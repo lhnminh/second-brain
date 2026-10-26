@@ -1,165 +1,129 @@
-# Visual Second Brain — Daily Dashboard
+# Visual Second Brain — Product Spec
 
-**Status:** Revised product direction; details open for discussion  
-**Version:** 0.4  
+**Status:** Product concept; layout and implementation to be defined  
+**Version:** 0.6  
 **Date:** October 26, 2026  
 **Format:** Hosted web application  
-**Working name:** Visual Second Brain (temporary)
+**Working name:** Visual Second Brain
 
-## 1. Product direction
+## 1. Product vision
 
-Visual Second Brain is a visual dashboard you open daily, especially at the start of your day, to **free up time and mental space**.
+**A daily starting point that frees up time and mental space.**
 
-The product should help the user begin their day with less effort spent gathering context, holding things in their head, and figuring out what needs attention. These are working interpretations of the desired benefit, to validate through concrete examples.
+Visual Second Brain is a visual dashboard you open daily, especially at the start of your day. It brings together priorities, work that needs doing, and work already underway so you can understand where things stand and get on with your day.
 
-Seeing current focus and deciding the next action are useful capabilities within that experience. They do not define the whole product.
+The experience combines three parts:
 
-The motivation also includes dissatisfaction with interacting with agents primarily through text. The dashboard should provide useful visual interaction directly, with conversation available when helpful.
+- **Daily dashboard:** See short-term and long-term priorities, current focus, and next actions.
+- **Agent activity:** See running agent tasks and inspect their progress through steps and screenshots.
+- **Corner pet:** Open text or voice interaction with the agent whenever you want to ask, discuss, or steer work.
 
-**Positioning:** A daily starting point that helps you reclaim time and mental space.
+The dashboard provides useful context at a glance. Conversation supports the experience without requiring the user to reconstruct their situation from a message history.
 
-## 2. Established direction and working proposals
+## 2. Daily dashboard
 
-### Established direction
+| Content | Purpose |
+|---|---|
+| Priorities | Understand what matters most |
+| Short-term view | See what needs attention soon |
+| Long-term view | Keep larger goals and direction visible |
+| Work to do | Understand what needs to be done |
+| Currently running | See agent tasks underway and their status |
+| Current focus and next actions | Decide where to put attention and how to move forward |
 
-- The product is something the user opens daily, especially at the start of the day.
-- Its intended benefit is freeing up time and mental space.
-- A dashboard is the central interface.
-- The experience should be more visual and less dependent on text conversation.
-- The dashboard should communicate the user's current focus.
-- It should help the user identify their next action.
-- It should show priorities across short-term and long-term horizons.
-- It should show what needs to be done.
-- It should show what is currently running or in progress.
+These are content needs, not a prescribed set of panels. The layout should make the overall situation easy to scan, with details available when needed.
 
-### Working proposals to validate
+Proposed interactions include adjusting priorities, editing work, choosing a focus, and accepting or revising suggested next actions. Connecting near-term work to long-term goals could help explain why an action matters.
 
-- Surface the context that helps the user start their day with less effort.
-- Make current focus easy to see when useful, without assuming it always dominates the screen.
-- Show a concrete recommended next action with enough context to understand it.
-- Let the user correct the focus and accept, adjust, or dismiss a suggestion directly.
-- Show relevant progress, blockers, and recent changes when they help the user act.
-- Persist the dashboard so the user can return without rebuilding context.
+Useful context should persist between visits. User corrections and completed work should inform subsequent suggestions.
 
-These proposals are starting points, not settled requirements.
+## 3. Agent activity
 
-## 3. Target experience
+The user can open a running agent task to see what is happening and how it is progressing.
 
-A user opens the app at the start of their day. The dashboard helps them get oriented and reduces the effort needed to begin. It carries useful context forward so the user has less to reconstruct or remember.
+The task view should include:
 
-The intended outcome is that the user leaves with more time and mental space for their day. Finding a next action can contribute to that outcome, but the experience should be evaluated more broadly.
+- The task and its current status.
+- The current step and a history of steps taken.
+- Screenshots associated with relevant steps.
+- Results and any point where user input is needed.
 
-### Daily overview
+A screen view may also show the task as it runs. Whether this uses live viewing, periodic screenshots, or step-linked captures remains open.
 
-The dashboard brings together:
+Steps describe observable actions and results. Tasks without a screen should still expose useful progress. Status should reflect actual execution and indicate when information is stale or unavailable.
 
-- **Priorities:** What matters most, across short-term needs and long-term direction.
-- **Work to do:** What needs to be done, with enough context to understand its importance.
-- **Work currently running:** What is already underway and its current status.
-- **Current focus and next actions:** Where to put attention and how to move forward.
+## 4. Corner pet and conversation
 
-Together these should help the user understand their situation without checking several places or reconstructing it from a conversation.
+A small pet sits in a corner of the application. Activating it opens text chat or voice interaction with the agent.
 
-## 4. Dashboard content and proposed interactions
+The user can ask questions, discuss priorities, request work, or steer an ongoing task. Conversation should share the dashboard's context, including relevant user edits and task state.
 
-The content categories below reflect the current product direction. Their layout and specific interactions remain proposals.
-
-| Area | Question it answers | Proposed interaction |
-|---|---|---|
-| Priorities | What deserves attention most? | Review and adjust priority |
-| Short-term view | What needs attention soon? | Inspect upcoming work and choose an action |
-| Long-term view | What am I working toward? | Review goals and their related work |
-| Work to do | What needs to be done? | Add, revise, defer, or complete work |
-| Currently running | What is already underway, and how is it going? | Inspect status and relevant details |
-| Current focus and next action | Where should my attention go now? | Select focus or adjust a suggestion |
-
-A proposed relationship is to connect near-term work to longer-term priorities so the user can see why it matters. How those relationships are created remains open.
-
-“Currently running” is intentionally broad. It may include the user's ongoing work, agent runs, background processes, or some combination. The exact scope needs definition. Showing an item here does not itself authorize the agent to start or control it.
-
-The visual hierarchy should make the overall situation easy to scan and let the user inspect details as needed. These content categories do not require six separate panels. The dashboard should reduce the effort of tracking work rather than add another surface to maintain.
-
-The layout remains open. A freeform canvas, draggable blocks, graphs, and a permanent chat sidebar are no longer assumed requirements.
+The dashboard remains useful with conversation closed. The pet's appearance, animation, and any activity indicators are design decisions. Voice should have explicit listening controls and a visible listening state.
 
 ## 5. Role of the agent
 
-The agent helps reduce the effort of starting and navigating the day. Maintaining context and suggesting next actions are possible ways to do that; its broader responsibilities remain to be defined.
+The agent supports the broader goal of saving time and reducing mental load. Its responsibilities include:
 
-Potential responsibilities:
+- Helping organize short-term and long-term priorities from available context.
+- Keeping work to do and work underway understandable.
+- Suggesting concrete next actions with a brief rationale when useful.
+- Incorporating user corrections, completed work, and changes in focus.
+- Making running tasks inspectable through progress and visual evidence.
 
-- Interpret the focus and context provided by the user.
-- Help organize short-term and long-term priorities.
-- Keep work to do and work already underway understandable from available information.
-- Distinguish observed status from inferred status; show uncertainty or stale information when relevant.
-- Suggest a specific, feasible next action.
-- Give a brief explanation when useful.
-- Incorporate corrections, completed actions, and changes in focus.
-- Ask for missing information when it materially affects a recommendation.
+The user controls priorities and actions. Recommendations, observed facts, and assumptions should be distinguishable. The scope of execution, automatic context gathering, and proactive behavior still needs definition.
 
-The user controls their focus and which action to take. A suggested action is separate from authorization to execute it.
+## 6. Experience principles
 
-Automatic context gathering, proactive behavior, and action execution remain unresolved product decisions.
+1. **Save time and mental space.** Each feature should reduce effort or the need to remember and reconstruct context.
+2. **Make the situation visible.** Use visual hierarchy and clear status to support a quick daily overview.
+3. **Support direct interaction.** Let the user correct and update information where it appears.
+4. **Keep conversation accessible.** Text and voice are available through the pet when useful.
+5. **Make agent work inspectable.** Show progress, steps, evidence, and outcomes.
+6. **Carry context forward.** Preserve useful state and intentional user changes between visits.
 
-## 6. Interaction principles
+## 7. Candidate prototype
 
-1. **Time and mental space.** Judge features by whether they reduce effort and free the user to get on with their day.
-2. **Dashboard first.** Opening the app reveals useful state immediately.
-3. **Visual clarity.** Layout, hierarchy, and status cues make the situation understandable at a glance.
-4. **Actionable suggestions.** Recommend a concrete next step with a clear purpose.
-5. **Direct control.** Users can update focus and action state from the dashboard.
-6. **Conversation when useful.** Discussion helps refine the dashboard or resolve uncertainty.
-7. **Visible rationale.** Explain recommendations briefly and distinguish known context from assumptions.
-8. **Persistent context.** Preserve intentional user updates for subsequent recommendations.
+Use one concrete daily scenario to demonstrate the complete experience:
 
-## 7. Candidate MVP
+1. Open the dashboard with saved context for the day.
+2. Review short-term and long-term priorities, work to do, and running agent tasks.
+3. Adjust a priority or focus directly.
+4. Activate the pet and interact through text or voice using the updated context.
+5. Open a running agent task and inspect its progress, steps, and screenshots.
+6. Return to the dashboard and see the updated state persist.
 
-The MVP scope should follow a concrete daily scenario. A candidate prototype could demonstrate:
+Context sources, the task the agent performs, and the implementation scope of voice and screen viewing must be chosen before building the prototype.
 
-1. The user provides enough context for a representative day.
-2. The dashboard shows short-term and long-term priorities, work to do, and what is currently running.
-3. The user can understand what needs attention, inspect ongoing work, and take or choose a useful action.
-4. Direct corrections update the dashboard and inform subsequent agent suggestions.
-5. Returning preserves useful context and reflects recorded changes.
+### Success criteria
 
-User-entered context is one possible starting point. Connected sources and automatic preparation remain open decisions.
+- The user can quickly understand priorities, pending work, and agent activity.
+- The experience reduces the effort of starting the day and keeping track of work.
+- Direct edits inform subsequent agent interactions.
+- Agent progress is understandable and reflects real execution.
+- Useful context persists, giving the user a reason to return the next day.
 
-### Prototype success questions
+## 8. Engineering requirements
 
-- Can the user distinguish short-term priorities, long-term direction, work to do, and work already underway?
-- Does opening the dashboard save effort at the start of the day?
-- Does it reduce what the user has to remember or reconstruct?
-- Does it help the user get on with their day sooner?
-- Can the user understand and correct it without a lengthy conversation?
-- Is there a useful reason to return the following morning?
+- Use shared, persistent state for the dashboard, conversation, and agent tasks.
+- Validate agent-generated updates before applying them.
+- Preserve user corrections and handle conflicting or stale updates.
+- Record meaningful changes and task events for inspection and recovery.
+- Associate screenshots and progress events with the relevant task and step.
+- Authorize data access and agent actions; keep credentials server-side.
 
-## 8. Engineering implications
+The technology stack remains open. The repository currently contains a Python package scaffold. Model providers, integrations, hosting, and any hackathon requirements need verification before implementation choices are finalized.
 
-The earlier design centered on an agent composing arrangements of typed blocks. Implementation should now follow the daily dashboard experience and its intended benefit of freeing time and mental space once its shape is clearer.
+## 9. Open decisions
 
-Useful principles from the earlier design:
+| Decision | What needs definition |
+|---|---|
+| First daily scenario | Whose day are we supporting, and what effort should the product remove? |
+| Context sources | What comes from the user, connected tools, or agent inference? |
+| Priority and time horizons | How are priorities set, and what counts as short-term or long-term? |
+| Dashboard layout | How are the overview, focus, and task activity presented together? |
+| Execution and autonomy | What can the agent do, when can it run, and what requires approval? |
+| Running work | Should the dashboard include user work and other processes alongside agent tasks? |
+| Screen visibility | Live view, periodic screenshots, step-linked captures, or a combination? |
+| Pet and voice | How does conversation open, how is voice controlled, and does the pet indicate activity? |
 
-- Store canonical dashboard state so user edits and agent suggestions share context.
-- Validate model output before applying changes.
-- Preserve user corrections and handle stale updates.
-- Keep enough history to explain or undo meaningful agent changes.
-- Keep credentials server-side and authorize access to user data.
-
-Previous stack suggestions—Next.js/TypeScript, Supabase, React Flow, and an optional Python agent runtime—remain provisional. React Flow may be unnecessary for a dashboard. The repository currently has a Python package scaffold; this document does not commit to replacing it.
-
-Meta model requirements, WebMCP support, research integrations, and hosting choices should be revisited against the revised product needs and actual hackathon constraints. They do not define the dashboard experience.
-
-## 9. Open product decisions
-
-1. **What would free up time and mental space in a real morning?** Identify the context gathering, remembering, decisions, or work the product could help with.
-2. **Where does current focus come from?** Explicit user selection, inference from connected activity, or a combination?
-3. **How many focuses are visible?** One active focus, several parallel areas, or an overview with one selected area?
-4. **What does next action mean?** A recommendation for the user, an action the agent can offer to execute, or both?
-5. **What context is needed?** User notes, existing tasks, calendar events, project activity, or other sources?
-6. **When should recommendations change?** On request, after a state change, or through proactive updates?
-7. **What counts as currently running?** User projects and tasks, agent activity, background processes, or a combination? Where does reliable status come from?
-8. **How are priorities set?** User-defined, agent-suggested, or both? What distinguishes the short-term and long-term horizons?
-9. **Which real situation should the first prototype serve?** Choose a concrete example before finalizing the layout.
-
-## 10. Immediate design priority
-
-Walk through a real start of day: what the user currently checks, remembers, decides, and does. Use that example to design a dashboard that frees up time and mental space. Choose features and layout from that evidence.
+**Next design step:** Walk through a real start of day and use it to sketch the dashboard, agent task view, and pet interaction.
