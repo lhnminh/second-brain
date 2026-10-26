@@ -15,10 +15,12 @@ Own server-side implementation in `backend/`:
 - Voice-input processing or forwarding, according to the verified Muse contract.
 - Planning activity status and validated dashboard updates.
 
-The existing Python placeholder remains at the repository root in `src/` with
-`pyproject.toml`. This folder does not yet contain a runnable service. Coordinate
-any package move or root configuration change and update the README as part of
-that change. The server framework and database are not selected yet.
+The root uv project manages all Python dependencies, its lockfile, virtual
+environment, and Python version. The `second_brain` package lives in
+`backend/second_brain/`; do not create a separate backend uv project. The service
+uses FastAPI and SQLAlchemy/Alembic, with Neon for hosted persistence and SQLite
+for local development. Coordinate root configuration changes and update the
+README as part of those changes.
 
 ## Data and agent rules
 

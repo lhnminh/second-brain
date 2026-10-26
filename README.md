@@ -15,10 +15,31 @@ context, message, activity, and API contracts together before integrating. Recor
 those contracts in a shared root-level document when defined. Frontend work can
 use clearly labeled fixtures while the backend implements the agreed behavior.
 
-The folders currently establish ownership and instructions, not runnable apps.
-The Python placeholder and package configuration remain at the root; coordinate
-their migration with the backend setup. Frontend and server frameworks and the
-database remain to be selected.
+The backend now contains a runnable FastAPI service with SQLAlchemy/Alembic
+persistence, a Meta Muse adapter, and review-before-saving task proposals.
+See [backend setup and demo](backend/README.md) and the shared
+[API contract](API_CONTRACT.md). Neon is the hosted database; SQLite supports
+local development and automated tests. A small browser dashboard at `/` connects
+to these APIs for tasks, context, Muse planning, and review before saving.
+Python dependencies, the lockfile, and the virtual environment are managed at
+the repository root. The root package points to application code in
+`backend/second_brain/`; the original hello-world placeholder has been replaced.
+
+Run from the repository root:
+
+```sh
+uv sync
+uv run alembic -c backend/alembic.ini upgrade head
+uv run second-brain
+```
+
+Open `http://localhost:8000/` for the dashboard or `/docs` for the API explorer.
+Restart an already-running server after pulling changes. Run checks with
+`uv run pytest`.
+
+Hosted setup is documented in [DEPLOYMENT.md](DEPLOYMENT.md). GitHub source,
+Neon migrations, and Vercel deployment are separate steps; credentials remain in
+server-side configuration.
 
 First integration milestone: a signed-in user sends text through the pet to Muse
 and sees a task update persisted to their own account. Then expand onboarding,
@@ -34,9 +55,9 @@ cp -n .env.example .env
 ```
 
 Keep credentials in `.env`, which Git ignores. The tracked `.env.example`
-contains blank placeholders only. Keep it updated when configuration changes.
+contains blank secret placeholders and non-secret defaults. Keep it updated when configuration changes.
 
-`META_API_KEY`, `META_BASE_URL`, and `META_MODEL` are planned application settings
-for the Meta integration. Confirm the provider's endpoint and model ID when
-that integration is implemented. The current Python scaffold does not load
-`.env` or use these variables yet.
+The backend loads this root `.env`. `META_API_KEY` authenticates real Meta calls;
+`META_BASE_URL` and `META_MODEL` default to the verified Meta endpoint and Muse
+Spark 1.3. Additional backend
+configuration and known limits are documented in [backend/README.md](backend/README.md).

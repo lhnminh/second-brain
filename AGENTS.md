@@ -69,3 +69,11 @@ As implementation progresses, keep setup instructions and the demo scenario repr
 Build toward a demonstration that shows the firsthand problem, the useful dashboard, the model's contribution, a user correction, and preserved context on return. Measure any claimed improvement using an explicit baseline; label unmeasured benefits as hypotheses.
 
 Before submission, check the current official requirements and map each required artifact to real implementation evidence. Clearly state what works, what is simulated, and what remains incomplete. Do not invent results or submit/publish externally without user authorization.
+
+## Code Map
+
+- `backend/second_brain` - Python application source, managed by the root uv project
+
+## Conventions
+
+- Keep source files with `.py` extensions.

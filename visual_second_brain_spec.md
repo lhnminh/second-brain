@@ -1,7 +1,7 @@
 # Visual Second Brain — Product Spec
 
 **Status:** MVP product scope defined; technical integration and implementation details open  
-**Version:** 0.11  
+**Version:** 0.12
 **Date:** October 26, 2026  
 **Format:** Hosted web application  
 **Working name:** Visual Second Brain
@@ -24,7 +24,7 @@ The dashboard provides useful context at a glance. Conversation supports the exp
 
 ## 2. Users and onboarding
 
-The application supports multiple users. Each signed-in user has their own dashboard, priorities, tasks, conversation history, and agent runs. Saved data and any connected accounts must be scoped to that user.
+The application supports multiple users. Each signed-in user has their own dashboard, priorities, tasks, conversation history, and agent runs. Saved data and any connected accounts must be scoped to that user. For the MVP implementation, a mock user ID stands in for sign-in; every record still carries `user_id` so real per-user isolation applies when sign-in lands.
 
 ### Voice-first onboarding
 
@@ -69,7 +69,17 @@ Useful context should persist between visits. User corrections and completed wor
 - The dashboard displays the importance level rather than the internal score.
 - Importance stays separate from deadline and urgency. An approaching deadline may raise priority without changing importance.
 
-This keeps fine-grained scoring with the agent and reduces the user's decision burden. The five labels and their exact score ranges remain to be defined.
+This keeps fine-grained scoring with the agent and reduces the user's decision burden. Confirmed labels and score ranges:
+
+| Label | Internal score range |
+|---|---|
+| Very low | 0–19 |
+| Low | 20–39 |
+| Medium | 40–59 |
+| High | 60–79 |
+| Very high | 80–100 |
+
+**Decision:** Generated task breakdowns and importance scores require user review before they are applied. The user may revise or reject the proposal.
 
 ## 4. Agent activity
 
@@ -195,7 +205,7 @@ The MVP proves task decomposition and importance scoring alongside voice onboard
 - When screen-based execution is added, associate screenshots with the relevant run and step.
 - Authorize data access and agent actions; keep credentials server-side.
 
-The technology stack remains open. The repository currently contains a Python package scaffold. Muse is the selected agent platform. Its integration contract, the remaining stack, hosting, and any hackathon requirements need verification before implementation choices are finalized.
+Decided stack: Vercel-hosted frontend, Python backend on Vercel serverless (owned in `backend/`), Neon (Postgres-compatible) database. The repository's Python scaffold migrates into the backend setup. Muse is the selected agent platform. Its integration contract and any hackathon requirements still need verification before those implementation choices are finalized.
 
 ### Implementation sequence
 
@@ -210,17 +220,17 @@ The technology stack remains open. The repository currently contains a Python pa
 
 | Decision | What needs definition |
 |---|---|
-| First daily scenario | Whose day are we supporting, and what effort should the product remove? |
+| First daily scenario | Confirmed: plan homework due next Sunday, review the proposed breakdown, correct it, and return to saved state. Ask for assignment details when needed rather than inventing requirements. |
 | Context sources | Voice onboarding supplies initial context; what additional input or connected tools should keep it current? |
-| Storage and context schema | Which database and supporting record structures implement the task model and user context? |
+| Storage and context schema | Neon (Postgres-compatible) decided. Supporting record structures for the task model and user context still need definition. |
 | Muse input and chat | How are voice input, transcription, and text chat integrated with Muse? What audio or transcripts are retained? |
-| Importance levels | What are the five labels and their score ranges? |
+| Importance levels | Confirmed: Very low 0–19, Low 20–39, Medium 40–59, High 60–79, Very high 80–100. |
 | Priority and time horizons | How do importance, deadlines, and work state determine priority, and what counts as short-term or long-term? |
 | Dashboard layout | How are the overview, focus, and task activity presented together? |
-| Planning updates | Should generated subtasks apply immediately with undo or be reviewed first? |
+| Planning updates | Confirmed: review before saving; proposals may be revised or rejected. |
 | Task relationships | How are subtasks ordered, when is a parent complete, and do deadline or importance values propagate? |
 | Running work | Should the dashboard include user work and other processes alongside agent tasks? |
 | Future screen visibility | When screen-based execution is added: live view, periodic screenshots, step-linked captures, or a combination? |
 | Pet and voice input | How does chat open, how is microphone input controlled, and does the pet indicate activity? |
 
-**Next implementation step:** Verify the Muse integration contract, then validate the initial schema against one onboarding-to-task-breakdown example. No additional product features are needed to start.
+**Implementation progress:** The initial text backend slice is implemented in `backend/`, with contracts in `API_CONTRACT.md`. A quick dashboard in `frontend/` is served at `/`. Browser checks with real Muse Spark and an isolated local database verified task/context creation, proposed subtasks, a user revision before approval, importance edits, completion, saved-state reload, and draft preservation after a connection failure. Neon persistence and deployment are not yet verified. Voice input, automatic onboarding context extraction, and real sign-in remain incomplete.

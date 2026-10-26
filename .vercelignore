@@ -1,0 +1,12 @@
+.git/
+.venv/
+backend/.venv/
+.env
+.env.*
+**/*.db
+**/*.db-journal
+**/__pycache__/
+.pytest_cache/
+.ruff_cache/
+backend/tests/
+dist/
