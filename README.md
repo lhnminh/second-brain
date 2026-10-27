@@ -40,10 +40,10 @@ saved objects as cards. Mark work complete, return later, and pick up where you 
 The current prototype supports conversation-based task creation and corrections,
 task and subtask editing, five importance levels, saved context, real Muse planning,
 and review before saving. `/dev` provides a read-only developer console for model runs, request inputs,
-proposals, saved objects, and change history. It uses a shared demo account protected by an access token.
+proposals, saved objects, and change history. Each browser has its own saved workspace, protected by a shared demo access token.
 Microphone recording and Meta transcription feed the reviewed text conversation (see `frontend/README.md`).
-Automatic onboarding, an animated companion, and real sign-in remain
-incomplete. The agent helps plan work; it does not execute the underlying tasks.
+Automatic onboarding and an animated companion remain incomplete. Individual sign-in
+is on the roadmap after the hackathon. The agent helps plan work; it does not execute the underlying tasks.
 
 ## Try it locally
 
@@ -59,8 +59,10 @@ uv run second-brain
 Add your `META_API_KEY` to `.env` to enable Muse planning. Keep credentials in
 that ignored file. Open [localhost:8000](http://localhost:8000/) for the dashboard
 or [/dev](http://localhost:8000/dev) for diagnostics and saved objects.
-A successful demo login stays connected across both pages and reloads for eight
-hours; use Sign out to end this browser session.
+A successful demo connection lasts eight hours across both pages and reloads.
+Sign out ends access while keeping this browser’s workspace. A separate workspace
+cookie lasts one year, renewed on use; clearing cookies or switching browsers
+starts a new workspace.
 The API explorer is at [/docs](http://localhost:8000/docs). After updating an
 existing checkout, run the migration command above and restart the server.
 

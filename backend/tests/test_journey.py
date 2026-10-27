@@ -61,7 +61,7 @@ def test_homework_review_edit_and_return(setup):
     )
     # Repeated approval is safe and cannot create duplicate subtasks.
     assert client.post(f"/api/runs/{run['id']}/approve", json={}).status_code == 200
-    data = clients().get("/api/dashboard").json()
+    data = clients(cookies=client.cookies).get("/api/dashboard").json()
     assert len(data["tasks"]) == 3
     children = [t for t in data["tasks"] if t["parent_task_id"]]
     assert {t["title"] for t in children} == {
@@ -84,7 +84,7 @@ def test_homework_review_edit_and_return(setup):
     assert edited.status_code == 200
     assert any(
         t["title"] == "My corrected step" and t["status"] == "completed"
-        for t in clients().get("/api/dashboard").json()["tasks"]
+        for t in clients(cookies=client.cookies).get("/api/dashboard").json()["tasks"]
     )
     assert len(data["messages"]) == 2 and data["events"]
 
@@ -274,7 +274,8 @@ def test_authentication_and_no_caller_selected_identity(setup):
         "/api/dashboard",
         headers={"Authorization": "Bearer test-token", "X-User-Id": "bob"},
     )
-    assert response.json()["user_id"] == "alice"
+    assert response.json()["user_id"].startswith("browser-")
+    assert response.json()["user_id"] != "bob"
 
 
 def test_interrupted_run_recovery(setup):
@@ -285,7 +286,7 @@ def test_interrupted_run_recovery(setup):
         c.execute(
             insert(runs).values(
                 id=uid(),
-                user_id="alice",
+                user_id=parent["user_id"],
                 task_id=parent["id"],
                 request_id=str(uuid4()),
                 message="plan",
@@ -309,7 +310,9 @@ def test_concurrent_approval_has_one_effect(setup):
     with ThreadPoolExecutor(max_workers=2) as executor:
         responses = list(
             executor.map(
-                lambda _: clients().post(f"/api/runs/{run['id']}/approve", json={}),
+                lambda _: clients(cookies=client.cookies).post(
+                    f"/api/runs/{run['id']}/approve", json={}
+                ),
                 range(2),
             )
         )

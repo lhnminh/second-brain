@@ -49,7 +49,7 @@ def setup(tmp_path, monkeypatch):
     engine = make_engine(url)
     muse = FixtureMuse()
 
-    def client(user="alice", token=None):
+    def client(user="alice", token=None, cookies=None):
         settings = Settings(
             _env_file=None,
             database_url=url,
@@ -58,7 +58,10 @@ def setup(tmp_path, monkeypatch):
             meta_api_key=None,
             vercel=None,
         )
-        return TestClient(create_app(settings, engine, muse))
+        result = TestClient(create_app(settings, engine, muse))
+        if cookies is not None:
+            result.cookies.update(cookies)
+        return result
 
     yield client, muse, engine
     engine.dispose()

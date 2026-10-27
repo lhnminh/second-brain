@@ -27,7 +27,7 @@ Empty values use defaults. Do not put secrets in tracked files.
 | Variable | Purpose / default |
 | --- | --- |
 | `DATABASE_URL` | Neon Postgres connection URL with SSL; default local SQLite file `backend/second-brain.db` |
-| `MOCK_USER_ID` | Server-selected demo owner; `demo-user` |
+| `MOCK_USER_ID` | Workspace namespace (keep stable); `demo-user` |
 | `MOCK_AUTH_TOKEN` | Optional local demo bearer token; required on Vercel |
 | `META_API_KEY` | Existing Meta key; required for real planning |
 | `META_BASE_URL` | `https://api.meta.ai/v1` |
@@ -107,9 +107,9 @@ Neon, the Meta key, mock owner/token, and the frontend origin as server-side
 environment variables, then apply migrations explicitly. Deployment has not
 been performed by this implementation.
 
-This is a single-account mock-auth demo, not public multi-user authentication.
-User ownership is enforced at the service/database boundary. Add verified
-sign-in before public use. Voice, inferred onboarding context,
+The hackathon uses isolated anonymous browser workspaces behind a shared demo
+access gate. Ownership is enforced at the service/database boundary. Individual
+sign-in, recovery, and cross-device linking are on the roadmap. Inferred onboarding context,
 streaming, pagination, and automatic priority ranking are deferred. Calls are
 synchronous with a 45-second model timeout; ensure the deployment's function
 duration accommodates this. `/health` is liveness, not external readiness.
@@ -131,7 +131,7 @@ console for runs, request inputs, proposals, messages, saved objects, and events
 Run `uv run alembic -c backend/alembic.ini upgrade head` before starting an updated
 checkout. The conversation migration preserves task-planning history, permits a
 null `task_id` on runs, and adds validated request inputs for retries and inspection.
-Voice, automatic onboarding extraction, and real sign-in remain incomplete.
+Automatic onboarding extraction remains incomplete; individual sign-in is roadmap work.
 
 
 ## Shared browser session
@@ -139,7 +139,20 @@ Voice, automatic onboarding extraction, and real sign-in remain incomplete.
 The workspace and dev console use `/api/session` to exchange the configured demo
 access token for a signed eight-hour HttpOnly cookie. It survives navigation and
 reloads; the bearer API remains available. No new migration is needed for sessions.
-Cookies are owner-bound and signed with the configured demo token; token rotation
-invalidates sessions across workers. HTTPS and Vercel use Secure cookies. Both
-pages clear private rendered state on 401 and expose sign-out. This remains a
-single-account demo, not real sign-in. See `API_CONTRACT.md` for expiry and origin rules.
+Access sessions are workspace-bound and signed with the configured demo token;
+token rotation invalidates access across workers without changing saved ownership.
+A separate random HttpOnly workspace cookie lasts one year, renewed on use, and
+survives sign-out and server restarts. HTTPS and Vercel use Secure cookies. Both
+pages clear private rendered state on 401 and expose sign-out. Clearing workspace
+cookies or switching browser profiles starts a separate workspace with no recovery.
+Existing shared-owner data is retained but not assigned to new browsers. No schema
+migration is needed. Bearer API clients must retain cookies between requests.
+See `API_CONTRACT.md` for expiry and origin rules.
+
+
+October 27 browser-workspace verification: 91 automated tests passed using isolated
+SQLite databases and fixture model responses. Coverage includes same-token browser
+isolation across tasks/context/messages/runs/events, foreign-record rejection,
+saved-state return through a fresh app instance, sign-out/reconnect, access expiry,
+token rotation, workspace/session mismatch, and clearing cookies. Ruff lint/format
+and Git whitespace checks passed. These checks do not verify hosted Neon/Vercel.

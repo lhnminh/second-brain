@@ -1,8 +1,8 @@
 # GitHub → Neon → Vercel
 
 Deployment target: `lhnminh/second-brain`, repository root, Python 3.14,
-FastAPI entrypoint `backend.app:app`. This is a single-account demo with a
-separate demo access token; real sign-in is not implemented.
+FastAPI entrypoint `backend.app:app`. This uses isolated anonymous browser workspaces behind a
+shared demo access token. Individual sign-in is roadmap work.
 
 ## Provision and configure
 
@@ -23,7 +23,7 @@ separate demo access token; real sign-in is not implemented.
    | `META_API_KEY` | Existing Meta API key, transferred privately |
    | `META_BASE_URL` | `https://api.meta.ai/v1` |
    | `META_MODEL` | `muse-spark-1.3` |
-   | `MOCK_USER_ID` | A stable owner ID for this hosted demo |
+   | `MOCK_USER_ID` | A stable namespace for browser workspace IDs; changing it selects new workspaces |
    | `MOCK_AUTH_TOKEN` | A separately generated random demo access token |
    | `FRONTEND_ORIGIN` | The final deployment origin if cross-origin requests are needed |
 
@@ -44,9 +44,12 @@ builds. Configure environment-specific Neon branches before enabling previews.
 - A demo login stays connected through workspace → dev console → workspace and
   reload. Sign-out clears the session on both pages. HTTPS cookies include Secure.
 - With the token, create a synthetic task and context; reload to verify Neon
-  persistence. Use a separate smoke-test owner when inspecting disposable data.
+  persistence. Use a separate browser profile/cookie jar for disposable smoke-test data.
 - Start a conversation from the blank canvas, request a real Muse plan, revise a
   suggestion, approve it, and reload. Check saved objects at `/dev`.
+- Connect two browser profiles using the same demo token; verify their tasks,
+  messages, runs, and context are separate. Sign out/reconnect to the original
+  workspace. Clearing cookies should open an empty workspace.
 - Check Vercel build/runtime logs for startup/import or migration failures. Keep
   secret values out of logs and screenshots.
 

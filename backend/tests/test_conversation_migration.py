@@ -11,7 +11,8 @@ from sqlalchemy import insert
 from second_brain.api import create_app
 from second_brain.config import Settings
 from second_brain.db import make_engine, now, runs, tasks
-from second_brain.service import task_values
+from second_brain.schemas import Approval
+from second_brain.service import Service, task_values
 
 
 def test_upgrade_preserves_existing_tasks_and_reviewable_plans(tmp_path, monkeypatch):
@@ -52,9 +53,13 @@ def test_upgrade_preserves_existing_tasks_and_reviewable_plans(tmp_path, monkeyp
             engine,
         )
     )
-    data = client.get("/api/dashboard").json()
+    settings = Settings(_env_file=None, mock_user_id="alice", vercel=None)
+    service = Service(engine, None, "alice", settings.meta_model)
+    data = service.dashboard()
     assert data["tasks"] == [task]
     assert data["runs"][0]["input_payload"] is None
-    assert client.post(f"/api/runs/{run_id}/approve", json={}).status_code == 200
-    assert client.get("/api/dashboard").json()["tasks"][0]["importance_score"] == 50
+    assert service.review(run_id, Approval())["status"] == "applied"
+    assert service.dashboard()["tasks"][0]["importance_score"] == 50
+    # Anonymous browsers do not automatically inherit the old shared account.
+    assert client.get("/api/dashboard").json()["tasks"] == []
     engine.dispose()

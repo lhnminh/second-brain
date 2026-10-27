@@ -4,7 +4,7 @@ from runpy import run_path
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends, FastAPI, Header, Path, Request
+from fastapi import Depends, FastAPI, Header, Path, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -27,7 +27,16 @@ from .schemas import (
     TaskEdit,
 )
 from .service import Service
-from .session import COOKIE_NAME, SESSION_SECONDS, create_session, valid_session
+from .session import (
+    COOKIE_NAME,
+    SESSION_SECONDS,
+    WORKSPACE_COOKIE_NAME,
+    WORKSPACE_SECONDS,
+    create_session,
+    valid_session,
+    workspace_cookie,
+    workspace_owner,
+)
 from .voice import MAX_AUDIO_BYTES, VoiceFailure, VoiceTranscriber
 
 
@@ -35,9 +44,7 @@ def create_app(settings=None, engine=None, muse=None, transcriber=None):
     settings = settings or Settings()
     settings.validate_hosted()
     engine = engine or make_engine(settings.database_url)
-    service = Service(
-        engine, muse or Muse(settings), settings.mock_user_id, settings.meta_model
-    )
+    muse = muse or Muse(settings)
     transcriber = transcriber or VoiceTranscriber(settings)
     app = FastAPI(title="Visual Second Brain", version="0.1.0")
     app.state.engine = engine
@@ -76,8 +83,24 @@ def create_app(settings=None, engine=None, muse=None, transcriber=None):
         if origin is not None and origin != expected:
             raise HTTPException(403, "Session requests must use the app's origin")
 
+    def ensure_workspace(request, response):
+        workspace = workspace_cookie(request.cookies.get(WORKSPACE_COOKIE_NAME))
+        workspace = workspace or secrets.token_hex(32)
+        response.set_cookie(
+            WORKSPACE_COOKIE_NAME,
+            workspace,
+            max_age=WORKSPACE_SECONDS,
+            httponly=True,
+            secure=bool(settings.vercel) or request.url.scheme == "https",
+            samesite="lax",
+            path="/",
+        )
+        return workspace
+
     def identity(
-        request: Request, authorization: Annotated[str | None, Header()] = None
+        request: Request,
+        response: Response,
+        authorization: Annotated[str | None, Header()] = None,
     ):
         token = settings.mock_auth_token
         if token:
@@ -87,18 +110,30 @@ def create_app(settings=None, engine=None, muse=None, transcriber=None):
                     ("Bearer " + token.get_secret_value()).encode(),
                 ):
                     raise HTTPException(401, "Valid demo access token required")
-            elif valid_session(settings, request.cookies.get(COOKIE_NAME)):
+            elif valid_session(
+                settings,
+                request.cookies.get(COOKIE_NAME),
+                workspace_cookie(request.cookies.get(WORKSPACE_COOKIE_NAME)),
+            ):
                 if request.method not in {"GET", "HEAD", "OPTIONS"}:
                     same_origin(request)
             else:
                 raise HTTPException(401, "Connect with your demo access token")
-        return service
+        elif authorization is None and request.method not in {"GET", "HEAD", "OPTIONS"}:
+            same_origin(request)
+        workspace = ensure_workspace(request, response)
+        return Service(
+            engine, muse, workspace_owner(settings, workspace), settings.meta_model
+        )
 
     @app.middleware("http")
     async def private_api_responses(request: Request, call_next):
         response = await call_next(request)
         if request.url.path.startswith("/api/"):
             response.headers["Cache-Control"] = "no-store"
+        elif request.url.path in {"/", "/dev"} and response.status_code == 200:
+            # Establish identity before the page starts parallel API requests.
+            ensure_workspace(request, response)
         return response
 
     @app.post("/api/session")
@@ -110,10 +145,11 @@ def create_app(settings=None, engine=None, muse=None, transcriber=None):
         ):
             raise HTTPException(401, "Valid demo access token required")
         response = JSONResponse({"authenticated": True, "authentication": "mock"})
+        workspace = ensure_workspace(request, response)
         if token:
             response.set_cookie(
                 COOKIE_NAME,
-                create_session(settings),
+                create_session(settings, workspace),
                 max_age=SESSION_SECONDS,
                 httponly=True,
                 secure=bool(settings.vercel) or request.url.scheme == "https",

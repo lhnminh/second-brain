@@ -7,17 +7,32 @@ response bodies use snake_case. Interactive schemas: `/docs`; machine schema:
 
 ## Identity and transport
 
-For this MVP, identity is the server's `MOCK_USER_ID` (default `demo-user`). The
-client cannot choose an owner in a header or body. This is a single-account demo,
-not real sign-in. Every read and write is scoped to that server-selected owner.
-Tests use separate configured identities against the same database.
+The hackathon MVP uses one anonymous workspace per browser profile and app origin.
+A server-generated 256-bit random HttpOnly cookie (`second_brain_workspace`)
+selects the workspace. Its value is a private capability; the public `user_id`
+is a one-way hash of that value and the configured `MOCK_USER_ID` namespace.
+Neither a body field nor an identity header can select an owner. Every task,
+context record, message, planning run, and event is scoped to the workspace.
+`/` and `/dev` initialize the cookie before their parallel API requests.
 
-If `MOCK_AUTH_TOKEN` is configured, data requests require either an authenticated
-browser session or `Authorization: Bearer <demo token>`. This shared demo token
-is not the Meta key. The same account is used by both pages.
-Hosted Vercel instances refuse to start without this token and a Postgres URL.
-Use deployment protection for a private demo. Real account authentication and
-authorization through verified identity remain a follow-up before public use.
+The workspace cookie uses Path=/, SameSite=Lax (including returns from external
+links), Secure on HTTPS/Vercel, and a one-year lifetime renewed on use. Sign-out
+retains it. Clearing/expiring cookies, a different browser profile, private
+browsing, or a different app origin starts a separate workspace; there is no
+account recovery or cross-device linking. Copying the cookie transfers workspace
+access. Existing shared-demo records remain stored but are not assigned to a
+new browser. No database migration is needed.
+
+If `MOCK_AUTH_TOKEN` is configured, data requests additionally require an
+eight-hour browser access session or `Authorization: Bearer <demo token>`.
+This shared access gate is not the Meta key and does not select a shared owner.
+Bearer clients must retain workspace cookies in a cookie jar between requests
+and initialize the jar before sending concurrent requests. Without a cookie,
+authorized API requests create a fresh workspace. Local development without a
+token uses the same browser isolation without the access gate.
+Hosted Vercel instances still require the token and a Postgres URL.
+Individual sign-in, recovery, and cross-device workspaces are roadmap work,
+not hackathon requirements.
 
 `FRONTEND_ORIGIN` allows one CORS origin (default `http://localhost:3000`).
 Credentials and `user_id` are not accepted in request bodies. Dates use
@@ -242,21 +257,25 @@ POST `/api/session` accepts `{"token":"<demo access token>"}`. With a configured
 `MOCK_AUTH_TOKEN`, valid input returns `{"authenticated":true,"authentication":"mock"}`
 and a signed session cookie. Invalid credentials return 401; input errors never
 echo credentials. The cookie contains a random nonce, expiry, and HMAC signature,
-not the access token. It is bound to the configured owner and signed with the
-configured demo token, so owner or token changes invalidate existing sessions.
+not the access token. It is bound to the browser workspace and configured namespace, and signed with
+the demo token. Missing/mismatched workspace cookies, namespace changes, or token
+rotation invalidate access sessions. Token rotation preserves workspace identity;
+reconnect with the new token to return to saved work.
 The session works across serverless workers without an in-memory session store.
 
 The cookie is HttpOnly, SameSite=Strict, scoped to `/api`, and valid for eight
 hours. Secure is enabled on HTTPS and hosted Vercel; local HTTP remains usable.
 No demo credential is saved in localStorage or sessionStorage. DELETE
-`/api/session` clears the browser cookie; saved work is retained. Sign-out clears
+`/api/session` clears only the access-session cookie; the workspace cookie and
+saved work are retained. Sign-out clears
 private frontend state and unsaved edits. Session expiry requires reconnecting.
-This is shared-account demo authentication, not per-user sign-in. Sign-out does
+This is anonymous browser ownership with a shared access gate. Individual sign-in
+is on the roadmap. Sign-out does
 not revoke an independently copied session cookie before its expiry.
 
 Browser session endpoints and cookie-authenticated writes reject an explicit
 cross-origin Origin header. These cookie flows use the same application origin;
-separate-origin API clients can continue using bearer authentication. Explicit
+Non-browser API clients can use bearer authentication with a persistent cookie jar. Explicit
 invalid bearer credentials are rejected even if a session cookie is valid.
 API responses, including errors and session responses, use `Cache-Control: no-store`.
 Pages recheck state when restored from the browser's back/forward cache.

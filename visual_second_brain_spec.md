@@ -1,7 +1,7 @@
 # Visual Second Brain — Product Spec
 
 **Status:** MVP product scope defined; technical integration and implementation details open  
-**Version:** 0.14
+**Version:** 0.15
 **Date:** October 27, 2026\
 **Format:** Hosted web application  
 **Working name:** Visual Second Brain
@@ -34,7 +34,9 @@ Conversation builds the initial workspace. Once saved work exists, the canvas pr
 
 ## 2. Users and onboarding
 
-The application supports multiple users. Each signed-in user has their own dashboard, priorities, tasks, conversation history, and agent runs. Saved data and any connected accounts must be scoped to that user. For the MVP implementation, a mock user ID stands in for sign-in; every record still carries `user_id` so real per-user isolation applies when sign-in lands.
+**Hackathon decision:** Use one anonymous workspace per browser profile and app origin; individual sign-in is on the roadmap. A persistent HttpOnly cookie identifies the workspace, and every record retains `user_id` for isolation. Tasks, context, conversation history, and agent runs are separate between browsers, even when they use the same demo access token. Reloads and backend restarts preserve access while the cookie remains. Sign-out ends demo access but keeps the workspace cookie.
+
+The workspace cookie lasts one year, renewed on use. Clearing cookies, private browsing, another browser, or a different app origin starts a separate workspace. Account recovery and cross-device linking require future sign-in. Existing shared-demo records remain untouched and are not automatically assigned to a browser.
 
 ### Voice-first onboarding
 
@@ -206,7 +208,7 @@ The current end-to-end slice proves conversation-based task creation, decomposit
 
 ## 9. Engineering requirements
 
-- Authenticate users and enforce user-scoped access on every data and task operation.
+- Enforce browser-workspace ownership on every data and task operation; retain the demo access gate for hosted use. Individual authentication is roadmap work.
 - Use shared, persistent state within each user account for onboarding context, the dashboard, conversation, and agent tasks.
 - Validate agent-generated updates before applying them.
 - Preserve user corrections and handle conflicting or stale updates.
@@ -220,7 +222,7 @@ Decided stack: Vercel-hosted frontend, Python backend on Vercel serverless (owne
 ### Implementation sequence
 
 1. Verify Muse's integration contract for text and voice input, chat replies, structured task updates, and activity status. This is the first technical dependency to resolve.
-2. Finalize the initial schema and implement per-user authentication, isolation, and persistence.
+2. Finalize the initial schema and implement browser-workspace isolation and persistence. Individual sign-in follows after the hackathon.
 3. Connect onboarding context, subtask creation, and importance scoring through Muse.
 4. Build the dashboard and five-level importance control.
 5. Add the corner pet with text chat and voice input, without spoken replies.
@@ -279,3 +281,10 @@ Automated checks use simulated capture/provider interfaces. A synthetic speech
 sample was transcribed successfully through the real Meta adapter, and the user
 confirmed the revised flow works in Dia on localhost. Hosted voice deployment
 remains unverified.
+
+
+**Browser workspaces (October 27):** Anonymous workspace ownership replaces the
+shared demo owner. A persistent browser cookie selects isolated saved state;
+the eight-hour demo access session is separately bound to that workspace.
+No schema migration or automatic transfer of legacy shared data is performed.
+Individual sign-in, account recovery, and cross-device linking remain roadmap work.

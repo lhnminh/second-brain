@@ -121,7 +121,7 @@ function renderOverview() {
     ];
     $('#metrics').innerHTML = values.map(([label,value,caption])=>`<div class="metric"><div class="eyebrow">${label}</div><div class="number">${value}</div><div class="caption">${esc(caption)}</div></div>`).join('');
     const authMode = !health ? 'Unknown' : authRequired ? 'Protected demo session' : 'Open local demo';
-    $('#snapshot-info').innerHTML = field('Configured model', health?.model, true) + field('Access mode', authMode) + field('Account ID', state?.user_id, true) + field('Service liveness', health?.status || 'Unavailable') + field('Snapshot fetch', snapshotMs===null ? 'Not measured' : `${snapshotMs} ms in this browser`) + field('Identity', health?.authentication==='mock' ? 'Demo identity · not real sign-in' : health?.authentication);
+    $('#snapshot-info').innerHTML = field('Configured model', health?.model, true) + field('Access mode', authMode) + field('Workspace ID', state?.user_id, true) + field('Service liveness', health?.status || 'Unavailable') + field('Snapshot fetch', snapshotMs===null ? 'Not measured' : `${snapshotMs} ms in this browser`) + field('Identity', health?.authentication==='mock' ? 'Anonymous browser workspace' : health?.authentication);
 }
 function runTitle(run) { return state?.tasks.find(task=>task.id===run.task_id)?.title || run.message || 'Conversation'; }
 function elapsed(run) {

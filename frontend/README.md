@@ -26,7 +26,7 @@ backend reload, use `uv run uvicorn backend.app:app --reload --port 8000`.
 4. Save the reviewed plan. Persisted task objects become cards on the canvas.
 5. Edit saved tasks, choose among five importance levels, or mark work complete.
 6. Return to saved tasks and conversation history. Demo login stays connected for
-   eight hours across both pages and reloads; Sign out ends this browser session.
+   eight hours across both pages and reloads; Sign out ends access while retaining this browser’s workspace.
 
 Model proposals remain separate from saved work until accepted. Conversation
 corrections can update existing task objects; steps append to existing plans.
@@ -52,7 +52,10 @@ existing backend editing endpoints remain accessible through the API reference.
 
 There are no seeded objects or simulated model responses in either page. The
 Meta key stays server-side. The demo token is exchanged for an eight-hour signed HttpOnly session cookie;
-it is not saved in JavaScript storage. Both pages share the session and clear
+it is not saved in JavaScript storage. A separate HttpOnly cookie selects this browser’s workspace for one year, renewed
+on use. Clearing cookies, private browsing, or another browser starts a separate
+workspace. Individual sign-in and cross-device access are roadmap work.
+Both pages share the session and clear
 private rendered state when access expires. Sign-out also discards unsaved edits. Browser drafts
 survive in-page request failures, but unsaved edits are not persisted across
 navigation or reload. A network retry reuses its request ID and input. Automatic onboarding extraction, real sign-in, arbitrary widgets, and task

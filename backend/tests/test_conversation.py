@@ -53,7 +53,7 @@ def test_conversation_review_correction_and_saved_reload(setup):
     run["proposal"]["tasks"][0]["subtasks"][0]["title"] = "Read only assigned pages"
     assert approve(client, run, proposal=run["proposal"]).status_code == 200
     assert approve(client, run).status_code == 200
-    data = clients().get("/api/dashboard").json()
+    data = clients(cookies=client.cookies).get("/api/dashboard").json()
     assert len(data["tasks"]) == 2
     parent = next(t for t in data["tasks"] if t["parent_task_id"] is None)
     child = next(t for t in data["tasks"] if t["parent_task_id"])
@@ -199,6 +199,7 @@ def test_unsaved_review_edits_are_shared_with_muse_and_bound_to_retry(setup):
 def test_older_response_cannot_supersede_a_newer_conversation_correction(setup):
     clients, muse, _ = setup
     client = clients()
+    client.get("/")  # Establish the browser workspace before overlapping requests.
     newer = {}
 
     def old_response(snapshot, message):
