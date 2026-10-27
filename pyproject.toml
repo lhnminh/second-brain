@@ -26,7 +26,7 @@ build-backend = "uv_build"
 
 [tool.uv.build-backend]
 module-root = "backend"
-source-include = ["frontend/dashboard.py"]
+source-include = ["frontend/*.py"]
 
 [dependency-groups]
 dev = ["pytest>=8,<10", "ruff>=0.11,<1"]

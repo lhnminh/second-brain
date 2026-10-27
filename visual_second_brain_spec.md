@@ -1,8 +1,8 @@
 # Visual Second Brain — Product Spec
 
 **Status:** MVP product scope defined; technical integration and implementation details open  
-**Version:** 0.13
-**Date:** October 26, 2026  
+**Version:** 0.14
+**Date:** October 27, 2026\
 **Format:** Hosted web application  
 **Working name:** Visual Second Brain
 
@@ -17,7 +17,10 @@ text conversation. The user describes what they need to do; Muse proposes struct
 task objects and their plans, and the frontend renders them as editable cards. The
 user reviews changes before saving. Saved objects populate the canvas on return.
 Muse creates task data, rather than generating arbitrary UI code or widget types.
-The existing form-based interface and object inspector live separately at `/dev`.
+The desktop workspace always uses the same canvas-left/chat-right layout, including
+when no tasks exist. The empty canvas has a quiet placeholder rather than a separate
+centered onboarding screen. `/dev` is a dedicated read-only diagnostic console for
+runs, requests, proposals, saved objects, messages, and change events.
 
 The experience combines three parts:
 
@@ -246,8 +249,17 @@ Decided stack: Vercel-hosted frontend, Python backend on Vercel serverless (owne
 **Conversation canvas implementation:** `/` now starts with chat and renders saved task
 objects as cards. Muse can propose new tasks with steps, answer clarification questions,
 or propose edits to owned tasks. Proposals are validated and reviewed before atomic
-application. Follow-up requests carry unsaved proposal edits. `/dev` retains manual
-controls and adds a read-only saved-object inspector. A migration makes run task links
+application. Follow-up requests carry unsaved proposal edits. `/dev` provides a read-only diagnostic console for model requests, proposals,
+saved objects, messages, and change history. A migration makes run task links
 optional; existing task-planning endpoints remain supported. Subtasks append to existing
 plans; edit existing steps by ID rather than replacing a plan. This is not arbitrary UI
 generation, external task execution, or automatic onboarding extraction.
+
+
+**Navigation and diagnostics refinement (October 27):** Empty and populated
+workspaces share the same layout. Demo login establishes an eight-hour signed
+HttpOnly session shared across `/` and `/dev`, including reloads, with sign-out.
+This does not replace the planned real per-user authentication. The diagnostic
+console distinguishes pending proposals from saved objects, reports actual run
+states and linked events, and labels snapshot-fetch timing separately from run
+lifecycle timestamps. It does not claim provider latency or model readiness.

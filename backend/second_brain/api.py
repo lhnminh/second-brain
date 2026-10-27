@@ -21,10 +21,12 @@ from .schemas import (
     ConversationApproval,
     ConversationRequest,
     PlanRequest,
+    SessionCreate,
     TaskCreate,
     TaskEdit,
 )
 from .service import Service
+from .session import COOKIE_NAME, SESSION_SECONDS, create_session, valid_session
 
 
 def create_app(settings=None, engine=None, muse=None):
@@ -45,30 +47,90 @@ def create_app(settings=None, engine=None, muse=None):
 
     @app.get("/", response_class=HTMLResponse, include_in_schema=False)
     def dashboard_page():
-        return frontend_page("PAGE")
+        return frontend_page("dashboard.py")
 
     @app.get("/dev", response_class=HTMLResponse, include_in_schema=False)
     def dev_page():
-        return frontend_page("DEV_PAGE")
+        return frontend_page("dev.py")
 
-    def frontend_page(name):
+    def frontend_page(filename):
         # Resolve repository UI assets independently of the command's cwd.
-        page = FilePath(__file__).resolve().parents[2] / "frontend" / "dashboard.py"
+        page = FilePath(__file__).resolve().parents[2] / "frontend" / filename
         if not page.is_file():
             # Vercel may install the package into site-packages; it preserves
             # included frontend assets relative to the project working directory.
-            page = FilePath.cwd() / "frontend" / "dashboard.py"
+            page = FilePath.cwd() / "frontend" / filename
         return HTMLResponse(
-            run_path(str(page))[name], headers={"Cache-Control": "no-store"}
+            run_path(str(page))["PAGE"], headers={"Cache-Control": "no-store"}
         )
 
-    def identity(authorization: Annotated[str | None, Header()] = None):
+    def same_origin(request):
+        origin = request.headers.get("origin")
+        expected = str(request.base_url).rstrip("/")
+        # Vercel terminates public HTTPS before forwarding to the Python app.
+        if settings.vercel:
+            expected = "https://" + request.headers["host"]
+        if origin is not None and origin != expected:
+            raise HTTPException(403, "Session requests must use the app's origin")
+
+    def identity(
+        request: Request, authorization: Annotated[str | None, Header()] = None
+    ):
+        token = settings.mock_auth_token
+        if token:
+            if authorization is not None:
+                if not secrets.compare_digest(
+                    authorization.encode(),
+                    ("Bearer " + token.get_secret_value()).encode(),
+                ):
+                    raise HTTPException(401, "Valid demo access token required")
+            elif valid_session(settings, request.cookies.get(COOKIE_NAME)):
+                if request.method not in {"GET", "HEAD", "OPTIONS"}:
+                    same_origin(request)
+            else:
+                raise HTTPException(401, "Connect with your demo access token")
+        return service
+
+    @app.middleware("http")
+    async def private_api_responses(request: Request, call_next):
+        response = await call_next(request)
+        if request.url.path.startswith("/api/"):
+            response.headers["Cache-Control"] = "no-store"
+        return response
+
+    @app.post("/api/session")
+    def connect(body: SessionCreate, request: Request):
+        same_origin(request)
         token = settings.mock_auth_token
         if token and not secrets.compare_digest(
-            authorization or "", "Bearer " + token.get_secret_value()
+            body.token.get_secret_value().encode(), token.get_secret_value().encode()
         ):
-            raise HTTPException(401, "Valid demo bearer token required")
-        return service
+            raise HTTPException(401, "Valid demo access token required")
+        response = JSONResponse({"authenticated": True, "authentication": "mock"})
+        if token:
+            response.set_cookie(
+                COOKIE_NAME,
+                create_session(settings),
+                max_age=SESSION_SECONDS,
+                httponly=True,
+                secure=bool(settings.vercel) or request.url.scheme == "https",
+                samesite="strict",
+                path="/api",
+            )
+        return response
+
+    @app.delete("/api/session")
+    def disconnect(request: Request):
+        same_origin(request)
+        response = JSONResponse({"authenticated": False})
+        response.delete_cookie(
+            COOKIE_NAME,
+            path="/api",
+            httponly=True,
+            samesite="strict",
+            secure=bool(settings.vercel) or request.url.scheme == "https",
+        )
+        return response
 
     @app.exception_handler(HTTPException)
     async def http_error(request: Request, exc: HTTPException):
@@ -103,7 +165,12 @@ def create_app(settings=None, engine=None, muse=None):
 
     @app.get("/health")
     def health():
-        return {"status": "ok", "authentication": "mock", "model": settings.meta_model}
+        return {
+            "status": "ok",
+            "authentication": "mock",
+            "model": settings.meta_model,
+            "demo_access_required": bool(settings.mock_auth_token),
+        }
 
     @app.get("/api/dashboard")
     def dashboard(s: Annotated[Service, Depends(identity)]):

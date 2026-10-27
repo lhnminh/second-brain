@@ -125,10 +125,21 @@ The homepage now uses `POST /api/conversation` to start planning without an
 existing task. Muse returns validated task objects and their subtasks, or a
 clarifying text reply. Acceptance through `/api/conversation/{id}/approve` applies
 all reviewed objects in one transaction. The original task-specific planning
-endpoint remains available at `/dev`, alongside manual controls and an object
-inspector. See `API_CONTRACT.md` for shapes and retry/review behavior.
+endpoint remains available through the API. `/dev` is a read-only diagnostic
+console for runs, request inputs, proposals, messages, saved objects, and events. See `API_CONTRACT.md` for shapes and retry/review behavior.
 
 Run `uv run alembic -c backend/alembic.ini upgrade head` before starting an updated
 checkout. The conversation migration preserves task-planning history, permits a
 null `task_id` on runs, and adds validated request inputs for retries and inspection.
 Voice, automatic onboarding extraction, and real sign-in remain incomplete.
+
+
+## Shared browser session
+
+The workspace and dev console use `/api/session` to exchange the configured demo
+access token for a signed eight-hour HttpOnly cookie. It survives navigation and
+reloads; the bearer API remains available. No new migration is needed for sessions.
+Cookies are owner-bound and signed with the configured demo token; token rotation
+invalidates sessions across workers. HTTPS and Vercel use Secure cookies. Both
+pages clear private rendered state on 401 and expose sign-out. This remains a
+single-account demo, not real sign-in. See `API_CONTRACT.md` for expiry and origin rules.

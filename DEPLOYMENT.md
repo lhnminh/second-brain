@@ -40,7 +40,9 @@ builds. Configure environment-specific Neon branches before enabling previews.
 ## Verify after deployment
 
 - `/` serves the dashboard; `/health` returns liveness.
-- `/api/dashboard` without the demo token returns 401.
+- `/api/dashboard` without a valid session or bearer token returns 401.
+- A demo login stays connected through workspace → dev console → workspace and
+  reload. Sign-out clears the session on both pages. HTTPS cookies include Secure.
 - With the token, create a synthetic task and context; reload to verify Neon
   persistence. Use a separate smoke-test owner when inspecting disposable data.
 - Start a conversation from the blank canvas, request a real Muse plan, revise a

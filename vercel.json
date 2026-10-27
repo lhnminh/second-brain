@@ -5,7 +5,7 @@
   "functions": {
     "backend/app.py": {
       "maxDuration": 60,
-      "includeFiles": "frontend/dashboard.py",
+      "includeFiles": "frontend/*.py",
       "excludeFiles": "{.env,.env.*,**/*.db,**/*.db-journal,backend/tests/**,**/__pycache__/**}"
     }
   }

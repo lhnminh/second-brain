@@ -2,7 +2,7 @@ from datetime import date
 from typing import Annotated, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, StrictInt, model_validator
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, StrictInt, model_validator
 
 Importance = Literal["very_low", "low", "medium", "high", "very_high"]
 Status = Literal["pending", "in_progress", "completed"]
@@ -20,6 +20,10 @@ RANGES = {
 
 class Input(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+
+class SessionCreate(Input):
+    token: Annotated[SecretStr, Field(min_length=1, max_length=4096)]
 
 
 class TaskCreate(Input):

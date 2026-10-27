@@ -31,15 +31,18 @@ def test_dashboard_resource_when_backend_package_is_installed_elsewhere(
         "__file__",
         str(tmp_path / "site-packages" / "second_brain" / "api.py"),
     )
-    page = clients().get("/")
+    client = clients()
+    page = client.get("/")
     assert page.status_code == 200
     assert 'id="chat-form"' in page.text
+    assert client.get("/dev").status_code == 200
 
 
-def test_dev_keeps_manual_controls_and_inspector(setup):
+def test_dev_serves_read_only_run_and_object_diagnostics(setup):
     clients, _, _ = setup
     page = clients().get("/dev")
     assert page.status_code == 200
-    assert 'id="task-form"' in page.text
-    assert 'id="object-inspector"' in page.text
+    assert 'id="run-explorer"' in page.text
+    assert 'id="raw-state"' in page.text
+    assert 'id="task-form"' not in page.text
     assert 'href="/"' in page.text

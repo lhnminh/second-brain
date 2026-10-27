@@ -12,8 +12,9 @@ client cannot choose an owner in a header or body. This is a single-account demo
 not real sign-in. Every read and write is scoped to that server-selected owner.
 Tests use separate configured identities against the same database.
 
-If `MOCK_AUTH_TOKEN` is configured, every `/api/` request requires
-`Authorization: Bearer <demo token>`. This shared demo token is not the Meta key.
+If `MOCK_AUTH_TOKEN` is configured, data requests require either an authenticated
+browser session or `Authorization: Bearer <demo token>`. This shared demo token
+is not the Meta key. The same account is used by both pages.
 Hosted Vercel instances refuse to start without this token and a Postgres URL.
 Use deployment protection for a private demo. Real account authentication and
 authorization through verified identity remain a follow-up before public use.
@@ -29,8 +30,10 @@ digits, underscores, or hyphens.
 | Method | Path | Behavior |
 | --- | --- | --- |
 | GET | `/` | Conversation canvas; public shell without embedded credentials |
-| GET | `/dev` | Manual development controls and read-only saved-object inspector; API data requires the same demo authentication |
-| GET | `/health` | Service liveness, configured model, mock-auth indicator; does not claim DB or model readiness |
+| GET | `/dev` | Read-only diagnostics console: runs, objects, messages, and events; API data requires the same demo authentication |
+| POST | `/api/session` | Validate demo token and establish an eight-hour browser session |
+| DELETE | `/api/session` | Clear this browser’s demo session |
+| GET | `/health` | Service liveness, configured model, mock-auth indicator and `demo_access_required` boolean; does not claim DB or model readiness |
 | GET | `/api/dashboard` | Owner's tasks, context, runs, messages, events |
 | GET | `/api/importance-levels` | Five accepted level ranges |
 | POST | `/api/tasks` | Create task or subtask; returns task, HTTP 201 |
@@ -229,4 +232,35 @@ The frontend renders these data objects with fixed components; Muse does not
 produce HTML, executable scripts, arbitrary widgets, or external actions.
 Conversation messages and proposals persist; unsaved browser edits survive
 in-page request failures but not navigation/reload. The demo access token stays
-in page memory, so reloading or opening `/dev` requires reconnecting.
+only in the login form until submitted; a signed HttpOnly session cookie keeps
+both pages connected through navigation and reload.
+
+## Browser demo session
+
+POST `/api/session` accepts `{"token":"<demo access token>"}`. With a configured
+`MOCK_AUTH_TOKEN`, valid input returns `{"authenticated":true,"authentication":"mock"}`
+and a signed session cookie. Invalid credentials return 401; input errors never
+echo credentials. The cookie contains a random nonce, expiry, and HMAC signature,
+not the access token. It is bound to the configured owner and signed with the
+configured demo token, so owner or token changes invalidate existing sessions.
+The session works across serverless workers without an in-memory session store.
+
+The cookie is HttpOnly, SameSite=Strict, scoped to `/api`, and valid for eight
+hours. Secure is enabled on HTTPS and hosted Vercel; local HTTP remains usable.
+No demo credential is saved in localStorage or sessionStorage. DELETE
+`/api/session` clears the browser cookie; saved work is retained. Sign-out clears
+private frontend state and unsaved edits. Session expiry requires reconnecting.
+This is shared-account demo authentication, not per-user sign-in. Sign-out does
+not revoke an independently copied session cookie before its expiry.
+
+Browser session endpoints and cookie-authenticated writes reject an explicit
+cross-origin Origin header. These cookie flows use the same application origin;
+separate-origin API clients can continue using bearer authentication. Explicit
+invalid bearer credentials are rejected even if a session cookie is valid.
+API responses, including errors and session responses, use `Cache-Control: no-store`.
+Pages recheck state when restored from the browser's back/forward cache.
+
+The dev console displays only persisted records and public health configuration.
+Its snapshot-fetch timing measures the browser API request. Recorded run intervals
+include lifecycle time (potentially user review), and are not provider latency.
+Token usage, provider latency, and raw outbound provider requests are not recorded.

@@ -39,8 +39,8 @@ saved objects as cards. Mark work complete, return later, and pick up where you 
 
 The current prototype supports conversation-based task creation and corrections,
 task and subtask editing, five importance levels, saved context, real Muse planning,
-and review before saving. `/dev` keeps manual controls and a saved-object inspector
-for development. It uses a shared demo account protected by an access token.
+and review before saving. `/dev` provides a read-only developer console for model runs, request inputs,
+proposals, saved objects, and change history. It uses a shared demo account protected by an access token.
 Voice input, automatic onboarding, an animated companion, and real sign-in remain
 incomplete. The agent helps plan work; it does not execute the underlying tasks.
 
@@ -57,7 +57,9 @@ uv run second-brain
 
 Add your `META_API_KEY` to `.env` to enable Muse planning. Keep credentials in
 that ignored file. Open [localhost:8000](http://localhost:8000/) for the dashboard
-or [/dev](http://localhost:8000/dev) for development controls and saved objects.
+or [/dev](http://localhost:8000/dev) for diagnostics and saved objects.
+A successful demo login stays connected across both pages and reloads for eight
+hours; use Sign out to end this browser session.
 The API explorer is at [/docs](http://localhost:8000/docs). After updating an
 existing checkout, run the migration command above and restart the server.
 
