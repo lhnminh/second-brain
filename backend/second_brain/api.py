@@ -9,6 +9,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
+from starlette.concurrency import run_in_threadpool
 from starlette.exceptions import HTTPException
 
 from .config import Settings
@@ -27,15 +28,17 @@ from .schemas import (
 )
 from .service import Service
 from .session import COOKIE_NAME, SESSION_SECONDS, create_session, valid_session
+from .voice import MAX_AUDIO_BYTES, VoiceFailure, VoiceTranscriber
 
 
-def create_app(settings=None, engine=None, muse=None):
+def create_app(settings=None, engine=None, muse=None, transcriber=None):
     settings = settings or Settings()
     settings.validate_hosted()
     engine = engine or make_engine(settings.database_url)
     service = Service(
         engine, muse or Muse(settings), settings.mock_user_id, settings.meta_model
     )
+    transcriber = transcriber or VoiceTranscriber(settings)
     app = FastAPI(title="Visual Second Brain", version="0.1.0")
     app.state.engine = engine
     app.add_middleware(
@@ -203,6 +206,23 @@ def create_app(settings=None, engine=None, muse=None):
         task_id: UUID, body: PlanRequest, s: Annotated[Service, Depends(identity)]
     ):
         return s.plan(str(task_id), body)
+
+    @app.post("/api/voice/transcribe")
+    async def transcribe_voice(
+        request: Request, s: Annotated[Service, Depends(identity)]
+    ):
+        if request.headers.get("content-type", "").split(";")[0].lower() != "audio/wav":
+            raise HTTPException(415, "Voice input must be an audio/wav recording")
+        audio = bytearray()
+        async for chunk in request.stream():
+            if len(audio) + len(chunk) > MAX_AUDIO_BYTES:
+                raise HTTPException(413, "Recording exceeds the one-minute audio limit")
+            audio.extend(chunk)
+        try:
+            text = await run_in_threadpool(transcriber.transcribe, bytes(audio))
+        except VoiceFailure as exc:
+            raise HTTPException(exc.status, str(exc)) from None
+        return {"transcript": text, "model": settings.meta_voice_model}
 
     @app.post("/api/conversation")
     def converse(body: ConversationRequest, s: Annotated[Service, Depends(identity)]):

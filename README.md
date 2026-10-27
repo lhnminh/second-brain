@@ -41,7 +41,8 @@ The current prototype supports conversation-based task creation and corrections,
 task and subtask editing, five importance levels, saved context, real Muse planning,
 and review before saving. `/dev` provides a read-only developer console for model runs, request inputs,
 proposals, saved objects, and change history. It uses a shared demo account protected by an access token.
-Voice input, automatic onboarding, an animated companion, and real sign-in remain
+Microphone recording and Meta transcription feed the reviewed text conversation (see `frontend/README.md`).
+Automatic onboarding, an animated companion, and real sign-in remain
 incomplete. The agent helps plan work; it does not execute the underlying tasks.
 
 ## Try it locally

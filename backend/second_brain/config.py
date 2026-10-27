@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     meta_api_key: SecretStr | None = None
     meta_base_url: str = "https://api.meta.ai/v1"
     meta_model: str = "muse-spark-1.3"
+    meta_voice_model: str = "muse-voice-transcribe-1.0"
     frontend_origin: str = "http://localhost:3000"
     vercel: str | None = None
 

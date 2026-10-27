@@ -26,7 +26,7 @@ The experience combines three parts:
 
 - **Daily dashboard:** See short-term and long-term priorities, current focus, and next actions.
 - **Agent activity:** See subtask creation and importance-scoring activity. The broader vision adds steps and screenshots for screen-based execution.
-- **Conversation:** Start and revise tasks through prominent text chat. A corner pet and voice input remain planned enhancements.
+- **Conversation:** Start and revise tasks through prominent text chat. Microphone recording and Meta transcription feed the reviewed text conversation; a corner pet remains planned.
 
 Conversation builds the initial workspace. Once saved work exists, the canvas provides useful context at a glance without requiring the user to reconstruct their situation from message history.
 
@@ -193,7 +193,7 @@ Use one concrete daily scenario to demonstrate the complete experience:
 6. Edit the breakdown, adjust an importance level, or mark work complete.
 7. Return to the dashboard and see the updated state persist for that user.
 
-The current end-to-end slice proves conversation-based task creation, decomposition, importance scoring, review, direct corrections, and persistence. Voice onboarding and pet interaction remain planned MVP work. Screen streaming, screenshot capture, external integrations, and execution of the underlying work are deferred.
+The current end-to-end slice proves conversation-based task creation, decomposition, importance scoring, review, direct corrections, and persistence. Microphone recording and Meta transcription are available for the conversation; automatic voice onboarding and pet interaction remain planned MVP work. Screen streaming, screenshot capture, external integrations, and execution of the underlying work are deferred.
 
 ### Success criteria
 
@@ -243,7 +243,7 @@ Decided stack: Vercel-hosted frontend, Python backend on Vercel serverless (owne
 | Future screen visibility | When screen-based execution is added: live view, periodic screenshots, step-linked captures, or a combination? |
 | Pet and voice input | How does chat open, how is microphone input controlled, and does the pet indicate activity? |
 
-**Implementation progress:** The initial text backend slice is implemented in `backend/`, with contracts in `API_CONTRACT.md`. A quick dashboard in `frontend/` is served at `/`. Browser checks with real Muse Spark and an isolated local database verified task/context creation, proposed subtasks, a user revision before approval, importance edits, completion, saved-state reload, and draft preservation after a connection failure. Neon persistence and deployment are not yet verified. Voice input, automatic onboarding context extraction, and real sign-in remain incomplete.
+**Implementation progress:** The initial text backend slice is implemented in `backend/`, with contracts in `API_CONTRACT.md`. A quick dashboard in `frontend/` is served at `/`. Browser checks with real Muse Spark and an isolated local database verified task/context creation, proposed subtasks, a user revision before approval, importance edits, completion, saved-state reload, and draft preservation after a connection failure. Neon persistence and deployment are not yet verified. Microphone recording and Meta transcription are implemented; automatic onboarding context extraction, streaming transcription, and real sign-in remain incomplete.
 
 
 **Conversation canvas implementation:** `/` now starts with chat and renders saved task
@@ -263,3 +263,19 @@ This does not replace the planned real per-user authentication. The diagnostic
 console distinguishes pending proposals from saved objects, reports actual run
 states and linked events, and labels snapshot-fetch timing separately from run
 lifecycle timestamps. It does not claim provider latency or model readiness.
+
+
+**Voice input (October 27):** The composer records up to one minute through the
+microphone, then **Stop & transcribe** forwards a validated WAV through the
+backend to Meta Voice Transcribe (`muse-voice-transcribe-1.0`). Browser speech
+recognition was replaced after its speech service failed in Dia. The transcript
+is editable before Send and uses the existing conversation/review/save flow.
+Audio is held in memory only, with no app-side disk or database retention.
+Failures preserve typed text and allow explicit transcription retry; Cancel and
+navigation discard audio. The transfer to Meta is disclosed before recording.
+Sent transcripts persist as ordinary conversation messages; unsent drafts do not
+survive reload. Automatic onboarding extraction and spoken replies remain open.
+Automated checks use simulated capture/provider interfaces. A synthetic speech
+sample was transcribed successfully through the real Meta adapter, and the user
+confirmed the revised flow works in Dia on localhost. Hosted voice deployment
+remains unverified.

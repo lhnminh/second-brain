@@ -39,6 +39,7 @@ digits, underscores, or hyphens.
 | POST | `/api/tasks` | Create task or subtask; returns task, HTTP 201 |
 | PATCH | `/api/tasks/{id}` | Edit with `expected_version`; returns updated task |
 | PUT | `/api/context/{key}` | Create/correct structured context with `expected_version` |
+| POST | `/api/voice/transcribe` | Validate a short WAV recording and return Meta transcript without saving it |
 | POST | `/api/conversation` | Conversation → clarification or reviewable task objects |
 | POST | `/api/conversation/{id}/approve` | Atomically apply reviewed conversation objects |
 | POST | `/api/tasks/{id}/plans` | Send text to Muse; persist conversation and return reviewable run |
@@ -177,7 +178,7 @@ approvals serialize through the owner's account row to avoid duplicate effects.
 
 ## Deferred
 
-Voice/transcription, automatic onboarding extraction,
+Streaming audio transcription, automatic onboarding extraction,
 real sign-in, pagination, deletion, automatic priority ranking, and execution of
 the homework itself. The quick frontend is described in `frontend/README.md`.
 
@@ -264,3 +265,39 @@ The dev console displays only persisted records and public health configuration.
 Its snapshot-fetch timing measures the browser API request. Recorded run intervals
 include lifecycle time (potentially user review), and are not provider latency.
 Token usage, provider latency, and raw outbound provider requests are not recorded.
+
+## Voice → reviewed transcript → conversation
+
+`POST /api/voice/transcribe` accepts a raw `audio/wav` body with the same
+authentication and same-origin session rules as other writes. It accepts mono
+PCM16 WAV at 16 or 24 kHz, between 0.25 and 60 seconds, capped at 2,880,044 bytes.
+The browser captures at 24 kHz through Web Audio. The backend bounds the request
+stream, validates the WAV and duration, then calls Meta's `/asr/transcribe` in
+`PUSH_TO_TALK` mode using the server's `META_API_KEY` and `META_VOICE_MODEL`
+(default `muse-voice-transcribe-1.0`). Credentials remain server-side.
+
+Success: `{"transcript":"Finish my homework.","model":"muse-voice-transcribe-1.0"}`.
+Transcript text must be nonempty and at most 10,000 characters. Errors use the
+standard error envelope: 401 unauthenticated; 403 cross-origin cookie write;
+413 oversized recording; 415 wrong content type; 422 invalid audio or no speech;
+502 provider connection/response failure; 503 missing configuration, unavailable
+model access, or provider rate limiting. Provider bodies/credentials are not
+exposed. The provider timeout is 45 seconds. Responses use `Cache-Control: no-store`.
+
+This endpoint does not save audio, messages, runs, or tasks. Audio is held only
+in memory while forwarded to Meta; no app-side disk or database retention occurs.
+The browser sends audio only after **Stop & transcribe**. Cancel/navigation
+release capture and discard browser audio; they cannot recall an upload already
+sent to Meta. Failed requests retain browser audio for explicit retry until
+cancelled, navigated away, another recording starts, or another action discards
+it. Retries may make a new transcription call; this endpoint has no idempotency key.
+
+The returned text populates an editable draft. The user explicitly sends it as
+`message` to `POST /api/conversation`, using the existing `request_id` and optional
+`review_draft`. Normal validation, retry, proposal review, and persistence rules
+apply. Sent transcripts are ordinary user messages; modality is not recorded.
+A combined typed draft and transcript longer than 10,000 characters must be
+shortened before Send. Unsupported/insecure browsers retain text entry.
+
+Verified API references: [Meta speech-to-text guide](https://dev.meta.ai/docs/speech-to-text)
+and [official file-transcription client](https://github.com/meta-models/meta-model-cookbook/blob/main/06_muse_voice/01_voice_api_fundamentals/utils.py).
