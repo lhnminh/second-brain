@@ -1,63 +1,73 @@
 # Visual Second Brain
 
-A daily dashboard to help free up time and mental space. See
-[the product spec](visual_second_brain_spec.md) for the current direction.
+**A new way to interact with AI agents. The future is visual.**
 
-## Two-person development
+Working with an AI agent should feel as natural as seeing a plan take shape.
+Your priorities, tasks, next steps, and the agent's activity belong in a shared
+space you can understand at a glance and change directly.
 
-| Folder | Owner's scope | Instructions |
-|---|---|---|
-| `frontend/` | Dashboard, task editing, onboarding UI, pet, chat, microphone controls | [Frontend AGENTS.md](frontend/AGENTS.md) |
-| `backend/` | Auth, per-user data, APIs, Muse integration, voice processing, scoring | [Backend AGENTS.md](backend/AGENTS.md) |
+Visual Second Brain is building that space: a daily dashboard where you and your
+agent work together. Open it in the morning, see where things stand, and decide
+what deserves your attention. Less time reconstructing context. More room to
+think and get things done.
 
-Both follow the root [AGENTS.md](AGENTS.md) and the product spec. Agree the task,
-context, message, activity, and API contracts together before integrating. Record
-those contracts in a shared root-level document when defined. Frontend work can
-use clearly labeled fixtures while the backend implements the agreed behavior.
+## See it. Shape it. Move forward.
 
-The backend now contains a runnable FastAPI service with SQLAlchemy/Alembic
-persistence, a Meta Muse adapter, and review-before-saving task proposals.
-See [backend setup and demo](backend/README.md) and the shared
-[API contract](API_CONTRACT.md). Neon is the hosted database; SQLite supports
-local development and automated tests. A small browser dashboard at `/` connects
-to these APIs for tasks, context, Muse planning, and review before saving.
-Python dependencies, the lockfile, and the virtual environment are managed at
-the repository root. The root package points to application code in
-`backend/second_brain/`; the original hello-world placeholder has been replaced.
+The vision goes beyond a conversation window. You shouldn't have to describe
+every change in a message or scroll through a transcript to find out what is
+happening. The interface itself should be how you steer the work.
 
-Run from the repository root:
+- **See what matters.** Bring priorities, commitments, and next actions into view.
+- **Shape the plan directly.** Edit a task, adjust its importance, or revise a
+  suggested step where it appears.
+- **Understand the agent's work.** See its planning activity and inspect what it
+  proposes before accepting changes.
+- **Carry your context forward.** Return to a workspace that remembers your
+  corrections and the work you've already done.
+- **Talk when it helps.** The broader experience includes a corner companion
+  for conversation and voice input, alongside direct dashboard interaction.
+
+The goal is to free up time and mental space. You bring the intent; the agent
+helps turn it into a plan you can see and steer.
+
+## The first experience
+
+You have homework due next Sunday. Add the assignment and its deadline, tell
+Muse what it needs to know, and ask for a breakdown. The suggested steps appear
+for review. Rewrite a step, remove one that doesn't help, and save the plan when
+it feels right. Mark work complete as you go. Come back later and pick up where
+you left off.
+
+The current prototype supports task and subtask editing, five importance levels,
+saved context, real Muse planning, review before saving, and planning history.
+It uses a shared demo account protected by an access token. Voice input,
+automatic onboarding, an animated companion, and real sign-in are still ahead.
+The agent currently helps plan work; it does not execute the underlying tasks.
+
+## Try it locally
+
+From the repository root:
 
 ```sh
+cp -n .env.example .env
 uv sync
 uv run alembic -c backend/alembic.ini upgrade head
 uv run second-brain
 ```
 
-Open `http://localhost:8000/` for the dashboard or `/docs` for the API explorer.
-Restart an already-running server after pulling changes. Run checks with
-`uv run pytest`.
+Add your `META_API_KEY` to `.env` to enable Muse planning. Keep credentials in
+that ignored file. Open [localhost:8000](http://localhost:8000/) for the dashboard
+or [/docs](http://localhost:8000/docs) for the API explorer.
 
-Hosted setup is documented in [DEPLOYMENT.md](DEPLOYMENT.md). GitHub source,
-Neon migrations, and Vercel deployment are separate steps; credentials remain in
-server-side configuration.
+All Python dependencies use the root uv project. The app uses FastAPI,
+SQLAlchemy/Alembic, and Meta Muse Spark, with Neon for hosted persistence and
+SQLite for local development. Run checks with `uv run pytest`.
 
-First integration milestone: a signed-in user sends text through the pet to Muse
-and sees a task update persisted to their own account. Then expand onboarding,
-voice input, and the dashboard. Coordinate shared root-file and contract changes
-between both developers.
+## Explore the project
 
-## Local environment
-
-Create your local configuration if `.env` does not already exist:
-
-```sh
-cp -n .env.example .env
-```
-
-Keep credentials in `.env`, which Git ignores. The tracked `.env.example`
-contains blank secret placeholders and non-secret defaults. Keep it updated when configuration changes.
-
-The backend loads this root `.env`. `META_API_KEY` authenticates real Meta calls;
-`META_BASE_URL` and `META_MODEL` default to the verified Meta endpoint and Muse
-Spark 1.3. Additional backend
-configuration and known limits are documented in [backend/README.md](backend/README.md).
+- [Product specification](visual_second_brain_spec.md) — direction, scope, and open decisions.
+- [Frontend](frontend/README.md) — the dashboard and its current interactions.
+- [Backend](backend/README.md) — setup, persistence, model integration, and verification.
+- [API contract](API_CONTRACT.md) — the shared frontend/backend boundary.
+- [Deployment](DEPLOYMENT.md) — GitHub, Neon, and Vercel setup.
+- [Contributor instructions](AGENTS.md) — how we build and collaborate.
