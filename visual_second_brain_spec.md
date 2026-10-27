@@ -1,7 +1,7 @@
 # Visual Second Brain — Product Spec
 
 **Status:** MVP product scope defined; technical integration and implementation details open  
-**Version:** 0.12
+**Version:** 0.13
 **Date:** October 26, 2026  
 **Format:** Hosted web application  
 **Working name:** Visual Second Brain
@@ -12,13 +12,20 @@
 
 Visual Second Brain is a visual dashboard you open daily, especially at the start of your day. It brings together priorities, work that needs doing, and work already underway so you can understand where things stand and get on with your day.
 
+**Confirmed interaction direction:** Start with a mostly blank canvas and a prominent
+text conversation. The user describes what they need to do; Muse proposes structured
+task objects and their plans, and the frontend renders them as editable cards. The
+user reviews changes before saving. Saved objects populate the canvas on return.
+Muse creates task data, rather than generating arbitrary UI code or widget types.
+The existing form-based interface and object inspector live separately at `/dev`.
+
 The experience combines three parts:
 
 - **Daily dashboard:** See short-term and long-term priorities, current focus, and next actions.
 - **Agent activity:** See subtask creation and importance-scoring activity. The broader vision adds steps and screenshots for screen-based execution.
-- **Corner pet:** Open text or voice interaction with the agent whenever you want to ask, discuss, or steer work.
+- **Conversation:** Start and revise tasks through prominent text chat. A corner pet and voice input remain planned enhancements.
 
-The dashboard provides useful context at a glance. Conversation supports the experience without requiring the user to reconstruct their situation from a message history.
+Conversation builds the initial workspace. Once saved work exists, the canvas provides useful context at a glance without requiring the user to reconstruct their situation from message history.
 
 **Agent platform:** Muse. Users can provide voice or text input, and the agent can reply in text chat and update the dashboard. Spoken agent replies are outside the MVP scope.
 
@@ -53,7 +60,7 @@ The Muse integration details for voice input, transcription, and audio retention
 | Currently running | See agent tasks underway and their status |
 | Current focus and next actions | Decide where to put attention and how to move forward |
 
-These are content needs, not a prescribed set of panels. The layout should make the overall situation easy to scan, with details available when needed.
+These are content needs, not a prescribed set of panels. A new workspace starts mostly empty, without task forms, statistics, or prefilled panels; task cards appear as the user accepts conversation proposals. The layout should make the overall situation easy to scan, with details available when needed.
 
 Proposed interactions include adjusting priorities, editing work, choosing a focus, and accepting or revising suggested next actions. Connecting near-term work to long-term goals could help explain why an action matters.
 
@@ -112,7 +119,7 @@ The dashboard remains useful with conversation closed. The pet's appearance, ani
 
 ## 6. Role of the agent
 
-The MVP agent has two core capabilities:
+The MVP agent creates tasks and their plans from natural language, asks for missing information, and proposes corrections to existing tasks. Its planning capabilities include:
 
 1. **Create subtasks:** Break a task into concrete steps that help complete it.
 2. **Score importance:** Assign or refine internal 0–100 importance scores using available context and respecting any user-selected importance level.
@@ -175,15 +182,15 @@ A relational database with flexible JSON fields is the proposed storage approach
 
 Use one concrete daily scenario to demonstrate the complete experience:
 
-1. Sign in as a new user and talk freely through voice onboarding.
-2. Review and correct the agent's understanding, then open the initial dashboard.
-3. Add or confirm a task, with an optional deadline and five-level importance choice.
-4. Ask the agent through the pet to break it into subtasks and assess importance.
-5. See the planning activity and inspect the generated subtasks and importance levels on the dashboard.
+1. Open a mostly blank workspace and describe homework due next Sunday through text chat.
+2. Answer any clarifying questions and review the proposed task and steps.
+3. Correct the proposal directly or through a follow-up message, confirm its deadline, then save it.
+4. See the saved task objects and steps appear on the canvas; choose among five importance levels through direct editing.
+5. Continue the conversation to plan additional work or propose corrections. Inspect saved objects and activity at `/dev`.
 6. Edit the breakdown, adjust an importance level, or mark work complete.
 7. Return to the dashboard and see the updated state persist for that user.
 
-The MVP proves task decomposition and importance scoring alongside voice onboarding, the dashboard, and pet interaction. Screen streaming, screenshot capture, external integrations, and execution of the underlying work are deferred.
+The current end-to-end slice proves conversation-based task creation, decomposition, importance scoring, review, direct corrections, and persistence. Voice onboarding and pet interaction remain planned MVP work. Screen streaming, screenshot capture, external integrations, and execution of the underlying work are deferred.
 
 ### Success criteria
 
@@ -226,7 +233,7 @@ Decided stack: Vercel-hosted frontend, Python backend on Vercel serverless (owne
 | Muse input and chat | How are voice input, transcription, and text chat integrated with Muse? What audio or transcripts are retained? |
 | Importance levels | Confirmed: Very low 0–19, Low 20–39, Medium 40–59, High 60–79, Very high 80–100. |
 | Priority and time horizons | How do importance, deadlines, and work state determine priority, and what counts as short-term or long-term? |
-| Dashboard layout | How are the overview, focus, and task activity presented together? |
+| Dashboard layout | Confirmed starting point: a mostly blank canvas with prominent chat; render structured tasks and plans as editable cards. Detailed visual design remains iterative. |
 | Planning updates | Confirmed: review before saving; proposals may be revised or rejected. |
 | Task relationships | How are subtasks ordered, when is a parent complete, and do deadline or importance values propagate? |
 | Running work | Should the dashboard include user work and other processes alongside agent tasks? |
@@ -234,3 +241,13 @@ Decided stack: Vercel-hosted frontend, Python backend on Vercel serverless (owne
 | Pet and voice input | How does chat open, how is microphone input controlled, and does the pet indicate activity? |
 
 **Implementation progress:** The initial text backend slice is implemented in `backend/`, with contracts in `API_CONTRACT.md`. A quick dashboard in `frontend/` is served at `/`. Browser checks with real Muse Spark and an isolated local database verified task/context creation, proposed subtasks, a user revision before approval, importance edits, completion, saved-state reload, and draft preservation after a connection failure. Neon persistence and deployment are not yet verified. Voice input, automatic onboarding context extraction, and real sign-in remain incomplete.
+
+
+**Conversation canvas implementation:** `/` now starts with chat and renders saved task
+objects as cards. Muse can propose new tasks with steps, answer clarification questions,
+or propose edits to owned tasks. Proposals are validated and reviewed before atomic
+application. Follow-up requests carry unsaved proposal edits. `/dev` retains manual
+controls and adds a read-only saved-object inspector. A migration makes run task links
+optional; existing task-planning endpoints remain supported. Subtasks append to existing
+plans; edit existing steps by ID rather than replacing a plan. This is not arbitrary UI
+generation, external task execution, or automatic onboarding extraction.

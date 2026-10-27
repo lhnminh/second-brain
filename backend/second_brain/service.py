@@ -7,7 +7,7 @@ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 from .db import accounts, context, events, messages, now, runs, tasks, uid
 from .muse import MuseFailure
-from .schemas import RANGES, Proposal
+from .schemas import RANGES, ConversationProposal, Proposal
 
 
 def rows(connection, table, user_id):
@@ -244,7 +244,7 @@ class Service:
     def plan(self, task_id, body):
         with self.engine.begin() as c:
             revision = lock_account(c, self.user_id)
-            task = owned(c, tasks, task_id, self.user_id)
+            task = owned(c, tasks, task_id, self.user_id) if task_id else None
             previous = (
                 c.execute(
                     select(runs).where(
@@ -259,6 +259,10 @@ class Service:
                 if (
                     previous["task_id"] != task_id
                     or previous["message"] != body.message
+                    or (
+                        previous["input_payload"] is not None
+                        and previous["input_payload"] != body.model_dump(mode="json")
+                    )
                 ):
                     raise HTTPException(
                         409, "request_id was already used for a different request"
@@ -266,6 +270,10 @@ class Service:
                 return dict(previous)
             run_id = uid()
             snapshot = {
+                "reference_date_utc": datetime.now(UTC).date().isoformat(),
+                "recent_runs": sorted(
+                    rows(c, runs, self.user_id), key=lambda r: r["created_at"]
+                )[-10:],
                 "task": task,
                 "tasks": rows(c, tasks, self.user_id),
                 "context": rows(c, context, self.user_id),
@@ -273,6 +281,12 @@ class Service:
                     rows(c, messages, self.user_id), key=lambda m: m["created_at"]
                 )[-20:],
             }
+            if task_id is None and body.review_draft is not None:
+                try:
+                    self._check_conversation(body.review_draft, snapshot["tasks"])
+                except ValueError as exc:
+                    raise HTTPException(422, str(exc)) from None
+                snapshot["review_draft"] = body.review_draft.model_dump(mode="json")
             c.execute(
                 insert(runs).values(
                     id=run_id,
@@ -280,6 +294,7 @@ class Service:
                     task_id=task_id,
                     request_id=str(body.request_id),
                     message=body.message,
+                    input_payload=body.model_dump(mode="json"),
                     snapshot_revision=revision,
                     status="running",
                     model=self.model,
@@ -300,8 +315,16 @@ class Service:
             audit(c, self.user_id, "planning.running", run_id, {"task_id": task_id})
         # Network work is outside the transaction. Running means an actual call was started.
         try:
-            proposal = Proposal.model_validate(self.muse.plan(snapshot, body.message))
-            check_score(proposal, task)
+            if task_id:
+                proposal = Proposal.model_validate(
+                    self.muse.plan(snapshot, body.message)
+                )
+                check_score(proposal, task)
+            else:
+                proposal = ConversationProposal.model_validate(
+                    self.muse.converse(snapshot, body.message)
+                )
+                self._check_conversation(proposal, snapshot["tasks"])
             error = None
         except MuseFailure, ValueError:
             proposal, error = (
@@ -317,6 +340,23 @@ class Service:
                 self._finish(c, run_id, "failed", error=error)
             else:
                 status = "awaiting_review" if current_revision == revision else "stale"
+                if task_id is None and any(
+                    other["task_id"] is None and other["created_at"] > run["created_at"]
+                    for other in rows(c, runs, self.user_id)
+                ):
+                    # An older reply must not replace a newer conversation correction.
+                    status = "stale"
+                if task_id is None and status == "awaiting_review":
+                    if not proposal.tasks:
+                        status = "answered"
+                    else:
+                        # A successful revision replaces earlier conversation drafts.
+                        for old in rows(c, runs, self.user_id):
+                            if (
+                                old["task_id"] is None
+                                and old["status"] == "awaiting_review"
+                            ):
+                                self._finish(c, old["id"], "superseded")
                 self._finish(
                     c, run_id, status, proposal=proposal.model_dump(mode="json")
                 )
@@ -332,10 +372,12 @@ class Service:
                 )
             return owned(c, runs, run_id, self.user_id)
 
-    def review(self, run_id, approval=None, reject=False):
+    def review(self, run_id, approval=None, reject=False, conversation=False):
         with self.engine.begin() as c:
             revision = lock_account(c, self.user_id)
             run = owned(c, runs, run_id, self.user_id)
+            if not reject and (run["task_id"] is None) != conversation:
+                raise HTTPException(409, "Use the matching proposal review endpoint")
             if (reject and run["status"] == "rejected") or (
                 not reject and run["status"] == "applied"
             ):
@@ -349,6 +391,20 @@ class Service:
                 # Persist stale status before returning a conflict to the caller.
                 self._finish(c, run_id, "stale")
                 result = None
+            elif run["task_id"] is None:
+                proposal = approval.proposal or ConversationProposal.model_validate(
+                    run["proposal"]
+                )
+                try:
+                    self._check_conversation(proposal, rows(c, tasks, self.user_id))
+                except ValueError as exc:
+                    raise HTTPException(422, str(exc)) from None
+                self._apply_conversation(c, run_id, proposal)
+                bump(c, self.user_id)
+                self._finish(
+                    c, run_id, "applied", proposal=proposal.model_dump(mode="json")
+                )
+                result = owned(c, runs, run_id, self.user_id)
             else:
                 task = owned(c, tasks, run["task_id"], self.user_id)
                 proposal = approval.proposal or Proposal.model_validate(run["proposal"])
@@ -416,3 +472,66 @@ class Service:
         if result is None:
             raise HTTPException(409, "Your state changed; request a fresh plan")
         return result
+
+    def _check_conversation(self, proposal, saved_tasks):
+        saved = {t["id"]: t for t in saved_tasks}
+        seen = set()
+        for item in proposal.tasks:
+            if item.task_id is not None:
+                task_id = str(item.task_id)
+                if task_id not in saved or task_id in seen:
+                    raise ValueError(
+                        "Proposal references an unavailable or repeated task"
+                    )
+                seen.add(task_id)
+                check_score(item, saved[task_id])
+
+    def _apply_conversation(self, c, run_id, proposal):
+        for item in proposal.tasks:
+            data = item.model_dump(mode="json", exclude={"task_id", "subtasks"})
+            if item.task_id:
+                task = owned(c, tasks, str(item.task_id), self.user_id)
+                changes = {**data, "version": task["version"] + 1, "updated_at": now()}
+                c.execute(
+                    update(tasks)
+                    .where(tasks.c.id == task["id"], tasks.c.user_id == self.user_id)
+                    .values(**changes)
+                )
+                audit(
+                    c,
+                    self.user_id,
+                    "task.edited",
+                    task["id"],
+                    {"run_id": run_id, "before": task, "changes": changes},
+                )
+            else:
+                task = self._insert_conversation_task(
+                    c, data, run_id, item.importance_score
+                )
+            for child in item.subtasks:
+                self._insert_conversation_task(
+                    c,
+                    {**child.model_dump(mode="json"), "parent_task_id": task["id"]},
+                    run_id,
+                    child.importance_score,
+                )
+
+    def _insert_conversation_task(self, c, data, run_id, score):
+        position = c.scalar(
+            select(func.count())
+            .select_from(tasks)
+            .where(
+                tasks.c.user_id == self.user_id,
+                tasks.c.parent_task_id == data.get("parent_task_id"),
+            )
+        )
+        record = task_values(self.user_id, data, position, score)
+        c.execute(insert(tasks).values(**record))
+        audit(
+            c,
+            self.user_id,
+            "task.created",
+            record["id"],
+            {"run_id": run_id, "task": record},
+        )
+        return record

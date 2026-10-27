@@ -1,10 +1,8 @@
-# Quick dashboard
+# Conversation canvas and development workspace
 
-The dashboard is a buildless page, with HTML, CSS, and browser JavaScript held in
-`dashboard.py` to follow this repository's `.py` source convention. FastAPI serves
-it at `/`; API calls use the same origin. It adds no framework dependencies,
-package manager, or development server. Run it from this repository checkout so
-the frontend source asset is available.
+The browser assets live in `dashboard.py`, following the repository's `.py`
+source convention. FastAPI serves the canvas at `/` and development tools at
+`/dev`. Both call the same-origin API; no frontend framework or build is needed.
 
 From the repository root:
 
@@ -14,46 +12,51 @@ uv run alembic -c backend/alembic.ini upgrade head
 uv run second-brain
 ```
 
-Open `http://localhost:8000/`. For automatic backend reloading, use
-`uv run uvicorn backend.app:app --reload --port 8000`. Restart an existing server
-to pick up the new homepage route. UI asset changes appear on a page reload.
+Open `http://localhost:8000/`. Restart an existing server after updating Python
+routes or backend code. UI asset edits appear on page reload. For automatic
+backend reload, use `uv run uvicorn backend.app:app --reload --port 8000`.
 
-## Available flow
+## Main journey
 
-1. Add a homework task, assignment details, an optional date, and an importance
-   level. Relative deadline parsing is not included; select the date explicitly.
-2. Save useful context in “The bigger picture”. This edits the `daily-context`
-   record; other context records remain intact and are still available to Muse.
-3. Select a task by its title and ask Muse to break it into steps.
-4. Review the reply. Edit proposed titles/details or remove unnecessary steps.
-5. Save the reviewed plan or reject it. Model scores appear as importance labels.
-6. Edit saved work, change its importance, or mark it complete. Reload to see
-   saved state again.
+1. Start with a quiet canvas and tell Muse what needs doing. No task form is required.
+2. Answer clarifying questions or review the task objects and steps Muse proposes.
+3. Revise through chat or edit proposed titles, descriptions, and deadlines directly.
+   You can remove unwanted tasks or steps. Follow-up messages carry unsaved edits.
+4. Save the reviewed plan. Persisted task objects become cards on the canvas.
+5. Edit saved tasks, choose among five importance levels, or mark work complete.
+6. Return to saved tasks and conversation history. Re-enter the demo access token
+   after reload if authentication is configured.
 
-Planning activity reflects real API records. There are no seeded tasks or model
-fixtures in the UI. Drafts remain in the current page after failed requests;
-unsaved drafts are not persisted across a full reload. A planning network retry
-reuses its request ID until a definitive response arrives. Conflicts require
-refreshing saved state; reopen a task editor to review the latest version.
+Model proposals remain separate from saved work until accepted. Conversation
+corrections can update existing task objects; steps append to existing plans.
+The model can correct an existing step by ID. The UI renders fixed task components,
+not generated HTML or arbitrary widgets. See `API_CONTRACT.md` for object shapes.
 
-When `MOCK_AUTH_TOKEN` is configured, the page prompts for that separate demo
-token. It stays in page memory and is sent only to the same-origin API. The Meta
-key is never embedded in the page. This remains mock authentication, not real
-sign-in. The corner button focuses the planning panel; it is not an animated pet.
-Voice, onboarding extraction, automatic priority ranking, and long-term goal
-views are not part of this quick version.
+## Development tools
+
+`/dev` retains the previous manual task/context forms, task-specific planning,
+proposal review, and planning activity. Expand **Inspect saved objects** to see
+owned tasks, context, messages, runs (including request inputs and proposals), and
+change events. Conversation proposals are reviewed on the canvas. Both pages
+use the same API authentication; the HTML shells embed no credentials.
+
+There are no seeded objects or simulated model responses in either page. The
+Meta key stays server-side. The demo token stays in page memory. Browser drafts
+survive in-page request failures, but unsaved edits are not persisted across
+navigation or reload. A network retry reuses its request ID and input. Voice,
+automatic onboarding extraction, real sign-in, arbitrary widgets, and task
+execution remain incomplete.
 
 ## Verification
 
-October 26, 2026: browser QA used an isolated SQLite database and the real Meta
-adapter. Creating a synthetic homework task, saving context, receiving three
-proposed steps, revising one, approving, completing a subtask, and changing
-importance all worked. The revised step, context, and completion survived a
-reload. Stopping the preview server and attempting another save displayed a
-connection error while retaining the draft. The preview server was then stopped.
-The responsive CSS is included; a narrow mobile viewport has not been tested.
+October 26, 2026: browser checks used an isolated SQLite database and real Muse
+Spark. Chat created a two-step homework proposal, a follow-up revised that plan,
+and a direct edit was saved before approval. The canvas displayed saved objects
+and completion updates. Saved edits and completion survived reload; a rename
+proposal updated the same task, and the `/dev` inspector showed those records.
+A stopped-server check preserved the chat draft and saved cards. Automated fixture tests cover creation, revisions,
+clarifying replies, invalid model output, retries, preservation of corrections,
+owner isolation, stale proposals, and upgrading existing task-planning data.
+Hosted deployment and Neon are not verified by these checks.
 
-The automated suite has 32 passing tests, including homepage delivery and
-checking that the configured demo token is not embedded in HTML. Lint and format
-checks cover both frontend and backend Python source. Hosted deployment and Neon
-remain unverified.
+The narrow mobile layout is included in CSS but has not been visually verified.

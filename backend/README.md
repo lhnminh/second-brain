@@ -109,7 +109,7 @@ been performed by this implementation.
 
 This is a single-account mock-auth demo, not public multi-user authentication.
 User ownership is enforced at the service/database boundary. Add verified
-sign-in before public use. Voice, inferred onboarding context, general chat,
+sign-in before public use. Voice, inferred onboarding context,
 streaming, pagination, and automatic priority ranking are deferred. Calls are
 synchronous with a 45-second model timeout; ensure the deployment's function
 duration accommodates this. `/health` is liveness, not external readiness.
@@ -118,3 +118,17 @@ Integration references verified October 26, 2026:
 [Meta overview](https://dev.meta.ai/docs/overview),
 [Meta structured output](https://dev.meta.ai/docs/structured-output),
 [FastAPI on Vercel](https://vercel.com/docs/frameworks/backend/fastapi).
+
+## Conversation canvas
+
+The homepage now uses `POST /api/conversation` to start planning without an
+existing task. Muse returns validated task objects and their subtasks, or a
+clarifying text reply. Acceptance through `/api/conversation/{id}/approve` applies
+all reviewed objects in one transaction. The original task-specific planning
+endpoint remains available at `/dev`, alongside manual controls and an object
+inspector. See `API_CONTRACT.md` for shapes and retry/review behavior.
+
+Run `uv run alembic -c backend/alembic.ini upgrade head` before starting an updated
+checkout. The conversation migration preserves task-planning history, permits a
+null `task_id` on runs, and adds validated request inputs for retries and inspection.
+Voice, automatic onboarding extraction, and real sign-in remain incomplete.

@@ -43,7 +43,8 @@ builds. Configure environment-specific Neon branches before enabling previews.
 - `/api/dashboard` without the demo token returns 401.
 - With the token, create a synthetic task and context; reload to verify Neon
   persistence. Use a separate smoke-test owner when inspecting disposable data.
-- Request a real Muse breakdown, revise a suggestion, approve it, and reload.
+- Start a conversation from the blank canvas, request a real Muse plan, revise a
+  suggestion, approve it, and reload. Check saved objects at `/dev`.
 - Check Vercel build/runtime logs for startup/import or migration failures. Keep
   secret values out of logs and screenshots.
 

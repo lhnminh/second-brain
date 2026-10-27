@@ -122,3 +122,30 @@ def test_blank_env_uses_defaults(tmp_path):
     assert settings.meta_model == "muse-spark-1.3"
     assert settings.meta_base_url == "https://api.meta.ai/v1"
     assert settings.database_url.startswith("sqlite:")
+
+
+def test_conversation_uses_structured_objects(monkeypatch):
+    def handler(request):
+        body = json.loads(request.content)
+        contract = body["response_format"]["json_schema"]
+        assert contract["name"] == "conversation_plan"
+        assert "tasks" in contract["schema"]["properties"]
+        assert contract["strict"] is True
+        assert "task_id=null" in body["messages"][0]["content"]
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "finish_reason": "stop",
+                        "message": {
+                            "content": json.dumps(
+                                {"reply": "What subject?", "tasks": []}
+                            )
+                        },
+                    }
+                ]
+            },
+        )
+
+    assert configure(monkeypatch, handler).converse({}, "Homework").tasks == []

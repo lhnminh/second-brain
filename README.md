@@ -7,8 +7,8 @@ Your priorities, tasks, next steps, and the agent's activity belong in a shared
 space you can understand at a glance and change directly.
 
 Visual Second Brain is building that space: a daily dashboard where you and your
-agent work together. Open it in the morning, see where things stand, and decide
-what deserves your attention. Less time reconstructing context. More room to
+agent work together. Start with a mostly blank canvas, tell Muse what you need to do, and watch a
+reviewable plan take shape. Return to saved work when you need it. Less time reconstructing context. More room to
 think and get things done.
 
 ## See it. Shape it. Move forward.
@@ -32,17 +32,17 @@ helps turn it into a plan you can see and steer.
 
 ## The first experience
 
-You have homework due next Sunday. Add the assignment and its deadline, tell
-Muse what it needs to know, and ask for a breakdown. The suggested steps appear
-for review. Rewrite a step, remove one that doesn't help, and save the plan when
-it feels right. Mark work complete as you go. Come back later and pick up where
-you left off.
+You have homework due next Sunday. Tell Muse through chat, answer any questions,
+and review the proposed task and steps. Revise the proposal through conversation,
+edit a step directly, and save it when it feels right. The canvas renders those
+saved objects as cards. Mark work complete, return later, and pick up where you left off.
 
-The current prototype supports task and subtask editing, five importance levels,
-saved context, real Muse planning, review before saving, and planning history.
-It uses a shared demo account protected by an access token. Voice input,
-automatic onboarding, an animated companion, and real sign-in are still ahead.
-The agent currently helps plan work; it does not execute the underlying tasks.
+The current prototype supports conversation-based task creation and corrections,
+task and subtask editing, five importance levels, saved context, real Muse planning,
+and review before saving. `/dev` keeps manual controls and a saved-object inspector
+for development. It uses a shared demo account protected by an access token.
+Voice input, automatic onboarding, an animated companion, and real sign-in remain
+incomplete. The agent helps plan work; it does not execute the underlying tasks.
 
 ## Try it locally
 
@@ -57,7 +57,9 @@ uv run second-brain
 
 Add your `META_API_KEY` to `.env` to enable Muse planning. Keep credentials in
 that ignored file. Open [localhost:8000](http://localhost:8000/) for the dashboard
-or [/docs](http://localhost:8000/docs) for the API explorer.
+or [/dev](http://localhost:8000/dev) for development controls and saved objects.
+The API explorer is at [/docs](http://localhost:8000/docs). After updating an
+existing checkout, run the migration command above and restart the server.
 
 All Python dependencies use the root uv project. The app uses FastAPI,
 SQLAlchemy/Alembic, and Meta Muse Spark, with Neon for hosted persistence and

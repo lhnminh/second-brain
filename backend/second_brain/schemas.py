@@ -78,3 +78,26 @@ class Proposal(Input):
 class Approval(Input):
     # Optional reviewed replacement permits editing before acceptance.
     proposal: Proposal | None = None
+
+
+class ConversationTask(Input):
+    # A null ID proposes a new object; an ID proposes edits to an owned task.
+    task_id: UUID | None
+    title: Title
+    description: Text
+    deadline: date | None
+    importance_score: Score
+    subtasks: Annotated[list[SuggestedTask], Field(max_length=20)]
+
+
+class ConversationProposal(Input):
+    reply: Annotated[str, Field(min_length=1, max_length=10000)]
+    tasks: Annotated[list[ConversationTask], Field(max_length=10)]
+
+
+class ConversationApproval(Input):
+    proposal: ConversationProposal | None = None
+
+
+class ConversationRequest(PlanRequest):
+    review_draft: ConversationProposal | None = None

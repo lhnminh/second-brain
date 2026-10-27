@@ -28,13 +28,16 @@ digits, underscores, or hyphens.
 
 | Method | Path | Behavior |
 | --- | --- | --- |
-| GET | `/` | Same-origin quick dashboard; public shell without embedded credentials |
+| GET | `/` | Conversation canvas; public shell without embedded credentials |
+| GET | `/dev` | Manual development controls and read-only saved-object inspector; API data requires the same demo authentication |
 | GET | `/health` | Service liveness, configured model, mock-auth indicator; does not claim DB or model readiness |
 | GET | `/api/dashboard` | Owner's tasks, context, runs, messages, events |
 | GET | `/api/importance-levels` | Five accepted level ranges |
 | POST | `/api/tasks` | Create task or subtask; returns task, HTTP 201 |
 | PATCH | `/api/tasks/{id}` | Edit with `expected_version`; returns updated task |
 | PUT | `/api/context/{key}` | Create/correct structured context with `expected_version` |
+| POST | `/api/conversation` | Conversation → clarification or reviewable task objects |
+| POST | `/api/conversation/{id}/approve` | Atomically apply reviewed conversation objects |
 | POST | `/api/tasks/{id}/plans` | Send text to Muse; persist conversation and return reviewable run |
 | POST | `/api/runs/{id}/approve` | Atomically apply a reviewed proposal |
 | POST | `/api/runs/{id}/reject` | Reject without changing work |
@@ -137,7 +140,8 @@ or stream tokens. A separate dashboard poll can observe persisted activity.
 Running records older than two minutes are marked failed on dashboard read to
 recover interrupted invocations. The user message is saved even on model failure.
 Persisted assistant messages carry the model's text reply, not synthetic success.
-Conversation is currently task-planning text only, not a general chat endpoint.
+The task-specific endpoint remains available for development; the canvas uses
+the conversation endpoint described below.
 
 Proposal:
 
@@ -170,6 +174,59 @@ approvals serialize through the owner's account row to avoid duplicate effects.
 
 ## Deferred
 
-Voice/transcription, automatic onboarding extraction, general conversation,
+Voice/transcription, automatic onboarding extraction,
 real sign-in, pagination, deletion, automatic priority ranking, and execution of
 the homework itself. The quick frontend is described in `frontend/README.md`.
+
+## Conversation → task objects → canvas
+
+POST `/api/conversation` accepts `request_id` and `message` with the same limits
+and retry rules as task planning. Optional `review_draft` carries a complete
+`ConversationProposal` containing the user's current unsaved edits. Reusing an
+ID with a changed message or review draft returns 409. Every new run stores its
+validated `input_payload`; legacy runs leave that field null.
+
+Muse receives owned tasks, structured context, recent messages and run states,
+a UTC reference date, and any review draft. Relative dates are model interpretations:
+the UI asks the user to confirm the proposed date before saving.
+
+Conversation runs use `task_id: null`. Their proposal shape is:
+
+```json
+{
+  "reply": "Review this homework plan.",
+  "tasks": [{
+    "task_id": null,
+    "title": "Math homework",
+    "description": "Chapter 3 questions 1–5",
+    "deadline": "2026-11-01",
+    "importance_score": 60,
+    "subtasks": [{"title": "Read chapter 3", "description": "Review assigned material", "importance_score": 55}]
+  }]
+}
+```
+
+All object fields shown are required; `task_id` and `deadline` may be null.
+Maximum 10 task objects, with at most 20 proposed subtasks each. Text and score
+validation match the existing task-planning schema. Empty `tasks` means a text
+answer or clarifying question: the run finishes as `answered` and creates no work.
+A nonempty proposal awaits review. A successful follow-up proposal marks earlier
+pending conversation proposals `superseded`, preventing duplicate acceptance.
+A failed follow-up leaves the prior proposal available.
+
+POST `/api/conversation/{run_id}/approve` accepts `{}` or
+`{"proposal": <complete edited conversation proposal>}`. Null task IDs create new
+root tasks. Existing task IDs propose updates to owned task fields: title,
+description, deadline, and importance score. Existing user importance choices,
+completion status, parent links, and children are preserved. Subtasks append;
+to correct an existing step, propose that step's ID with an empty subtasks list.
+Ownership, duplicate task references, user score ranges, and snapshot revision
+are checked again at approval. All objects and audit events save atomically.
+The task-plan and conversation approval endpoints reject mismatched run types.
+`POST /api/runs/{id}/reject` dismisses either proposal type.
+
+The frontend renders these data objects with fixed components; Muse does not
+produce HTML, executable scripts, arbitrary widgets, or external actions.
+Conversation messages and proposals persist; unsaved browser edits survive
+in-page request failures but not navigation/reload. The demo access token stays
+in page memory, so reloading or opening `/dev` requires reconnecting.

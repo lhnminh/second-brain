@@ -14,7 +14,16 @@ from starlette.exceptions import HTTPException
 from .config import Settings
 from .db import make_engine
 from .muse import Muse
-from .schemas import RANGES, Approval, ContextEdit, PlanRequest, TaskCreate, TaskEdit
+from .schemas import (
+    RANGES,
+    Approval,
+    ContextEdit,
+    ConversationApproval,
+    ConversationRequest,
+    PlanRequest,
+    TaskCreate,
+    TaskEdit,
+)
 from .service import Service
 
 
@@ -36,6 +45,13 @@ def create_app(settings=None, engine=None, muse=None):
 
     @app.get("/", response_class=HTMLResponse, include_in_schema=False)
     def dashboard_page():
+        return frontend_page("PAGE")
+
+    @app.get("/dev", response_class=HTMLResponse, include_in_schema=False)
+    def dev_page():
+        return frontend_page("DEV_PAGE")
+
+    def frontend_page(name):
         # Resolve repository UI assets independently of the command's cwd.
         page = FilePath(__file__).resolve().parents[2] / "frontend" / "dashboard.py"
         if not page.is_file():
@@ -43,7 +59,7 @@ def create_app(settings=None, engine=None, muse=None):
             # included frontend assets relative to the project working directory.
             page = FilePath.cwd() / "frontend" / "dashboard.py"
         return HTMLResponse(
-            run_path(str(page))["PAGE"], headers={"Cache-Control": "no-store"}
+            run_path(str(page))[name], headers={"Cache-Control": "no-store"}
         )
 
     def identity(authorization: Annotated[str | None, Header()] = None):
@@ -120,6 +136,18 @@ def create_app(settings=None, engine=None, muse=None):
         task_id: UUID, body: PlanRequest, s: Annotated[Service, Depends(identity)]
     ):
         return s.plan(str(task_id), body)
+
+    @app.post("/api/conversation")
+    def converse(body: ConversationRequest, s: Annotated[Service, Depends(identity)]):
+        return s.plan(None, body)
+
+    @app.post("/api/conversation/{run_id}/approve")
+    def approve_conversation(
+        run_id: UUID,
+        body: ConversationApproval,
+        s: Annotated[Service, Depends(identity)],
+    ):
+        return s.review(str(run_id), body, conversation=True)
 
     @app.post("/api/runs/{run_id}/approve")
     def approve(run_id: UUID, body: Approval, s: Annotated[Service, Depends(identity)]):

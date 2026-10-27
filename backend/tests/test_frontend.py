@@ -5,7 +5,7 @@ def test_dashboard_page_and_api_share_an_origin(setup):
     assert page.status_code == 200
     assert page.headers["content-type"].startswith("text/html")
     assert page.headers["cache-control"] == "no-store"
-    assert 'id="task-form"' in page.text
+    assert 'id="chat-form"' in page.text
     assert 'id="reviews"' in page.text
     assert "fetch(path" in page.text
     assert client.get("/api/dashboard").status_code == 200
@@ -33,4 +33,13 @@ def test_dashboard_resource_when_backend_package_is_installed_elsewhere(
     )
     page = clients().get("/")
     assert page.status_code == 200
+    assert 'id="chat-form"' in page.text
+
+
+def test_dev_keeps_manual_controls_and_inspector(setup):
+    clients, _, _ = setup
+    page = clients().get("/dev")
+    assert page.status_code == 200
     assert 'id="task-form"' in page.text
+    assert 'id="object-inspector"' in page.text
+    assert 'href="/"' in page.text
