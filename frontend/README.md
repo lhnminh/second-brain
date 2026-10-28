@@ -18,9 +18,11 @@ backend reload, use `uv run uvicorn backend.app:app --reload --port 8000`.
 
 ## Main journey
 
-1. Start with the workspace canvas on the left and Muse chat on the right, even
-   when no tasks exist. No task form is required.
+1. Start with a full-width workspace canvas. Click the circular Muse launcher
+   at the bottom right to expand chat. No task form is required.
 2. Answer clarifying questions or review the task objects and steps Muse proposes.
+   Proposals appear above saved plans on the wider canvas; the Muse panel links
+   to pending reviews. They remain unsaved until explicitly approved.
 3. Revise through chat or edit proposed titles, descriptions, and deadlines directly.
    You can remove unwanted tasks or steps. Follow-up messages carry unsaved edits.
 4. Save the reviewed plan. Persisted task objects become cards on the canvas.
@@ -86,8 +88,8 @@ used an isolated local SQLite database, not deployed Neon.
 
 ## Voice input
 
-Choose **Use voice**, allow microphone access, record up to one minute, then
-choose **Stop & transcribe**. Meta Voice Transcribe returns text into the composer.
+Choose the **microphone icon**, allow microphone access, record up to one minute,
+then choose the **stop icon** (labelled **Stop & transcribe**). Meta Voice Transcribe returns text into the composer.
 Review/edit it and choose **Send** to use the existing Muse conversation and
 proposal-review flow. No task changes are saved until you approve the proposal.
 
@@ -120,3 +122,45 @@ saving records or invoking planning. Node is required for the controller test.
 A computer-generated homework recording was transcribed successfully through the
 real Meta adapter. The user confirmed the revised flow works in Dia on localhost.
 Hosted deployment has not been verified for voice input.
+
+## Layout polish (October 28, 2026)
+
+The workspace uses a warm paper palette and a wider task canvas. Empty workspaces
+keep the same layout and show first-use guidance; this is interface copy, not a
+generated Muse reply. Saved cards show task status and
+progress from completed immediate steps. Step progress does not automatically
+complete the parent. Muse is now a floating panel, as described below.
+
+Existing frontend and voice-controller tests pass. Render checks with DOM test
+doubles covered empty, saved, review, escaped titles, preserved review edits, and
+cleared state. These are simulated DOM checks, not visual browser verification.
+Later Safari desktop checks are recorded below; mobile visual review remains
+pending. This pass does not add or reverify a live model integration.
+
+## Expandable Muse chat (October 28, 2026)
+
+At the user's request, the previous fixed canvas-left/chat-right arrangement is
+replaced by a full-width canvas and a circular Muse launcher at the bottom right.
+Chat starts collapsed. The launcher and canvas conversation buttons open a floating
+panel with a short fade/scale transition; reduced-motion preferences disable it.
+The close button, launcher, or Escape collapse it. Hidden chat is inert so its
+controls cannot receive keyboard focus; closing returns focus to the launcher.
+The open/close controls remain available during a model request.
+
+Closing preserves messages and typed drafts in the existing page DOM, and cancels
+active voice capture/transcription so the microphone does not keep running out of
+view. Drafts still do not persist across page reload. Reviews remain on the canvas;
+following the panel's review link closes chat to reveal them. On small screens the
+panel fits the viewport and scrolls internally when needed. No API changes or
+additional frontend dependencies are required.
+
+Safari desktop checks verified the collapsed launcher, expanded appearance, close
+button, Escape/focus return, and unsent draft preservation across reopening. These
+checks used the signed-out interface and did not call the model or microphone.
+Mobile visual verification remains pending. Existing automated frontend and voice
+checks also pass with simulated interfaces.
+
+The composer uses a compact rounded input, a circular send arrow, and a microphone
+icon. Recording replaces the microphone with a stop icon; setup/transcription
+show a spinner. Voice controls retain accessible labels and hover titles. The
+Meta transcription disclosure expands below the input.
