@@ -164,3 +164,52 @@ The composer uses a compact rounded input, a circular send arrow, and a micropho
 icon. Recording replaces the microphone with a stop icon; setup/transcription
 show a spinner. Voice controls retain accessible labels and hover titles. The
 Meta transcription disclosure expands below the input.
+
+## WebMCP browser tools
+
+The workspace registers four tools through `document.modelContext.registerTool()`:
+
+| Tool | Behavior |
+| --- | --- |
+| `get_dashboard` | Fetch saved tasks and pending proposal IDs using this browser's authenticated workspace. |
+| `draft_muse_message` | Open Muse and stage text for the user to review and send. Preserve existing unsent text. |
+| `open_task_editor` | Open a loaded task for the user to edit and save. |
+| `show_pending_reviews` | Scroll to and focus pending proposal reviews. |
+
+These tools support the existing journey: inspect saved homework, stage a planning
+request, then bring the resulting review into view. Sending, editing, approval,
+and persistence still use the existing visible controls and backend contracts.
+The tools do not invoke Muse or save changes themselves. UI actions refuse to
+interrupt requests, voice capture, or an open editor. Saved-state reads go to the
+server each time and return an error rather than cached data if access expires
+or the request fails. Results exclude conversation history, owner IDs, and internal
+importance scores; `user_importance_level` is the user's choice and can be unset.
+
+For local setup:
+
+1. Start the app using the commands above and open `http://localhost:8000/`.
+2. In a compatible Chrome build, enable `chrome://flags/#enable-webmcp-testing`
+   and relaunch, following [Chrome's WebMCP instructions](https://developer.chrome.com/docs/ai/webmcp).
+3. Reopen the workspace and connect using the normal demo access form if prompted.
+4. Check `typeof document.modelContext?.registerTool` in DevTools; expect
+   `"function"`. Use a WebMCP-capable browser agent or the tool inspector linked
+   in Chrome's instructions to discover the four tools.
+5. Call `get_dashboard`, then `draft_muse_message` with
+   `{"message":"Help me plan my homework due next Sunday."}`. Check that the text
+   appears in Muse without being sent. Send it manually, review the real proposal,
+   save it, and reload to check persistence using the normal app flow.
+
+Registration requires a secure context (HTTPS or localhost) and the current
+`document.modelContext` API. Browsers exposing only the older
+`navigator.modelContext` API are not supported by this integration. Unsupported
+browsers retain the normal UI. No polyfill, third-party script, new dependency,
+remote MCP server, or cross-origin tool exposure is added. Tools unregister on
+page exit and register again on back/forward restoration. This adds website-side
+tools; it does not configure an agent client or enroll the deployed origin in
+Chrome's origin trial.
+
+Verification: automated Node tests execute the shipped tool code with simulated
+browser and network interfaces. They cover discovery/registration, unsupported
+browsers, input validation, authenticated read options, access/network errors,
+cancellation, preservation of drafts and edits, and navigation cleanup. They do
+not verify native WebMCP discovery in Chrome or a deployed browser-agent journey.

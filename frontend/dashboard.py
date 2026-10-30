@@ -388,6 +388,81 @@ $('#voice-status').textContent=voiceAvailable?'':!window.isSecureContext?'Voice 
 syncVoice();
 // End voice input.
 
+// WebMCP: browser-agent access to saved state and reviewable UI actions.
+let webMCPController=null;
+async function registerWebMCP(){
+ if(!window.isSecureContext||!document.modelContext?.registerTool||webMCPController)return;
+ const controller=new AbortController();webMCPController=controller;
+ const emptySchema={type:'object',properties:{},additionalProperties:false};
+ function validate(input,keys=[]){
+  if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(key=>!keys.includes(key)))return {error:'Pass an object with only the documented fields.'};
+ }
+ function uiBlocked(){
+  if(!$('#access').hidden)return {error:'Connect using the visible demo access form first.'};
+  if(busy||voiceSession)return {error:'Wait for the current request or stop voice capture before changing the interface.'};
+  if($('#edit-dialog').open)return {error:'Save or close the open task editor first; its unsaved changes are preserved.'};
+ }
+ const tools=[
+  {
+   name:'get_dashboard',
+   description:'Read the current saved tasks and proposal statuses from this browser workspace. Use to understand the user’s plans before offering a next step.',
+   inputSchema:emptySchema,annotations:{readOnlyHint:true},
+   async execute(input,{signal}={}){
+    const invalid=validate(input);if(invalid)return invalid;
+    try{
+     const response=await fetch('/api/dashboard',{credentials:'same-origin',signal});
+     if(!response.ok)return {error:response.status===401?'Connect using the visible demo access form first.':'Could not load saved state. Retry when the server is available.',status:response.status};
+     const data=await response.json();signal?.throwIfAborted();
+     return {tasks:data.tasks.map(({id,parent_task_id,title,description,deadline,user_importance_level,status,version})=>({id,parent_task_id,title,description,deadline,user_importance_level,status,version})),reviews:data.runs.filter(run=>run.task_id===null&&run.status==='awaiting_review').map(run=>({id:run.id,status:run.status})),source:'Saved server state; unsaved interface edits are not included.'};
+    }catch(e){if(signal?.aborted)throw e;return {error:'Could not read saved state. Retry when the server is available.'};}
+   }
+  },
+  {
+   name:'draft_muse_message',
+   description:'Place a message in the Muse composer and open chat for the user to review and send. Existing unsent text is preserved.',
+   inputSchema:{type:'object',properties:{message:{type:'string',minLength:1,maxLength:10000,description:'The message to stage for user review.'}},required:['message'],additionalProperties:false},
+   execute(input){
+    const invalid=validate(input,['message']);if(invalid)return invalid;
+    if(typeof input.message!=='string'||!input.message.trim()||input.message.length>10000)return {error:'Provide a nonempty message of at most 10,000 characters.'};
+    const blocked=uiBlocked();if(blocked)return blocked;
+    if($('#message').value)return {error:'The composer already has unsent text. Ask the user to send or clear it first.'};
+    $('#message').value=input.message;setMuseOpen(true);
+    return {status:'drafted',next_step:'Review the message and choose Send. No model request or task change has been made.'};
+   }
+  },
+  {
+   name:'open_task_editor',
+   description:'Open a saved task in the visible editor so the user can review and change it.',
+   inputSchema:{type:'object',properties:{task_id:{type:'string',minLength:1,description:'A saved task ID from get_dashboard.'}},required:['task_id'],additionalProperties:false},
+   execute(input){
+    const invalid=validate(input,['task_id']);if(invalid)return invalid;
+    if(typeof input.task_id!=='string'||!input.task_id)return {error:'Provide a saved task ID.'};
+    const blocked=uiBlocked();if(blocked)return blocked;
+    if(!state.tasks.some(task=>task.id===input.task_id))return {error:'Task is not in the loaded workspace. Refresh the dashboard and try again.'};
+    openEditor(input.task_id);return {status:'editor_open',next_step:'Review and edit the task, then choose Save changes.'};
+   }
+  },
+  {
+   name:'show_pending_reviews',
+   description:'Bring pending Muse proposals into view so the user can correct and save them.',
+   inputSchema:emptySchema,
+   execute(input){
+    const invalid=validate(input);if(invalid)return invalid;
+    const blocked=uiBlocked();if(blocked)return blocked;
+    if(!state.runs.some(run=>run.task_id===null&&run.status==='awaiting_review'))return {error:'No pending proposal is loaded. Refresh the dashboard to check for new proposals.'};
+    setMuseOpen(false,{focus:false});$('#reviews').scrollIntoView({block:'start'});$('#reviews').focus({preventScroll:true});
+    return {status:'review_visible',next_step:'Review the proposal and choose Save reviewed plan when ready.'};
+   }
+  }
+ ];
+ try{for(const tool of tools){controller.signal.throwIfAborted();await document.modelContext.registerTool(tool,{signal:controller.signal});}}
+ catch(e){controller.abort();if(webMCPController===controller)webMCPController=null;if(e.name!=='AbortError')console.warn('WebMCP registration failed; dashboard controls remain available.',e);}
+}
+window.addEventListener('pagehide',()=>{webMCPController?.abort();webMCPController=null;});
+window.addEventListener('pageshow',()=>{registerWebMCP();});
+registerWebMCP();
+// End WebMCP.
+
 refresh().catch(error);
 window.addEventListener('pageshow',event=>{if(event.persisted)refresh().catch(error);});
 setInterval(()=>{if(busy&&pending)api('/api/dashboard').then(data=>{$('#status').textContent=data.runs.some(r=>r.status==='running')?'Muse is planning…':'';}).catch(()=>{});},4000);
