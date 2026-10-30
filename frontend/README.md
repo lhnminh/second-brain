@@ -216,46 +216,101 @@ not verify native WebMCP discovery in Chrome or a deployed browser-agent journey
 
 ## Three-panel dashboard draft (October 30, 2026)
 
-The main workspace now shows **Your top 3**, **Long-term focus**, and a monthly
-**Your progress** calendar. Live priorities show up to three incomplete top-level
-plans, ordered by the existing importance score. Each priority shows up to three
-unfinished leaf steps immediately, in saved plan order, with completion controls
-and clickable titles for editing. Expand for remaining steps and plan controls;
-completed steps and notes have separate disclosures. Plans without subtasks show
-the task itself as the action. Completing steps does not complete the parent. **All saved plans** includes every plan,
-including completed ones. Muse and proposal review keep their existing flows.
+The workspace uses the available desktop width and shows:
 
-Choose **Preview sample day**, or open `http://localhost:8000/?draft=1`, to see the
-populated visual direction. A visible **Design draft · sample data** label marks
-this mode. Sample completion controls update only the in-memory sample calendar;
-month arrows and day selection are interactive. Reload resets sample changes.
-**Back to my workspace** returns to the real task view. Sample data never enters
-API state, proposal review, or Muse context. Chat, if opened, still uses the real
-workspace and existing backend; sample mode does not simulate Muse.
+- **Current priorities:** up to three next actions, one unfinished leaf step per
+  eligible plan, ordered by the existing importance score. The plan name provides
+  context. Expand for remaining steps, notes, and plan editing/completion controls.
+- **Long-term focus:** eligible saved tasks without a deadline, using the same
+  task model as the rest of the dashboard. Shows three initially, with further
+  items behind a disclosure. Select a task to open its bubble details. A task can
+  also appear among current priorities when its importance ranks highly.
+- **Everything to do:** a responsive bubble map of every eligible top-level task/plan,
+  including work beyond the three current priorities. Larger bubbles represent greater importance. Each bubble shows a short task
+  name and importance label; selecting one opens its steps and editing controls
+  beneath the map. Selecting it again or closing details collapses that view. This replaces the earlier completion-calendar draft.
 
-Long-term goals and completion history are layout placeholders in the live view.
-Their API mapping and history semantics remain open; the interface does not
-invent goals or treat task modification dates as completion dates. The live
-calendar explicitly marks history as unavailable. No backend/API changes or
-frontend dependencies were added.
+Importance appears through bubble size, color, and the existing five labels.
+Bubbles use existing user-selected levels or backend score ranges;
+internal scores are never displayed. Unassessed tasks have an explicit label and
+a neutral bubble. Ordering uses backend importance scores in live mode.
 
-Verification: existing frontend, voice, chat lifecycle, and WebMCP checks passed
-(8 tests). An additional temporary Node harness exercised the shipped overview
-functions with DOM doubles: sample completion/reopening without changing API
-state, month navigation, sample/live switching, empty states, importance ordering,
-and title escaping. These are simulated DOM checks. Desktop/mobile visual review
-is left to the user; browser automation was unavailable during this pass. No live
-model calls were made for this draft.
+Completed plans and plans with all leaf steps complete leave both active views.
+The **Completed work** disclosure retains access to these saved plans. This is a
+visibility rule: it does not delete records or automatically complete parents.
+Reopening a step makes an incomplete parent eligible again.
+
+Completing a visible action checks it off and fades it upward, followed by the
+next action sliding into place. Live motion waits for the write and refreshed
+dashboard to confirm completion. Failed requests do not play success motion;
+canceled animations still allow updated state to render. Reduced-motion
+preferences skip animations. Sample steps use the same motion without saving.
+
+Choose **Preview sample day**, or open `http://localhost:8000/?draft=1`, to see
+populated fixtures, including living-room, garden, and photo projects. A visible
+**Design draft · sample data** label marks this mode. Sample completions stay in
+memory and reset on reload. **Back to my workspace** returns to live tasks.
+Fixtures never enter API state, proposal review, or Muse context. Chat still uses
+the real workspace and existing backend; sample mode does not simulate Muse.
+No backend/API changes or frontend dependencies were added.
+
+Verification: all 8 existing frontend, voice, chat lifecycle, and WebMCP checks
+pass. Temporary Node harnesses with simulated DOM/animation interfaces checked
+three default focus actions, nested step ordering/advancement, completed-plan
+removal, preservation of parent status, isolated sample changes, the full backlog,
+house-project steps, five-level/unassessed importance, escaped titles, animation
+cancellation, reduced motion, and failure behavior. Visual review is left to the
+user at their request. No live model calls were made for this draft.
 
 
-The October 30 refinement uses the full available desktop width with small side
-margins and removes the large introductory headline. Expanded saved plans use
-compact checklists instead of repeating descriptions, importance badges, and Edit
-buttons on every row. Child groups and notes are collapsible. Sample priorities
-use the same action-first renderer, including in-memory step completion.
+The bubble refinement removes the rectangular backlog cards and five-bar marks.
+Bubbles begin in deterministic scattered positions, with smaller sizes on narrow
+screens. They can be dragged and released with momentum. Collisions push other
+bubbles and the field edges bounce them back; damping lets them settle. Dragging
+does not change importance, tasks, or their saved order. Positions survive in-page
+selection, rerenders, and window resizing, in separate sample/live coordinate
+maps. Coordinates are not persisted across page reloads. Full titles
+remain available to assistive technology and on hover; longer visible names are
+limited to three lines. Completed bubbles disappear and close their selected
+details. All 8 existing checks pass; a temporary DOM harness also verified bubble
+counts, importance classes, selection/closing, completed removal, escaping, and
+unassessed labels. Visual review remains with the user.
 
-Verification for this refinement: the same 8 existing tests pass. The temporary
-Node harness additionally checked nested Duolingo-style steps, saved ordering,
-visible completion/edit targets, hiding completed steps, advancing the next
-visible step after completion, and keeping sample step changes separate from live
-state. Visual review is delegated to the user at their request.
+
+The scattered layout uses task IDs to seed placement, circle collision checks to
+keep labels separate, and a growing field for larger backlogs. Importance controls
+size rather than alignment. A temporary geometry harness checked repeatability,
+bounds, separation, and irregular heights for 1–100 tasks across 220–1800px field
+widths. All 8 existing frontend-related checks pass. Visual review remains with
+the user.
+
+
+Bubble interaction supports mouse/touch pointer capture, a five-pixel drag
+threshold, and arrow-key nudging. Ordinary clicks and Enter still open details;
+the click following a drag is suppressed. Canceling a pointer releases capture.
+Reduced-motion preferences retain direct movement and collision separation while
+skipping inertia. Animation frames stop after settling and are canceled on page
+hide, navigation, or rerender. No new dependencies or backend contracts are used.
+
+Verification: all 8 existing frontend-related checks pass. A temporary Node
+harness executed the shipped physics/controller with simulated pointer events,
+DOM, animation frames, and time. It verified dragging, neighbor collisions,
+release momentum, bounds, settling, click/drag distinction, keyboard nudging,
+reduced motion, cancellation, in-page position restoration, and cleanup. Visual
+feel remains for the user's review.
+
+
+Long-term focus is now connected to existing undated tasks, following the user's
+clarification; no separate goal schema or integration is needed. Dated tasks are
+excluded, and the panel shares the active-task completion filter. Changing a
+saved deadline moves a task into or out of this view on refresh. Sample data uses
+the same rule. The 8 existing frontend-related checks pass; a temporary harness
+verified deadline filtering, detail targets, empty/overflow states, and escaping.
+
+Expanding/collapsing task details, notes, completed work, and the long-term
+"more" disclosure now uses a short height transition. Selecting a bubble reveals
+its detail panel with height and fade motion. Repeated clicks can reverse a
+running disclosure transition; reduced motion skips these effects. Existing
+native disclosure/keyboard controls remain in use. All 8 existing checks pass;
+a temporary animation harness verified expand/collapse, rapid reversal, style
+cleanup, reduced motion, and bubble-detail reveal.

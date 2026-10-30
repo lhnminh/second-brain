@@ -35,6 +35,7 @@ p{line-height:1.65}
 .wrap{flex-wrap:wrap}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 [hidden]{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
 
 /* A full-width canvas, with Muse available from a corner launcher. */
 .topbar{height:82px;max-width:none;margin:auto;padding:0 32px;border-bottom:1px solid var(--line)}
@@ -203,14 +204,14 @@ h1{font-size:36px}
 .panel-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:var(--soft);font-size:21px;color:var(--green)}
 .focus-list{display:grid;gap:12px}.focus-item{padding:18px;background:#f5f5ef;border:1px solid transparent;border-radius:14px;min-width:0}.focus-item:first-child{background:#ecf1df;border-color:#dce5c9}
 .focus-context{display:flex;align-items:center;gap:10px;margin-bottom:12px;min-width:0}.focus-rank{font-size:10px;color:var(--muted)}.focus-plan{font-size:11px;color:var(--muted);flex:1;overflow-wrap:anywhere}.focus-fraction{font-size:10px;color:var(--muted);white-space:nowrap}.focus-context progress{width:52px;flex:none}
-.next-steps{display:grid;gap:10px}.step-line{display:flex;align-items:flex-start;gap:10px;min-width:0}.step-title{flex:1;min-width:0;text-align:left;padding:0;border:0;background:none;font-size:14px;font-weight:500;line-height:1.6;overflow-wrap:anywhere}.step-title:hover{background:none;text-decoration:underline}.step-title.done{text-decoration:line-through;color:var(--muted)}.step-line .check{margin-top:4px;width:17px;height:17px}.step-state{font-size:10px;color:var(--muted);white-space:nowrap;padding-top:4px}.steps-finished{font-size:12px;color:var(--muted)}.sample-check{padding:0;width:18px;flex:none;border:0;background:transparent;font-size:19px;line-height:23px;font-weight:400}
+.next-steps{display:grid;gap:10px}.step-line{display:flex;align-items:flex-start;gap:10px;min-width:0}.step-title{flex:1;min-width:0;text-align:left;padding:0;border:0;background:none;font-size:14px;font-weight:500;line-height:1.6;overflow-wrap:anywhere}.step-title:hover{background:none;text-decoration:underline}.step-title.done{text-decoration:line-through;color:var(--muted)}.step-line.is-finishing .step-title{text-decoration:line-through;color:var(--green)}.step-line.is-finishing{background:#e0edcf;border-radius:6px}.next-steps{min-height:24px}.step-line .check{margin-top:4px;width:17px;height:17px}.step-state{font-size:10px;color:var(--muted);white-space:nowrap;padding-top:4px}.steps-finished{font-size:12px;color:var(--muted)}.sample-check{padding:0;width:18px;flex:none;border:0;background:transparent;font-size:19px;line-height:23px;font-weight:400}
 .focus-details{margin-top:14px;border-top:1px solid #dce2d1;padding-top:10px}.focus-details>summary,.completed-steps>summary{cursor:pointer;font-size:11px;color:var(--muted);list-style:none}.focus-details>summary::after{content:' ＋';float:right}.focus-details[open]>summary::after{content:' −'}.focus-details summary::-webkit-details-marker{display:none}.plan-info{margin-top:12px}.plan-info p{font-size:12px;color:var(--muted);margin-top:10px;white-space:pre-wrap;overflow-wrap:anywhere;max-width:65ch}.focus-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:10px;color:var(--muted)}.focus-details .card-actions{margin-top:12px;padding-top:10px;gap:8px}.focus-details .step-title{font-size:12px}.remaining-steps{display:grid;gap:10px;margin-top:14px}.completed-steps{margin-top:14px}.completed-steps .step-line{margin-top:10px}
 .plan-notes{margin:10px 0 0}.plan-step{padding:12px 0;border-bottom:1px solid var(--line)}.plan-step:last-child{border-bottom:0}.step-notes,.step-children{margin:6px 0 0 27px;font-size:11px;color:var(--muted)}.step-notes summary,.step-children summary{cursor:pointer}.step-notes p{margin:8px 0;white-space:pre-wrap;overflow-wrap:anywhere}.step-children .plan-step{padding:10px 0}.all-plans>.plan-step{padding:14px 0}
 .panel-foot{margin-top:20px;font-size:11px;color:var(--muted)}.all-plans{margin-top:18px}.all-plans>summary{font-size:12px;cursor:pointer;color:var(--green)}.all-plans .task{padding:12px 0}.quiet-empty{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-height:222px;gap:12px;color:var(--muted)}.quiet-empty strong{font-size:17px;font-weight:500;color:var(--ink)}.quiet-empty p{font-size:12px;max-width:260px}.quiet-empty .chat-entry{margin-top:0}
-.direction-panel{background:linear-gradient(135deg,#f1f3e9,#f8f8f1)}.goal-item{padding:12px 0;border-bottom:1px solid #dce2d1;display:flex;align-items:center;gap:16px}.goal-item:last-of-type{border-bottom:0}.goal-symbol{width:48px;height:48px;display:grid;place-items:center;border-radius:50%;background:#e1e9d2;color:#496641;font-size:24px;flex:none}.goal-item:nth-child(3) .goal-symbol{background:#eee4d4;color:#886d49}.goal-item:nth-child(4) .goal-symbol{background:#dce7e6;color:#4b706d}.goal-title{font-weight:500;font-size:17px;line-height:1.4}.goal-note{font-size:11px;color:var(--muted);margin-top:5px}.direction-caption{font-size:11px;color:var(--muted);margin-top:22px}
-.progress-panel{grid-column:1/-1}.progress-layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:30px}.month-control{display:flex;align-items:center;gap:14px}.month-control strong{font-size:13px;font-weight:500;min-width:112px;text-align:center}.month-control button{padding:4px 9px;background:transparent}.calendar-week,.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}.calendar-week{margin-bottom:8px}.calendar-week span{font-size:10px;color:var(--muted);padding-left:12px}.calendar-day{height:42px;border-radius:10px;text-align:left;padding:8px 11px;position:relative;background:#f5f5ef;border:1px solid transparent;font-size:11px;font-weight:400}.calendar-day:hover{border-color:#9aaa98}.calendar-day[data-count="1"]{background:#e3eccf}.calendar-day[data-count="2"]{background:#c7d9a6}.calendar-day[data-count="3"]{background:#9bb97a}.calendar-day.is-today{border:1px solid var(--green);font-weight:700}.calendar-day.is-selected{outline:2px solid var(--green);outline-offset:2px}.day-dots{display:block;font-size:13px;letter-spacing:2px;line-height:14px;color:#42613e}.calendar-blank{height:42px}.calendar-day.is-future{background:transparent;color:#92988d}.calendar-legend{display:flex;align-items:center;gap:7px;font-size:10px;color:var(--muted);margin-top:16px}.legend-swatch{width:12px;height:12px;border-radius:3px;background:#f5f5ef}.legend-swatch.mid{background:#e3eccf}.legend-swatch.full{background:#9bb97a}.calendar-note{margin-left:auto}.day-detail{border-left:1px solid var(--line);padding-left:26px}.day-detail h3{font-size:14px;font-weight:500;margin-bottom:8px}.day-total{font-size:38px;letter-spacing:-2px;line-height:1.2}.day-total small{font-size:11px;letter-spacing:0;color:var(--muted);margin-left:7px}.completed-list{list-style:none;padding:0;margin:18px 0 0}.completed-list li{display:flex;gap:9px;align-items:flex-start;font-size:12px;margin-bottom:14px;line-height:1.5}.completed-list li span{color:#648446}.day-detail .muted{font-size:12px;margin-top:16px}
-@media(max-width:900px){.overview-grid{gap:16px}.overview-panel{padding:20px}.progress-layout{grid-template-columns:minmax(0,1fr) 190px;gap:20px}.day-detail{padding-left:20px}.canvas{max-width:100%}}
-@media(max-width:650px){.overview-grid{grid-template-columns:1fr}.progress-panel{grid-column:auto}.progress-layout{grid-template-columns:1fr}.day-detail{border-left:0;border-top:1px solid var(--line);padding:20px 0 0}.overview-toolbar{align-items:flex-start;gap:8px;flex-wrap:wrap}.calendar-day{height:47px;padding:6px}.calendar-blank{height:47px}.calendar-week span{padding-left:6px}.calendar-grid,.calendar-week{gap:5px}.calendar-note{display:none}.panel-top{flex-wrap:wrap}.month-control{gap:7px}.goal-title{font-size:16px}}
+.direction-panel{background:linear-gradient(135deg,#f1f3e9,#f8f8f1)}.goal-item{width:100%;text-align:left;padding:12px 6px;border:0;border-bottom:1px solid #dce2d1;border-radius:0;background:transparent;display:flex;align-items:center;gap:16px}.goal-item:hover{background:#e7ecdf}.goal-title{overflow-wrap:anywhere;min-width:0}.direction-more{margin-top:14px}.direction-more>summary{cursor:pointer;color:var(--muted);font-size:11px}.goal-item:last-of-type{border-bottom:0}.goal-symbol{width:48px;height:48px;display:grid;place-items:center;border-radius:50%;background:#e1e9d2;color:#496641;font-size:24px;flex:none}.goal-item:nth-child(3) .goal-symbol{background:#eee4d4;color:#886d49}.goal-item:nth-child(4) .goal-symbol{background:#dce7e6;color:#4b706d}.goal-title{font-weight:500;font-size:17px;line-height:1.4}.goal-note{font-size:11px;color:var(--muted);margin-top:5px}.direction-caption{font-size:11px;color:var(--muted);margin-top:22px}
+.backlog-panel{grid-column:1/-1}.bubble-field{position:relative;min-height:280px;background:radial-gradient(ellipse at center,#edf1e67a,transparent 72%);isolation:isolate}.task-bubble{--bubble-size:148px;--bubble-ink:#45623e;--bubble-fill:#e5eddc;position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;flex:0 0 auto;width:var(--bubble-size);height:var(--bubble-size);padding:22px;border-radius:50%;border:1px solid #ffffffb3;color:var(--bubble-ink);background:var(--bubble-fill);box-shadow:0 4px 12px #30452d08;transition:box-shadow .2s;overflow:hidden;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}.task-bubble.very_high{--bubble-size:210px;--bubble-ink:#78532f;--bubble-fill:#eedcc1}.task-bubble.high{--bubble-size:180px;--bubble-ink:#6c642b;--bubble-fill:#e8e4bd}.task-bubble.medium{--bubble-size:152px;--bubble-fill:#dfe9d2}.task-bubble.low{--bubble-size:130px;--bubble-ink:#506d67;--bubble-fill:#dfebe5}.task-bubble.very_low{--bubble-size:112px;--bubble-ink:#63716c;--bubble-fill:#e9eeea}.task-bubble.unassessed{--bubble-size:130px;--bubble-ink:#69716b;--bubble-fill:#eef0e9;border:1px dashed #a5afa1}.task-bubble:hover{background:var(--bubble-fill);border-color:#ffffff;box-shadow:0 6px 16px #30452d12}.task-bubble.is-dragging{cursor:grabbing;z-index:3;box-shadow:0 10px 22px #30452d20}.task-bubble[aria-expanded="true"]{outline:2px solid var(--bubble-ink);outline-offset:5px}.bubble-title{font-size:15px;font-weight:550;line-height:1.4;text-align:center;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-width:100%}.task-bubble.very_high .bubble-title{font-size:21px}.task-bubble.high .bubble-title{font-size:18px}.task-bubble.very_low .bubble-title{font-size:12px}.bubble-hint{font-size:11px;color:var(--muted)}.bubble-detail{max-width:720px;margin:12px auto 0;padding:22px;background:#f5f7ef;border:1px solid var(--line);border-radius:16px;scroll-margin:24px}.bubble-detail h3{font-size:18px;overflow-wrap:anywhere}.bubble-detail .focus-meta{margin-top:10px}.bubble-close{width:28px;height:28px;padding:0;border-radius:50%;flex:none}.backlog-details{display:grid;gap:12px;margin-top:20px}.backlog-details .step-title{font-size:13px}.backlog-details .card-actions{gap:8px;margin-top:4px}.bubble-detail .next-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+@media(max-width:900px){.overview-grid{gap:16px}.overview-panel{padding:20px}.canvas{max-width:100%}}
+@media(max-width:650px){.overview-grid{grid-template-columns:1fr}.backlog-panel{grid-column:auto}.overview-toolbar{align-items:flex-start;gap:8px;flex-wrap:wrap}.panel-top{flex-wrap:wrap}.goal-title{font-size:16px}.bubble-field{min-height:280px}.task-bubble{width:calc(var(--bubble-size)*.82);height:calc(var(--bubble-size)*.82);padding:16px}.task-bubble.very_high .bubble-title{font-size:17px}.task-bubble.high .bubble-title{font-size:15px}.bubble-title{font-size:12px}.task-bubble.very_low .bubble-title{font-size:11px}.bubble-detail{padding:18px}}
 
 </style></head><body>
 <header class="topbar row between"><div class="row"><span class="brand-mark" aria-hidden="true">✳</span><span class="brand">Visual Second Brain</span></div><nav class="row"><button id="refresh" class="small ghost">Refresh</button><a href="/dev">Dev ↗</a><button id="signout" class="small ghost" hidden>Sign out</button></nav></header>
@@ -226,6 +227,7 @@ h1{font-size:36px}
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const labels={very_low:'Very low',low:'Low',medium:'Medium',high:'High',very_high:'Very high'};
 let state={tasks:[],messages:[],runs:[]},ranges={},busy=false,pending=null,editVersion=null;
+let completionAnimating=false;
 const drafts=new Map();
 // A visit owns its chat in memory; saved dashboard records stay in the workspace.
 let conversationId=crypto.randomUUID();
@@ -238,7 +240,7 @@ function badge(t){return `<span class="pill ${esc(level(t))}">${esc(labels[level
 function error(e){$('#error').textContent=e.message||'Something went wrong. Your draft is still here.';$('#error').hidden=false;}
 async function api(path,method='GET',body){let r;try{r=await fetch(path,{method,credentials:'same-origin',headers:{'Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})});}catch{throw Error('Could not reach the server. Your draft is preserved; try again.');}let data;try{data=await r.json();}catch{throw Error('The server returned an unreadable response. Your draft is preserved.');}if(!r.ok){if(r.status===401){endVoice({discard:true});$('#access').hidden=false;$('#signout').hidden=true;newChat();state={tasks:[],messages:[],runs:[]};render();}throw Error((data.error?.message||'Request failed')+(r.status===409?' Refresh to see the latest state.':''));}return data;}
 function setBusy(value){if(value)endVoice({discard:true});busy=value;document.querySelectorAll('button:not([data-chat-control]),input,textarea,select').forEach(el=>el.disabled=value);$('#send').textContent=value?'…':'↑';syncVoice();}
-async function refresh(){const [data,levels,health]=await Promise.all([api('/api/dashboard'),api('/api/importance-levels'),api('/health')]);state=data;const runIds=new Set(chatRuns().map(r=>r.id));state.messages=state.messages.filter(m=>runIds.has(m.run_id));ranges=levels;$('#access').hidden=true;$('#signout').hidden=!health.demo_access_required;render();}
+async function refresh(){const [data,levels,health]=await Promise.all([api('/api/dashboard'),api('/api/importance-levels'),api('/health')]);const transition=refresh.completionId&&data.tasks.some(t=>t.id===refresh.completionId&&t.status==='completed')?await animateTaskExit(refresh.completionId):null;state=data;const runIds=new Set(chatRuns().map(r=>r.id));state.messages=state.messages.filter(m=>runIds.has(m.run_id));ranges=levels;$('#access').hidden=true;$('#signout').hidden=!health.demo_access_required;render();if(transition)animateTaskEntry(transition);}
 async function action(work,success){if(busy)return;setBusy(true);$('#error').hidden=true;$('#notice').textContent='';try{await work();await refresh();if(success)$('#notice').textContent=success;}catch(e){$('#status').textContent='';error(e);}finally{setBusy(false);}}
 function stepProgress(task){const steps=state.tasks.filter(t=>t.parent_task_id===task.id);if(!steps.length)return '';const done=steps.filter(t=>t.status==='completed').length;return `<div class="task-progress"><progress value="${done}" max="${steps.length}" aria-label="Completed steps for ${esc(task.title)}"></progress><span>${done} of ${steps.length} steps complete</span></div>`;}
 function taskRow(t){
@@ -247,66 +249,262 @@ function taskRow(t){
 }
 // Sample mode is an isolated visual draft. It never replaces API state or writes records.
 let samplePreview=new URLSearchParams(window.location.search).get('draft')==='1';
-const overviewToday=new Date();overviewToday.setHours(0,0,0,0);
-let calendarMonth=new Date(overviewToday.getFullYear(),overviewToday.getMonth(),1),selectedDay=localDay(overviewToday);
-function localDay(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+let selectedBubble=null,lastRevealedBubble=null;
+const sampleSunday=new Date();sampleSunday.setDate(sampleSunday.getDate()+((7-sampleSunday.getDay())%7||7));
+const sampleDue=[sampleSunday.getFullYear(),String(sampleSunday.getMonth()+1).padStart(2,'0'),String(sampleSunday.getDate()).padStart(2,'0')].join('-');
 const sampleFocus=[
- {id:'sample-1',title:'Finish the homework outline',note:'Due Sunday',done:2,total:4},
- {id:'sample-2',title:'Polish the dashboard',note:'In progress',done:1,total:3},
- {id:'sample-3',title:'Make time for a walk',note:'A little space for yourself',done:0,total:1}
+ {user_importance_level:'very_high',id:'sample-1',deadline:sampleDue,title:'Finish the homework outline',note:'Due Sunday',done:2,total:4},
+ {user_importance_level:'high',id:'sample-2',title:'Polish the dashboard',note:'In progress',done:1,total:3},
+ {user_importance_level:'medium',id:'sample-3',title:'Make time for a walk',note:'A little space for yourself',done:0,total:1}
 ];
-const sampleGoals=[{symbol:'↗',title:'Build something useful',note:'A product that gives time back'},{symbol:'◎',title:'Keep learning, every week',note:'Make curiosity a habit'},{symbol:'♧',title:'A calmer, healthier routine',note:'Leave room for life outside work'}];
-const sampleHistory={};
-for(let day=1;day<=overviewToday.getDate();day++){
- const date=new Date(overviewToday.getFullYear(),overviewToday.getMonth(),day);
- const count=[0,2,1,3,0,1,2][date.getDay()];
- sampleHistory[localDay(date)]=['Review assignment brief','Sketch the dashboard','Read one chapter'].slice(0,count);
-}
-sampleHistory[localDay(overviewToday)]=['Review assignment brief','Sketch the dashboard'];
+
+const sampleBacklog=[
+ {id:'sample-house',title:'Refresh the living room',user_importance_level:'medium',done:0,total:3},
+ {id:'sample-garden',title:'Start a balcony garden',user_importance_level:'low',done:0,total:2},
+ {id:'sample-photos',title:'Organize old photos',user_importance_level:'very_low',done:0,total:2}
+];
+const samplePlans=[...sampleFocus,...sampleBacklog];
 function orderedChildren(id,tasks=state.tasks){return tasks.filter(t=>t.parent_task_id===id).sort((a,b)=>(a.position??0)-(b.position??0));}
 function leafSteps(id,tasks=state.tasks){return orderedChildren(id,tasks).flatMap(t=>orderedChildren(t.id,tasks).length?leafSteps(t.id,tasks):[t]);}
 function focusStep(t,sample=false){
  const done=t.status==='completed';
- return `<div class="step-line ${done?'is-done':''}">${sample?`<button class="sample-check" data-sample-step="${esc(t.id)}" aria-label="${done?'Reopen':'Complete'} sample step ${esc(t.title)}">${done?'✓':'○'}</button>`:`<input class="check" type="checkbox" data-complete="${esc(t.id)}" aria-label="Mark ${esc(t.title)} ${done?'pending':'complete'}" ${done?'checked':''}>`}${sample?`<span class="step-title ${done?'done':''}">${esc(t.title)}</span>`:`<button class="step-title ${done?'done':''}" data-edit="${esc(t.id)}">${esc(t.title)}</button>`}</div>`;
+ return `<div class="step-line ${done?'is-done':''}" data-step-id="${esc(t.id)}">${sample?`<button class="sample-check" data-sample-step="${esc(t.id)}" aria-label="${done?'Reopen':'Complete'} sample step ${esc(t.title)}">${done?'✓':'○'}</button>`:`<input class="check" type="checkbox" data-complete="${esc(t.id)}" aria-label="Mark ${esc(t.title)} ${done?'pending':'complete'}" ${done?'checked':''}>`}${sample?`<span class="step-title ${done?'done':''}">${esc(t.title)}</span>`:`<button class="step-title ${done?'done':''}" data-edit="${esc(t.id)}">${esc(t.title)}</button>`}</div>`;
 }
 function overviewFocus(t,i,tasks=state.tasks,sample=false){
- const steps=leafSteps(t.id,tasks),unfinished=steps.filter(c=>c.status!=='completed'),visible=unfinished.slice(0,3),done=steps.filter(c=>c.status==='completed').length;
+ const steps=leafSteps(t.id,tasks),unfinished=steps.filter(c=>c.status!=='completed'),visible=unfinished.slice(0,1),done=steps.filter(c=>c.status==='completed').length;
  const actions=steps.length?visible:[t],completeSteps=steps.filter(c=>c.status==='completed');
- return `<article class="focus-item"><div class="focus-context"><span class="focus-rank">0${i+1}</span><span class="focus-plan">${esc(t.title)}</span>${steps.length?`<span class="focus-fraction">${done}/${steps.length}</span><progress value="${done}" max="${steps.length}" aria-label="Completed steps for ${esc(t.title)}"></progress>`:''}</div><div class="next-steps">${actions.map(c=>focusStep(c,sample)).join('')||'<span class="steps-finished">All steps checked off · finish the plan when ready.</span>'}</div><details class="focus-details"><summary>${unfinished.length>3?`All ${steps.length} steps`:'Plan details'}</summary><div class="plan-info"><div class="focus-meta">${sample?'<span>Sample plan</span>':badge(t)}${t.deadline?`<span>Due ${esc(t.deadline)}</span>`:''}${t.status==='in_progress'?'<span>In progress</span>':''}</div>${t.description?`<details class="step-notes plan-notes"><summary>Notes</summary><p>${esc(t.description)}</p></details>`:''}</div>${unfinished.length>3?`<div class="remaining-steps">${unfinished.slice(3).map(c=>focusStep(c,sample)).join('')}</div>`:''}${completeSteps.length?`<details class="completed-steps"><summary>Completed · ${completeSteps.length}</summary>${completeSteps.map(c=>focusStep(c,sample)).join('')}</details>`:''}<div class="card-actions">${sample?`<button class="small ghost" data-sample-complete="${esc(t.id)}">${t.completed?'Reopen plan':'Complete plan'}</button>`:`<button class="small ghost" data-edit="${esc(t.id)}">Edit plan</button><button class="small ghost" data-toggle="${esc(t.id)}">Complete plan</button>`}</div></details></article>`;
+ return `<article class="focus-item" data-plan-id="${esc(t.id)}" data-focus-rank="${i}"><div class="focus-context"><span class="focus-rank">0${i+1}</span><span class="focus-plan">${esc(t.title)}</span>${steps.length?`<span class="focus-fraction">${done}/${steps.length}</span><progress value="${done}" max="${steps.length}" aria-label="Completed steps for ${esc(t.title)}"></progress>`:''}</div><div class="next-steps">${actions.map(c=>focusStep(c,sample)).join('')||'<span class="steps-finished">All steps checked off · finish the plan when ready.</span>'}</div><details class="focus-details"><summary>${unfinished.length>1?`All ${steps.length} steps`:'Plan details'}</summary><div class="plan-info"><div class="focus-meta">${sample?'<span>Sample plan</span>':badge(t)}${t.deadline?`<span>Due ${esc(t.deadline)}</span>`:''}${t.status==='in_progress'?'<span>In progress</span>':''}</div>${t.description?`<details class="step-notes plan-notes"><summary>Notes</summary><p>${esc(t.description)}</p></details>`:''}</div>${unfinished.length>1?`<div class="remaining-steps">${unfinished.slice(1).map(c=>focusStep(c,sample)).join('')}</div>`:''}${completeSteps.length?`<details class="completed-steps"><summary>Completed · ${completeSteps.length}</summary>${completeSteps.map(c=>focusStep(c,sample)).join('')}</details>`:''}<div class="card-actions">${sample?`<button class="small ghost" data-sample-complete="${esc(t.id)}">${t.completed?'Reopen plan':'Complete plan'}</button>`:`<button class="small ghost" data-edit="${esc(t.id)}">Edit plan</button><button class="small ghost" data-toggle="${esc(t.id)}">Complete plan</button>`}</div></details></article>`;
 }
-const sampleStepNames=[['Read the assignment brief','Collect references','Write the outline','Review the outline'],['Sketch the layout','Refine the priority cards','Check the mobile layout'],['Walk around the neighborhood']];
-const sampleSteps=sampleFocus.flatMap((t,i)=>sampleStepNames[i].map((title,j)=>({id:`${t.id}-step-${j}`,parent_task_id:t.id,title,position:j,status:j<t.done?'completed':'pending'})));
+const sampleStepNames=[['Read the assignment brief','Collect references','Write the outline','Review the outline'],['Sketch the layout','Refine the priority cards','Check the mobile layout'],['Walk around the neighborhood'],['Choose a corner to refresh','Measure the space','Pick a paint color'],['Check the balcony light','Choose a few plants'],['Gather photos into one folder','Choose favorites']];
+const sampleSteps=samplePlans.flatMap((t,i)=>sampleStepNames[i].map((title,j)=>({id:`${t.id}-step-${j}`,parent_task_id:t.id,title,position:j,status:j<t.done?'completed':'pending'})));
+function hasNextAction(task,tasks=state.tasks){if(task.status==='completed'||task.completed)return false;const steps=leafSteps(task.id,tasks);return !steps.length||steps.some(t=>t.status!=='completed');}
 function renderOverview(){
+ stopBubbleWorld();
  $('#draft-label').hidden=!samplePreview;$('#preview-toggle').textContent=samplePreview?'Back to my workspace':'Preview sample day';$('#preview-toggle').setAttribute('aria-pressed',String(samplePreview));
- const roots=state.tasks.filter(t=>!t.parent_task_id),active=roots.filter(t=>t.status!=='completed').sort((a,b)=>(b.importance_score??-1)-(a.importance_score??-1));
- const focus=samplePreview?sampleFocus.map((t,i)=>overviewFocus({...t,status:t.completed?'completed':'pending'},i,sampleSteps,true)).join(''):active.slice(0,3).map((t,i)=>overviewFocus(t,i)).join('');
- const allPlans=!samplePreview&&roots.length?`<details class="all-plans"><summary>All saved plans · ${roots.length}</summary>${roots.map(taskRow).join('')}</details>`:'';
- const goals=samplePreview?sampleGoals.map(g=>`<div class="goal-item"><span class="goal-symbol" aria-hidden="true">${g.symbol}</span><div><div class="goal-title">${esc(g.title)}</div><div class="goal-note">${esc(g.note)}</div></div></div>`).join(''):`<div class="quiet-empty"><span class="goal-symbol" aria-hidden="true">↗</span><strong>What are you working toward?</strong><p>Your bigger goals will live here.</p><span class="panel-foot">Goal data isn’t connected in this draft.</span></div>`;
- $('#canvas').innerHTML=`<div class="overview-grid"><section class="overview-panel" aria-labelledby="focus-title"><div class="panel-top"><div><p class="panel-kicker">Make room for these</p><h2 id="focus-title">Your top 3</h2></div><span class="panel-icon" aria-hidden="true">◎</span></div><div class="focus-list">${focus||`<div class="quiet-empty"><strong>${roots.length?'A little breathing room.':'One thing at a time.'}</strong><p>${roots.length?'All your saved plans are complete.':'Tell Muse what needs doing to find your first priorities.'}</p><button class="chat-entry" type="button" data-open-muse>Talk to Muse ↗</button></div>`}</div>${allPlans}<p class="panel-foot">${samplePreview?'Sample priorities · try checking one off':active.length?'Ranked by importance':''}</p></section><section class="overview-panel direction-panel" aria-labelledby="direction-title"><div class="panel-top"><div><p class="panel-kicker">The bigger picture</p><h2 id="direction-title">Long-term focus</h2></div><span class="panel-icon" aria-hidden="true">↗</span></div>${goals}${samplePreview?'<p class="direction-caption">A direction to grow in. No deadline needed.</p>':''}</section><section class="overview-panel progress-panel" aria-labelledby="progress-title"><div class="panel-top"><div><p class="panel-kicker">Small steps add up</p><h2 id="progress-title">Your progress</h2></div><div class="month-control"><button type="button" data-month="-1" aria-label="Previous month">‹</button><strong>${calendarMonth.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</strong><button type="button" data-month="1" aria-label="Next month">›</button></div></div><div class="progress-layout"><div>${renderCalendar()}<div class="calendar-legend"><span>Less</span><i class="legend-swatch"></i><i class="legend-swatch mid"></i><i class="legend-swatch full"></i><span>More completed</span><span class="calendar-note">${samplePreview?'Sample completion history':'Completion history not connected'}</span></div></div><aside class="day-detail" aria-label="Selected day">${renderDayDetail()}</aside></div></section></div>`;
+ const roots=state.tasks.filter(t=>!t.parent_task_id),active=roots.filter(t=>hasNextAction(t)).sort((a,b)=>(b.importance_score??-1)-(a.importance_score??-1));
+ const sampleActive=samplePlans.filter(t=>hasNextAction(t,sampleSteps)).sort((a,b)=>Object.keys(labels).indexOf(level(b))-Object.keys(labels).indexOf(level(a)));
+ const focus=samplePreview?sampleActive.slice(0,3).map((t,i)=>overviewFocus({...t,status:t.completed?'completed':'pending'},i,sampleSteps,true)).join(''):active.slice(0,3).map((t,i)=>overviewFocus(t,i)).join('');
+ const boardPlans=samplePreview?sampleActive:active;
+ if(!boardPlans.some(t=>t.id===selectedBubble))selectedBubble=null;
+ const archive=!samplePreview&&roots.some(t=>!hasNextAction(t))?`<details class="all-plans"><summary>Completed work</summary>${roots.filter(t=>!hasNextAction(t)).map(taskRow).join('')}</details>`:'';
+
+ const directions=renderDirections(boardPlans);
+ $('#canvas').innerHTML=`<div class="overview-grid"><section class="overview-panel" aria-labelledby="focus-title"><div class="panel-top"><div><p class="panel-kicker">Make room for these</p><h2 id="focus-title" class="sr-only">Current priorities</h2></div><span class="panel-icon" aria-hidden="true">◎</span></div><div class="focus-list">${focus||`<div class="quiet-empty"><strong>${roots.length?'A little breathing room.':'One thing at a time.'}</strong><p>${roots.length?'No unfinished actions in your saved plans.':'Tell Muse what needs doing to find your first priorities.'}</p><button class="chat-entry" type="button" data-open-muse>Talk to Muse ↗</button></div>`}</div>${samplePreview?'<p class="panel-foot">Sample priorities · try checking one off</p>':''}</section><section class="overview-panel direction-panel" aria-labelledby="direction-title"><div class="panel-top"><div><p class="panel-kicker">No deadline</p><h2 id="direction-title">Long-term focus</h2></div><span class="panel-icon" aria-hidden="true">↗</span></div>${directions}</section><section class="overview-panel backlog-panel" aria-labelledby="backlog-title"><div class="panel-top"><div><p class="panel-kicker">The whole picture</p><h2 id="backlog-title">Everything to do</h2></div><span class="bubble-hint">Drag to move · bigger means more important</span></div><span id="bubble-move-help" class="sr-only">Drag to move, or use arrow keys when focused. Press Enter to open task details.</span><div class="bubble-field" role="group" aria-label="Tasks by importance">${boardPlans.map(backlogBubble).join('')||'<p class="muted">Nothing waiting. Add a task with Muse when you’re ready.</p>'}</div>${renderBubbleDetails(boardPlans,samplePreview?sampleSteps:state.tasks,samplePreview)}${archive}</section></div>`;
+ layoutBubbles();
+ if(selectedBubble&&selectedBubble!==lastRevealedBubble)revealBubbleDetails();
+ lastRevealedBubble=selectedBubble;
 }
-function renderCalendar(){
- const year=calendarMonth.getFullYear(),month=calendarMonth.getMonth(),offset=(calendarMonth.getDay()+6)%7,days=new Date(year,month+1,0).getDate();
- let cells='<div class="calendar-blank" aria-hidden="true"></div>'.repeat(offset);
- for(let day=1;day<=days;day++){
-  const date=new Date(year,month,day),key=localDay(date),items=samplePreview?(sampleHistory[key]||[]):[],today=key===localDay(overviewToday),future=date>overviewToday;
-  const description=samplePreview?`${items.length} completed`:'completion history unavailable';
-  cells+=`<button type="button" class="calendar-day ${today?'is-today':''} ${key===selectedDay?'is-selected':''} ${future?'is-future':''}" data-day="${key}" data-count="${Math.min(items.length,3)}" aria-label="${date.toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric'})}, ${description}" aria-pressed="${key===selectedDay}" ${today?'aria-current="date"':''}>${day}<span class="day-dots" aria-hidden="true">${'•'.repeat(Math.min(items.length,3))}</span></button>`;
+// Seeded placement gives the backlog an irregular shape without changing on reload.
+function bubbleSeed(id){let seed=2166136261;for(const char of String(id))seed=Math.imul(seed^char.charCodeAt(0),16777619);return seed>>>0;}
+function scatterBubbles(items,width){
+ const inset=12,gap=20,available=Math.max(1,width-inset*2);
+ const circles=items.map(item=>({...item,r:Math.min(item.size,available)/2})).sort((a,b)=>b.r-a.r||bubbleSeed(a.id)-bubbleSeed(b.id));
+ let height=Math.max(280,circles.reduce((sum,c)=>sum+Math.PI*(c.r+gap/2)**2,0)/(Math.max(width,1)*.44));
+ const placed=[];
+ for(const circle of circles){
+  let seed=bubbleSeed(circle.id),found=false;
+  const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+  while(!found){
+   for(let attempt=0;attempt<240;attempt++){
+    const x=inset+circle.r+random()*Math.max(0,width-2*(inset+circle.r));
+    const y=inset+circle.r+random()*Math.max(0,height-2*(inset+circle.r));
+    if(placed.every(other=>Math.hypot(x-other.x,y-other.y)>=circle.r+other.r+gap)){
+     placed.push({...circle,x,y});found=true;break;
+    }
+   }
+   if(!found)height+=Math.max(60,circle.r);
+  }
  }
- return `<div class="calendar-week" aria-hidden="true">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>`<span>${d}</span>`).join('')}</div><div class="calendar-grid" role="group" aria-label="Completion calendar">${cells}</div>`;
+ return {circles:placed,height:Math.ceil(Math.max(280,...placed.map(c=>c.y+c.r+inset)))};
 }
-function renderDayDetail(){
- const date=new Date(selectedDay+'T00:00:00'),title=selectedDay===localDay(overviewToday)?'Today':date.toLocaleDateString(undefined,{month:'short',day:'numeric'}),items=samplePreview?(sampleHistory[selectedDay]||[]):[];
- return `<h3>${title}</h3>${samplePreview?`<div class="day-total">${items.length}<small>completed</small></div>${items.length?`<ul class="completed-list">${items.map(t=>`<li><span aria-hidden="true">✓</span>${esc(t)}</li>`).join('')}</ul>`:'<p class="muted">No sample completions.</p>'}`:'<p class="muted">Completed work will appear here once history is connected.</p>'}`;
+function layoutBubbles(){
+ stopBubbleWorld();
+ const field=$('#canvas').querySelector('.bubble-field');if(!field||!field.clientWidth)return;
+ const buttons=[...field.querySelectorAll('[data-bubble]')];if(!buttons.length){field.style.height='auto';return;}
+ const scale=window.matchMedia('(max-width:650px)').matches ? 0.82 : 1;
+ const items=buttons.map(button=>({id:button.dataset.bubble,size:parseFloat(getComputedStyle(button).getPropertyValue('--bubble-size'))*scale}));
+ const layout=scatterBubbles(items,field.clientWidth),positions=new Map(layout.circles.map(c=>[c.id,c]));
+ field.style.height=layout.height+'px';
+ buttons.forEach(button=>{const c=positions.get(button.dataset.bubble);Object.assign(button.style,{left:(c.x-c.r)+'px',top:(c.y-c.r)+'px',width:(c.r*2)+'px',height:(c.r*2)+'px'});});
+ startBubbleWorld(field,layout,buttons);
+}
+// Small, local physics controller. Moving a bubble changes presentation only.
+let bubbleWorld=null;
+const bubblePositions=new Map();
+function clampBubble(body,world){
+ const inset=12;
+ if(body.x<body.r+inset){body.x=body.r+inset;body.vx=Math.abs(body.vx)*.45;}
+ if(body.x>world.width-body.r-inset){body.x=world.width-body.r-inset;body.vx=-Math.abs(body.vx)*.45;}
+ if(body.y<body.r+inset){body.y=body.r+inset;body.vy=Math.abs(body.vy)*.45;}
+ if(body.y>world.height-body.r-inset){body.y=world.height-body.r-inset;body.vy=-Math.abs(body.vy)*.45;}
+}
+function advanceBubbleWorld(world,dt=1,reduced=false){
+ const held=world.drag?.body;
+ for(const body of world.bodies){
+  if(body!==held){body.x+=reduced?0:body.vx*dt;body.y+=reduced?0:body.vy*dt;body.vx*=Math.pow(.91,dt);body.vy*=Math.pow(.91,dt);}
+  clampBubble(body,world);
+ }
+ let displacement=0;
+ for(let pass=0;pass<5;pass++){
+  for(let i=0;i<world.bodies.length;i++)for(let j=i+1;j<world.bodies.length;j++){
+   const a=world.bodies[i],b=world.bodies[j],dx=b.x-a.x,dy=b.y-a.y,distance=Math.hypot(dx,dy),overlap=a.r+b.r+12-distance;
+   if(overlap<=0)continue;
+   const nx=distance>.001?dx/distance:1,ny=distance>.001?dy/distance:0,ia=a===held?0:1/(a.r*a.r),ib=b===held?0:1/(b.r*b.r),sum=ia+ib;
+   if(!sum)continue;
+   a.x-=nx*overlap*ia/sum;a.y-=ny*overlap*ia/sum;b.x+=nx*overlap*ib/sum;b.y+=ny*overlap*ib/sum;
+   const speed=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;
+   if(speed<0&&!reduced){const impulse=-1.45*speed/sum;a.vx-=impulse*nx*ia;a.vy-=impulse*ny*ia;b.vx+=impulse*nx*ib;b.vy+=impulse*ny*ib;}
+   displacement=Math.max(displacement,overlap);clampBubble(a,world);clampBubble(b,world);
+  }
+ }
+ for(const body of world.bodies){if(reduced)body.vx=body.vy=0;else{body.vx=Math.max(-16,Math.min(16,body.vx));body.vy=Math.max(-16,Math.min(16,body.vy));}}
+ return displacement>.15||world.bodies.some(b=>Math.hypot(b.vx,b.vy)>.06);
+}
+function paintBubbleWorld(world){
+ for(const body of world.bodies){body.button.style.left=(body.x-body.r)+'px';body.button.style.top=(body.y-body.r)+'px';bubblePositions.set(world.scope+body.id,{x:body.x/world.width,y:body.y/world.height});}
+}
+function stopBubbleWorld(){
+ const world=bubbleWorld;if(!world)return;world.disposed=true;cancelAnimationFrame(world.frame);
+ if(world.drag){const {button,pointerId}=world.drag;world.drag=null;button.classList.remove('is-dragging');if(button.hasPointerCapture?.(pointerId))button.releasePointerCapture(pointerId);}
+ bubbleWorld=null;
+}
+function wakeBubbleWorld(world){
+ if(world.disposed||world.frame)return;
+ if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){advanceBubbleWorld(world,1,true);paintBubbleWorld(world);return;}
+ world.lastTime=0;world.idle=0;
+ const tick=time=>{
+  world.frame=null;if(world.disposed||document.hidden)return;
+  const dt=world.lastTime?Math.min(2,Math.max(.25,(time-world.lastTime)/16.667)):1;world.lastTime=time;
+  const moving=advanceBubbleWorld(world,dt);paintBubbleWorld(world);
+  world.idle=moving||world.drag?0:world.idle+1;
+  if(world.idle<8)world.frame=requestAnimationFrame(tick);
+ };
+ world.frame=requestAnimationFrame(tick);
+}
+function startBubbleWorld(field,layout,buttons){
+ stopBubbleWorld();
+ const scope=samplePreview?'sample:':'live:',byId=new Map(buttons.map(button=>[button.dataset.bubble,button]));
+ const world={field,width:field.clientWidth,height:layout.height,scope,bodies:layout.circles.map(c=>{const cached=bubblePositions.get(scope+c.id);return {...c,x:cached?cached.x*field.clientWidth:c.x,y:cached?cached.y*layout.height:c.y,vx:0,vy:0,button:byId.get(c.id)};}),frame:null,drag:null,disposed:false};
+ bubbleWorld=world;
+ world.bodies.forEach(body=>clampBubble(body,world));advanceBubbleWorld(world,1,true);paintBubbleWorld(world);
+ const bodyFor=event=>{const button=event.target.closest('[data-bubble]');return world.bodies.find(body=>body.button===button);};
+ const reduced=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ field.addEventListener('pointerdown',event=>{
+  if(world.disposed||world.drag||busy||completionAnimating||event.button!==0||event.isPrimary===false)return;
+  const body=bodyFor(event);if(!body)return;
+  const rect=field.getBoundingClientRect();body.vx=body.vy=0;
+  world.drag={body,button:body.button,pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,offsetX:body.x-(event.clientX-rect.left),offsetY:body.y-(event.clientY-rect.top),lastTime:performance.now(),moved:false};
+  body.button.setPointerCapture(event.pointerId);
+ });
+ field.addEventListener('pointermove',event=>{
+  const drag=world.drag;if(world.disposed||!drag||event.pointerId!==drag.pointerId)return;
+  if(!drag.moved&&Math.hypot(event.clientX-drag.startX,event.clientY-drag.startY)<5)return;
+  event.preventDefault();drag.moved=true;drag.button.classList.add('is-dragging');
+  const rect=field.getBoundingClientRect(),time=performance.now(),elapsed=Math.max(8,time-drag.lastTime),body=drag.body;
+  const x=event.clientX-rect.left+drag.offsetX,y=event.clientY-rect.top+drag.offsetY;
+  body.vx=Math.max(-16,Math.min(16,(x-body.x)*16.667/elapsed));body.vy=Math.max(-16,Math.min(16,(y-body.y)*16.667/elapsed));body.x=x;body.y=y;drag.lastTime=time;
+  clampBubble(body,world);paintBubbleWorld(world);wakeBubbleWorld(world);
+ });
+ const release=(event,canceled=false)=>{
+  const drag=world.drag;if(!drag||event.pointerId!==drag.pointerId)return;
+  world.drag=null;drag.button.classList.remove('is-dragging');
+  if(drag.moved){world.suppressClick={id:drag.body.id,until:performance.now()+500};if(canceled||reduced()||performance.now()-drag.lastTime>90)drag.body.vx=drag.body.vy=0;wakeBubbleWorld(world);}
+  if(drag.button.hasPointerCapture(event.pointerId))drag.button.releasePointerCapture(event.pointerId);
+ };
+ field.addEventListener('pointerup',event=>release(event));
+ field.addEventListener('pointercancel',event=>release(event,true));
+ field.addEventListener('lostpointercapture',event=>release(event,true));
+ field.addEventListener('click',event=>{const body=bodyFor(event);if(event.detail!==0&&body&&world.suppressClick?.id===body.id&&performance.now()<world.suppressClick.until){event.preventDefault();event.stopPropagation();world.suppressClick=null;}},true);
+ field.addEventListener('keydown',event=>{
+  const direction={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[event.key],body=bodyFor(event);
+  if(!direction||!body||busy||completionAnimating)return;
+  event.preventDefault();body.x+=direction[0]*24;body.y+=direction[1]*24;body.vx=direction[0]*2;body.vy=direction[1]*2;clampBubble(body,world);wakeBubbleWorld(world);
+ });
+ // Resolve resized/restored layouts, then stop requesting frames once still.
+ wakeBubbleWorld(world);
+}
+
+function renderDirections(plans){
+ const undated=plans.filter(task=>!task.deadline);
+ const item=task=>`<button type="button" class="goal-item" data-open-direction="${esc(task.id)}"><span class="goal-symbol" aria-hidden="true">↗</span><span class="goal-title">${esc(task.title)}</span></button>`;
+ return undated.length?undated.slice(0,3).map(item).join('')+(undated.length>3?`<details class="direction-more"><summary>${undated.length-3} more</summary>${undated.slice(3).map(item).join('')}</details>`:''):'<div class="quiet-empty"><strong>No open-ended tasks yet.</strong><p>Tasks without a deadline appear here.</p></div>';
+}
+function backlogBubble(task){
+ const importance=level(task);
+ return `<button type="button" class="task-bubble ${esc(importance||'unassessed')}" data-bubble="${esc(task.id)}" aria-expanded="${task.id===selectedBubble}" aria-controls="bubble-details" aria-describedby="bubble-move-help" aria-label="${esc(task.title)} · ${esc(labels[importance]||'Unassessed')} importance" title="${esc(task.title)}"><span class="bubble-title">${esc(task.title)}</span></button>`;
+}
+function renderBubbleDetails(plans,tasks=state.tasks,sample=false){
+ const task=plans.find(t=>t.id===selectedBubble);if(!task)return '<div id="bubble-details" hidden></div>';
+ const steps=leafSteps(task.id,tasks),unfinished=steps.filter(t=>t.status!=='completed');
+ return `<section id="bubble-details" class="bubble-detail" data-backlog-id="${esc(task.id)}" aria-labelledby="bubble-detail-title"><div class="row between"><h3 id="bubble-detail-title">${esc(task.title)}</h3><button class="bubble-close" data-close-bubble type="button" aria-label="Close task details">×</button></div><div class="focus-meta"><span>${esc(labels[level(task)]||'Unassessed')} importance</span>${steps.length?`<span>${steps.length-unfinished.length}/${steps.length} steps</span>`:''}${task.deadline?`<span>Due ${esc(task.deadline)}</span>`:''}</div><div class="backlog-details">${unfinished.length?'<p class="next-label">Next steps</p>':''}${unfinished.map(t=>focusStep(t,sample)).join('')}${task.description?`<details class="step-notes plan-notes"><summary>Notes</summary><p>${esc(task.description)}</p></details>`:''}<div class="card-actions">${sample?`<button class="small ghost" data-sample-complete="${esc(task.id)}">Complete plan</button>`:`<button class="small ghost" data-edit="${esc(task.id)}">Edit plan</button><button class="small ghost" data-toggle="${esc(task.id)}">Complete plan</button>`}</div></div></section>`;
+}
+// Animate native disclosures without replacing their keyboard or form behavior.
+const disclosureMotion=new WeakMap();
+function animateDisclosure(details){
+ const previous=disclosureMotion.get(details),open=previous?!previous.open:!details.open,start=details.getBoundingClientRect().height;
+ const overflow=previous?.overflow??details.style.overflow;
+ previous?.animation.cancel();
+ if(!motionAllowed()||!details.animate){details.open=open;details.style.overflow=overflow;disclosureMotion.delete(details);return;}
+ details.open=open;const end=details.getBoundingClientRect().height;
+ details.open=true;details.style.overflow='hidden';
+ const animation=details.animate([{height:start+'px'},{height:end+'px'}],{duration:230,easing:'cubic-bezier(.2,.8,.2,1)'});
+ const transition={open,overflow,animation};disclosureMotion.set(details,transition);
+ const finish=()=>{if(disclosureMotion.get(details)!==transition)return;details.open=open;details.style.overflow=overflow;disclosureMotion.delete(details);};
+ animation.finished.then(finish,finish);
+}
+function revealBubbleDetails(){
+ const panel=$('#bubble-details');if(!panel||panel.hidden||!motionAllowed()||!panel.animate)return;
+ const height=panel.getBoundingClientRect().height,overflow=panel.style.overflow;panel.style.overflow='hidden';
+ const animation=panel.animate([{height:'0px',opacity:0,transform:'translateY(-6px)'},{height:height+'px',opacity:1,transform:'translateY(0)'}],{duration:260,easing:'cubic-bezier(.2,.8,.2,1)'});
+ const finish=()=>{panel.style.overflow=overflow;};animation.finished.then(finish,finish);
+}
+
+// Completion motion uses confirmed live state, or explicitly labeled sample state.
+function completionTarget(id){
+ const canvas=$('#canvas'),rows=[...canvas.querySelectorAll('.next-steps [data-step-id],.backlog-details [data-step-id]')].filter(el=>el.dataset.stepId===id);
+ const row=rows.find(el=>el.contains(document.activeElement))||rows[0],cards=[...canvas.querySelectorAll('[data-plan-id],[data-backlog-id]')];
+ const card=row?.closest('[data-plan-id],[data-backlog-id]')||cards.find(el=>(el.dataset.planId||el.dataset.backlogId)===id&&el.contains(document.activeElement))||cards.find(el=>el.dataset.planId===id);
+ const board=!!card?.dataset.backlogId;
+ return card?{node:row||card,planId:card.dataset.planId||card.dataset.backlogId,rank:board?[...canvas.querySelectorAll('[data-backlog-id]')].indexOf(card):card.dataset.focusRank,board,open:card.open,hadFocus:card.contains(document.activeElement)}:null;
+}
+function motionAllowed(){return !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;}
+async function animateTaskExit(id){
+ const target=completionTarget(id);if(!target)return null;
+ if(!motionAllowed()||!target.node.animate)return target;
+ const row=target.node,check=row.querySelector('input.check'),sampleCheck=row.querySelector('.sample-check');
+ row.classList.add('is-finishing');if(check)check.checked=true;if(sampleCheck)sampleCheck.textContent='✓';
+ try{await row.animate([{opacity:1,transform:'translateY(0)'},{opacity:1,transform:'translateY(0)',offset:.45},{opacity:0,transform:'translateY(-8px)'}],{duration:360,easing:'ease-in'}).finished;}catch{/* A canceled animation must never prevent a saved update from rendering. */}
+ finally{row.classList.remove('is-finishing');}
+ return target;
+}
+function animateTaskEntry(transition){
+ if(!transition)return;
+ const cards=[...$('#canvas').querySelectorAll(transition.board?'[data-backlog-id]':'[data-plan-id]')],card=cards.find(el=>(el.dataset.planId||el.dataset.backlogId)===transition.planId)||(transition.board?cards[Number(transition.rank)]:cards.find(el=>el.dataset.focusRank===transition.rank))||cards.at(-1);
+ if(transition.board&&card&&transition.open)card.open=true;
+ const next=card?.querySelector(transition.board?'.backlog-details':'.next-steps');
+ if(next&&motionAllowed()&&next.animate)next.animate([{opacity:0,transform:'translateY(10px)'},{opacity:1,transform:'translateY(0)'}],{duration:260,easing:'ease-out'});
+ if(transition.hadFocus){const control=next?.querySelector('input,button')||card?.querySelector('summary')||(transition.board?$('#canvas').querySelector('[data-bubble]'):null);if(control)control.focus({preventScroll:true});else{const heading=$('#focus-title');heading?.setAttribute('tabindex','-1');heading?.focus({preventScroll:true});}}
+}
+async function completeSampleStep(task){
+ if(completionAnimating)return;completionAnimating=true;
+ try{
+  const completing=task.status!=='completed',transition=completing?await animateTaskExit(task.id):null;
+  task.status=completing?'completed':'pending';
+  renderOverview();animateTaskEntry(transition);
+ }finally{completionAnimating=false;}
 }
 function handleOverviewClick(e){
- const day=e.target.closest('[data-day]'),month=e.target.closest('[data-month]'),sample=e.target.closest('[data-sample-complete]'),step=e.target.closest('[data-sample-step]');
- if(day){selectedDay=day.dataset.day;renderOverview();$('#canvas').querySelector(`[data-day="${selectedDay}"]`)?.focus();return true;}
- if(month){const direction=Number(month.dataset.month);calendarMonth=new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()+direction,1);selectedDay=localDay(calendarMonth);renderOverview();$('#canvas').querySelector(`[data-month="${direction}"]`)?.focus();return true;}
- if(step&&samplePreview){const task=sampleSteps.find(t=>t.id===step.dataset.sampleStep);task.status=task.status==='completed'?'pending':'completed';const key=localDay(overviewToday);sampleHistory[key]=sampleHistory[key].filter(t=>t!==task.title);if(task.status==='completed')sampleHistory[key].push(task.title);renderOverview();return true;}
- if(sample&&samplePreview){const task=sampleFocus.find(t=>t.id===sample.dataset.sampleComplete);task.completed=!task.completed;const key=localDay(overviewToday);sampleHistory[key]=sampleHistory[key].filter(t=>t!==task.title);if(task.completed)sampleHistory[key].push(task.title);renderOverview();$('#canvas').querySelector(`[data-sample-complete="${task.id}"]`)?.focus();return true;}
+ if(completionAnimating)return true;
+ const direction=e.target.closest('[data-open-direction]');
+ if(direction){selectedBubble=direction.dataset.openDirection;renderOverview();const detail=$('#bubble-details');detail.setAttribute('tabindex','-1');detail.focus({preventScroll:true});detail.scrollIntoView({behavior:motionAllowed()?'smooth':'auto',block:'nearest'});return true;}
+ const bubble=e.target.closest('[data-bubble]'),close=e.target.closest('[data-close-bubble]');
+ if(bubble||close){const id=bubble?.dataset.bubble||selectedBubble;selectedBubble=close||selectedBubble===id?null:id;renderOverview();[...$('#canvas').querySelectorAll('[data-bubble]')].find(el=>el.dataset.bubble===id)?.focus({preventScroll:true});return true;}
+ const sample=e.target.closest('[data-sample-complete]'),step=e.target.closest('[data-sample-step]');
+ if(step&&samplePreview){const task=sampleSteps.find(t=>t.id===step.dataset.sampleStep);completeSampleStep(task).catch(error);return true;}
+ if(sample&&samplePreview){const task=samplePlans.find(t=>t.id===sample.dataset.sampleComplete);task.completed=!task.completed;renderOverview();return true;}
  return false;
 }
-$('#preview-toggle').onclick=()=>{samplePreview=!samplePreview;calendarMonth=new Date(overviewToday.getFullYear(),overviewToday.getMonth(),1);selectedDay=localDay(overviewToday);renderOverview();};
+$('#preview-toggle').onclick=()=>{if(completionAnimating)return;samplePreview=!samplePreview;selectedBubble=null;renderOverview();};
 
 function render(){
  $('#chat-welcome').hidden=state.messages.length>0;
@@ -323,7 +521,8 @@ $('#send').title='Send message (⌘ Enter)';$('#send').setAttribute('aria-keysho
 $('#reviews').oninput=e=>{const section=e.target.closest('[data-run]'),object=e.target.closest('[data-object]');if(!section||!object||!e.target.dataset.key)return;let item=drafts.get(section.dataset.run).tasks[+object.dataset.object];const child=e.target.closest('[data-child]');if(child)item=item.subtasks[+child.dataset.child];item[e.target.dataset.key]=e.target.dataset.key==='deadline'?(e.target.value||null):e.target.value;};
 $('#reviews').onclick=e=>{if(busy)return;const section=e.target.closest('[data-run]');if(!section)return;const id=section.dataset.run,p=drafts.get(id),object=e.target.closest('[data-object]');if(e.target.closest('[data-remove-task]')){p.tasks.splice(+object.dataset.object,1);render();}else if(e.target.closest('[data-remove-step]')){p.tasks[+object.dataset.object].subtasks.splice(+e.target.dataset.removeStep,1);render();}else if(e.target.closest('[data-save]')){if(!p.tasks.length||p.tasks.some(t=>!t.title.trim()||t.subtasks.some(c=>!c.title.trim()))){error(Error('Keep at least one task and give each task and step a title.'));return;}action(()=>api('/api/conversation/'+id+'/approve','POST',{proposal:p}),'Your reviewed plan is saved.');}else if(e.target.closest('[data-reject]'))action(()=>api('/api/runs/'+id+'/reject','POST'),'Proposal dismissed.');};
 function openEditor(id){const t=state.tasks.find(t=>t.id===id);editVersion=t.version;$('#edit-id').value=t.id;$('#edit-title').value=t.title;$('#edit-description').value=t.description;$('#edit-deadline').value=t.deadline||'';$('#edit-importance').value=t.user_importance_level||'';$('#edit-status').value=t.status;$('#edit-dialog').showModal();}
-function complete(id,value){const t=state.tasks.find(t=>t.id===id);action(()=>api('/api/tasks/'+id,'PATCH',{expected_version:t.version,status:value?'completed':'pending'}),'Task updated.');}
+function complete(id,value){if(busy)return;const t=state.tasks.find(t=>t.id===id);return action(async()=>{await api('/api/tasks/'+id,'PATCH',{expected_version:t.version,status:value?'completed':'pending'});refresh.completionId=value?id:null;},'Task updated.').finally(()=>{refresh.completionId=null;});}
+$('#canvas').addEventListener('click',event=>{const summary=event.target.closest('summary');if(summary?.parentElement?.tagName!=='DETAILS')return;event.preventDefault();animateDisclosure(summary.parentElement);},true);
 $('#canvas').onclick=e=>{if(handleOverviewClick(e)||samplePreview)return;if(busy)return;const edit=e.target.closest('[data-edit]'),toggle=e.target.closest('[data-toggle]');if(edit)openEditor(edit.dataset.edit);if(toggle)complete(toggle.dataset.toggle,state.tasks.find(t=>t.id===toggle.dataset.toggle).status!=='completed');};
 $('#canvas').onchange=e=>{if(samplePreview)return;const el=e.target.closest('[data-complete]');if(!el)return;const checked=el.checked;el.checked=!checked;complete(el.dataset.complete,checked);};
 $('#edit-form').onsubmit=e=>{e.preventDefault();action(async()=>{await api('/api/tasks/'+$('#edit-id').value,'PATCH',{expected_version:editVersion,title:$('#edit-title').value,description:$('#edit-description').value,deadline:$('#edit-deadline').value||null,user_importance_level:$('#edit-importance').value||null,status:$('#edit-status').value});$('#edit-dialog').close();},'Your correction is saved. Muse will use it next time.');};$('#close-edit').onclick=()=>$('#edit-dialog').close();
@@ -543,6 +742,10 @@ window.addEventListener('pageshow',()=>{registerWebMCP();});
 registerWebMCP();
 // End WebMCP.
 
+let bubbleResizeFrame=null;
+window.addEventListener('pagehide',stopBubbleWorld);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopBubbleWorld();else layoutBubbles();});
+window.addEventListener('resize',()=>{cancelAnimationFrame(bubbleResizeFrame);bubbleResizeFrame=requestAnimationFrame(layoutBubbles);});
 if(samplePreview)renderOverview();
 refresh().catch(error);
 window.addEventListener('pageshow',event=>{if(event.persisted)refresh().catch(error);});
