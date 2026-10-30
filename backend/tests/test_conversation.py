@@ -66,6 +66,92 @@ def test_conversation_review_correction_and_saved_reload(setup):
     assert approve(clients("bob"), run).status_code == 404
 
 
+def test_take_home_cards_survive_review_correction_and_return(setup, monkeypatch):
+    """Mock provider output verifies the real adapter and saved dashboard journey."""
+    import json
+
+    import httpx
+
+    from second_brain.config import Settings
+    from second_brain.muse import Muse
+
+    clients, muse, _ = setup
+    proposal = {
+        "reply": "Review the proposed take-home card and steps before saving.",
+        "tasks": [
+            {
+                "task_id": None,
+                "title": "Complete Duolingo take-home",
+                "description": "Read the supplied brief and prepare the submission.",
+                "deadline": None,
+                "importance_score": 70,
+                "subtasks": [
+                    {
+                        "title": "Read the assignment brief",
+                        "description": "List its required deliverables and constraints.",
+                        "importance_score": 70,
+                    },
+                    {
+                        "title": "Prepare the required submission",
+                        "description": "Follow the deliverables listed in the brief.",
+                        "importance_score": 70,
+                    },
+                ],
+            }
+        ],
+    }
+
+    def handler(request):
+        body = json.loads(request.content)
+        state = json.loads(body["messages"][1]["content"])["state"]
+        assert state["tasks"] == []
+        assert body["response_format"]["json_schema"]["name"] == "conversation_plan"
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "finish_reason": "stop",
+                        "message": {"content": json.dumps(proposal)},
+                    }
+                ]
+            },
+        )
+
+    original_client = httpx.Client
+    monkeypatch.setattr(
+        "second_brain.muse.httpx.Client",
+        lambda **kw: original_client(transport=httpx.MockTransport(handler), **kw),
+    )
+    muse.converse = Muse(
+        Settings(_env_file=None, meta_api_key="test-secret", vercel=None)
+    ).converse
+    client = clients()
+    run = converse(
+        client,
+        "Break my Duolingo take-home into bite-size steps: read the supplied brief "
+        "and prepare the required submission.",
+    ).json()
+    assert run["status"] == "awaiting_review"
+    assert run["proposal"] == proposal
+    assert client.get("/api/dashboard").json()["tasks"] == []
+    run["proposal"]["tasks"][0]["subtasks"][0]["title"] = "Read the brief I received"
+    assert approve(client, run, proposal=run["proposal"]).status_code == 200
+    saved = clients(cookies=client.cookies).get("/api/dashboard").json()
+    parent = next(t for t in saved["tasks"] if t["parent_task_id"] is None)
+    steps = sorted(
+        (t for t in saved["tasks"] if t["parent_task_id"] == parent["id"]),
+        key=lambda t: t["position"],
+    )
+    assert parent["title"] == "Complete Duolingo take-home"
+    assert [t["title"] for t in steps] == [
+        "Read the brief I received",
+        "Prepare the required submission",
+    ]
+    assert all(t["deadline"] is None for t in saved["tasks"])
+    assert all(t["status"] == "pending" for t in saved["tasks"])
+
+
 def test_follow_up_replaces_pending_proposal_but_failure_preserves_it(setup):
     clients, muse, _ = setup
     fixture(muse)

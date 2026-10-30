@@ -133,6 +133,21 @@ checkout. The conversation migration preserves task-planning history, permits a
 null `task_id` on runs, and adds validated request inputs for retries and inspection.
 Automatic onboarding extraction remains incomplete; individual sign-in is roadmap work.
 
+### Dashboard-focused model guidance
+
+The model instructions make task cards and bite-size steps the main planning
+output. Titles and descriptions should be useful with chat closed. Chat briefly
+explains the proposed cards and invites review instead of repeating the plan.
+Concrete commitments can produce a card with unknown details left unset; missing
+assignment requirements call for a focused question rather than invented steps.
+For a Duolingo take-home without a brief, the model should propose the take-home
+and reviewing its brief, then ask for assignment details before specific work.
+
+This is prompt tuning, not model weight fine-tuning. The provider, schemas, and
+review-before-save contract are unchanged. The automated take-home journey uses
+a mocked provider response through the real adapter to verify review, correction,
+and persistence; it does not measure live model adherence to these instructions.
+
 
 ## Shared browser session
 

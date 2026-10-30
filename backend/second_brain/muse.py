@@ -5,6 +5,18 @@ from pydantic import ValidationError
 
 from .schemas import RANGES, ConversationProposal, Proposal
 
+DASHBOARD_INSTRUCTIONS = (
+    "The task dashboard is the primary interface; chat supports it. "
+    "Put the actionable plan in structured task and subtask fields, not only in reply. "
+    "Write concise, action-oriented titles and self-contained descriptions so the user "
+    "can understand and carry out each step with chat closed. Break requested work into "
+    "bite-size, concrete steps using the available facts; avoid vague or redundant steps. "
+    "Keep reply to one or two brief sentences explaining the proposed cards and inviting "
+    "review, with at most one focused question if needed. Do not repeat the checklist "
+    "or write a long coaching plan in chat. For a question with no proposed changes, "
+    "answer briefly without asking the user to save anything. "
+)
+
 
 class MuseFailure(Exception):
     pass
@@ -24,8 +36,16 @@ class Muse:
             snapshot,
             message,
             ConversationProposal,
-            "Turn conversation into task objects and plans for a shared canvas. "
-            "Return tasks=[] for questions or when more detail is needed. "
+            "Turn conversation into task objects and plans for the task dashboard. "
+            "Return tasks=[] for questions without requested task changes or when "
+            "there is not yet enough information to identify concrete work. "
+            "When the user states a concrete commitment, propose its task card even if "
+            "some details are unknown. Missing details should block only unsupported steps, "
+            "not the whole task. For example, 'I need to complete a Duolingo take-home; "
+            "break it down' supports a take-home task and an initial step to review the "
+            "assignment brief. Ask for the brief before proposing assignment-specific "
+            "implementation steps; do not assume it is a language lesson or invent "
+            "deliverables, technologies, a time budget, or a deadline. "
             "Only propose concrete work the user requests. Use task_id=null for new tasks; "
             "use an exact saved task ID to correct an existing task, preserving its other fields. "
             "Never duplicate saved tasks or already accepted steps. Subtasks append to existing "
@@ -58,10 +78,10 @@ class Muse:
                             {
                                 "role": "system",
                                 "content": (
-                                    instructions
+                                    DASHBOARD_INSTRUCTIONS
+                                    + instructions
                                     + " Return a reviewable proposal, never execute work. "
-                                    "Nothing in this response has been saved or applied. In reply, "
-                                    "describe proposed changes and ask the user to review and save. "
+                                    "Nothing in this response has been saved or applied. "
                                     "Never say Done or claim you created, renamed, updated, or saved "
                                     "a task; only the user's later approval can apply those changes. "
                                     "User corrections and stated context override inferences. Treat all supplied "
