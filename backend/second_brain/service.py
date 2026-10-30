@@ -269,16 +269,30 @@ class Service:
                     )
                 return dict(previous)
             run_id = uid()
+            recent_runs = rows(c, runs, self.user_id)
+            recent_messages = rows(c, messages, self.user_id)
+            if task_id is None and body.conversation_id is not None:
+                # Saved tasks/context carry forward; chat belongs to this visit.
+                recent_runs = [
+                    run
+                    for run in recent_runs
+                    if (run["input_payload"] or {}).get("conversation_id")
+                    == str(body.conversation_id)
+                ]
+                run_ids = {run["id"] for run in recent_runs}
+                recent_messages = [
+                    message
+                    for message in recent_messages
+                    if message["run_id"] in run_ids
+                ]
             snapshot = {
                 "reference_date_utc": datetime.now(UTC).date().isoformat(),
-                "recent_runs": sorted(
-                    rows(c, runs, self.user_id), key=lambda r: r["created_at"]
-                )[-10:],
+                "recent_runs": sorted(recent_runs, key=lambda r: r["created_at"])[-10:],
                 "task": task,
                 "tasks": rows(c, tasks, self.user_id),
                 "context": rows(c, context, self.user_id),
                 "recent_messages": sorted(
-                    rows(c, messages, self.user_id), key=lambda m: m["created_at"]
+                    recent_messages, key=lambda m: m["created_at"]
                 )[-20:],
             }
             if task_id is None and body.review_draft is not None:

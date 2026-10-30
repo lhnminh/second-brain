@@ -34,9 +34,15 @@ Conversation builds the initial workspace. Once saved work exists, the canvas pr
 
 ## 2. Users and onboarding
 
-**Hackathon decision:** Use one anonymous workspace per browser profile and app origin; individual sign-in is on the roadmap. A persistent HttpOnly cookie identifies the workspace, and every record retains `user_id` for isolation. Tasks, context, conversation history, and agent runs are separate between browsers, even when they use the same demo access token. Reloads and backend restarts preserve access while the cookie remains. Sign-out ends demo access but keeps the workspace cookie.
+**Hackathon decision:** Use one anonymous workspace per browser profile and app origin; individual sign-in is on the roadmap. A persistent HttpOnly cookie identifies the workspace, and every record retains `user_id` for isolation. Tasks, context, diagnostic conversation history, and agent runs are separate between browsers, even when they use the same demo access token. Reloads and backend restarts preserve access while the cookie remains. Sign-out ends demo access but keeps the workspace cookie.
 
 The workspace cookie lasts one year, renewed on use. Clearing cookies, private browsing, another browser, or a different app origin starts a separate workspace. Account recovery and cross-device linking require future sign-in. Existing shared-demo records remain untouched and are not automatically assigned to a browser.
+
+**Chat lifecycle (October 30):** Each page load or demo login starts a fresh chat.
+Messages and run history from earlier chats are excluded from the visible chat
+and Muse's conversational context. Saved tasks and structured user context still
+carry forward. Prior records remain available in `/dev`, and pending proposals
+remain reviewable on the canvas; chat reset does not delete workspace data.
 
 ### Voice-first onboarding
 

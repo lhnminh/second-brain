@@ -52,7 +52,7 @@ function browser({supported=true,secure=true,permissionError=false,deferPermissi
  const sent=[],uploads=[],urls={revoked:[],createObjectURL:()=> 'blob:recorder',revokeObjectURL(url){this.revoked.push(url);}};
  const context=vm.createContext({$,window,navigator,document,AudioWorkletNode:Worklet,Blob,URL:urls,AbortController,TypeError,busy:false,
  setTimeout:fn=>{timers.set(++nextTimer,fn);return nextTimer;},clearTimeout:id=>timers.delete(id),
- state:{runs:[]},pending:null,drafts:new Map(),crypto:{randomUUID:()=> 'request-1'},structuredClone,
+ conversationId:'chat-1',chatRuns:()=>[],state:{runs:[]},pending:null,drafts:new Map(),crypto:{randomUUID:()=> 'request-1'},structuredClone,
  action:async fn=>fn(),api:async(path,method,body)=>{sent.push({path,body});return {status:'answered'};},refresh:async()=>{},error:e=>$('#error').textContent=e.message,
  fetch:async(path,options)=>{
   uploads.push({path,...options});

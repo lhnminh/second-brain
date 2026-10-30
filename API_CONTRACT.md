@@ -205,6 +205,13 @@ and retry rules as task planning. Optional `review_draft` carries a complete
 ID with a changed message or review draft returns 409. Every new run stores its
 validated `input_payload`; legacy runs leave that field null.
 
+Optional `conversation_id` (UUID) scopes recent messages and run states sent to
+Muse to that chat within the authenticated workspace. The dashboard generates it
+in memory on each page load or login and renders only messages linked to that
+chat's runs. Saved tasks/context and canvas reviews persist independently; the
+full dashboard snapshot remains available for diagnostics. Omitting the ID keeps
+legacy client behavior. Changing it when retrying a request returns 409.
+
 Muse receives owned tasks, structured context, recent messages and run states,
 a UTC reference date, and any review draft. Relative dates are model interpretations:
 the UI asks the user to confirm the proposed date before saving.

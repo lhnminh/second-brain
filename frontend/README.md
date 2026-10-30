@@ -27,7 +27,7 @@ backend reload, use `uv run uvicorn backend.app:app --reload --port 8000`.
    You can remove unwanted tasks or steps. Follow-up messages carry unsaved edits.
 4. Save the reviewed plan. Persisted task objects become cards on the canvas.
 5. Edit saved tasks, choose among five importance levels, or mark work complete.
-6. Return to saved tasks and conversation history. Demo login stays connected for
+6. Return to saved tasks with a fresh chat on each page load or login. Demo login stays connected for
    eight hours across both pages and reloads; Sign out ends access while retaining this browser’s workspace.
 
 Model proposals remain separate from saved work until accepted. Conversation

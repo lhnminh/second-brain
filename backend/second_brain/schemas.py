@@ -104,4 +104,5 @@ class ConversationApproval(Input):
 
 
 class ConversationRequest(PlanRequest):
+    conversation_id: UUID | None = None
     review_draft: ConversationProposal | None = None
