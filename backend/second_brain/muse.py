@@ -10,7 +10,23 @@ DASHBOARD_INSTRUCTIONS = (
     "Put the actionable plan in structured task and subtask fields, not only in reply. "
     "Write concise, action-oriented titles and self-contained descriptions so the user "
     "can understand and carry out each step with chat closed. Break requested work into "
-    "bite-size, concrete steps using the available facts; avoid vague or redundant steps. "
+    "concrete outcomes using the available facts; avoid vague or redundant steps. "
+    "Split work at useful handoffs, decisions, or independently reviewable results. "
+    "Keep low-level clicks and routine execution steps inside descriptions. "
+    "Classify every proposed task and subtask in handoff as part of creating the plan. "
+    "Set handler='muse' for work an agent could perform on a computer, or 'user' for "
+    "human judgment, personal choices, physical actions, or work that must be done by "
+    "the user based on their stated preferences. Split mixed work "
+    "into useful human and Muse outcomes. "
+    "For a parent containing human-only steps, classify the parent as user and "
+    "identify the individual Muse subtasks separately. "
+    "Include a concise reason, a list of required context, tools, access, or approvals, "
+    "and a concrete done_when result. "
+    "Do not assume credentials, access, tools, or a connected computer exist. Missing "
+    "context/access can be requirements for a Muse task; it does not make it human work. "
+    "Classification is suitability, not authorization or runtime readiness. Never "
+    "claim execution is available or started. Preserve saved handoff classifications "
+    "whose handoff_source is 'user'. Always include a non-null handoff object; "
     "Keep reply to one or two brief sentences explaining the proposed cards and inviting "
     "review, with at most one focused question if needed. Do not repeat the checklist "
     "or write a long coaching plan in chat. For a question with no proposed changes, "
@@ -64,6 +80,13 @@ class Muse:
         key = self.settings.meta_api_key
         if not key or not key.get_secret_value():
             raise MuseFailure("Muse API key is not configured")
+        output_schema = schema.model_json_schema()
+        # Old stored proposals remain readable, while new generations must include
+        # this field in the same structured response that creates the task/step.
+        for name in ("SuggestedTask", "ConversationTask"):
+            definition = output_schema.get("$defs", {}).get(name)
+            if definition is not None:
+                definition["required"] = [*definition["required"], "handoff"]
         # Direct Meta API call; no alternate provider or simulated fallback.
         try:
             with httpx.Client(
@@ -106,7 +129,7 @@ class Muse:
                                 if schema is Proposal
                                 else "conversation_plan",
                                 "strict": True,
-                                "schema": schema.model_json_schema(),
+                                "schema": output_schema,
                             },
                         },
                         "max_completion_tokens": 4096,
@@ -117,7 +140,15 @@ class Muse:
                 choice = response.json()["choices"][0]
                 if choice.get("finish_reason") != "stop":
                     raise MuseFailure("Muse did not return a complete proposal")
-                return schema.model_validate_json(choice["message"]["content"])
+                proposal = schema.model_validate_json(choice["message"]["content"])
+                items = (
+                    [item for task in proposal.tasks for item in (task, *task.subtasks)]
+                    if isinstance(proposal, ConversationProposal)
+                    else proposal.subtasks
+                )
+                if any(item.handoff is None for item in items):
+                    raise MuseFailure("Muse omitted a task's handoff classification")
+                return proposal
         except (
             httpx.HTTPError,
             ValueError,

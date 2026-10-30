@@ -24,7 +24,15 @@ def test_upgrade_preserves_existing_tasks_and_reviewable_plans(tmp_path, monkeyp
     task = task_values("alice", {"title": "Saved before migration"})
     run_id = str(uuid4())
     with engine.begin() as c:
-        c.execute(insert(tasks).values(**task))
+        c.execute(
+            insert(tasks).values(
+                **{
+                    key: value
+                    for key, value in task.items()
+                    if key not in {"handoff", "handoff_source"}
+                }
+            )
+        )
         c.execute(
             insert(runs).values(
                 id=run_id,

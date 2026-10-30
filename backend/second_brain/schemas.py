@@ -26,12 +26,22 @@ class SessionCreate(Input):
     token: Annotated[SecretStr, Field(min_length=1, max_length=4096)]
 
 
+class Handoff(Input):
+    handler: Literal["muse", "user"]
+    reason: Annotated[str, Field(min_length=1, max_length=1000)]
+    requirements: Annotated[
+        list[Annotated[str, Field(min_length=1, max_length=500)]], Field(max_length=10)
+    ]
+    done_when: Annotated[str, Field(min_length=1, max_length=2000)]
+
+
 class TaskCreate(Input):
     title: Title
     description: Text = ""
     deadline: date | None = None
     parent_task_id: UUID | None = None
     user_importance_level: Importance | None = None
+    handoff: Handoff | None = None
 
 
 class TaskEdit(Input):
@@ -41,6 +51,7 @@ class TaskEdit(Input):
     deadline: date | None = None
     user_importance_level: Importance | None = None
     status: Status | None = None
+    handoff: Handoff | None = None
 
     @model_validator(mode="after")
     def required_fields_not_null(self):
@@ -71,6 +82,8 @@ class SuggestedTask(Input):
     title: Title
     description: Text
     importance_score: Score
+    # Null supports old saved proposals. New model output must classify every step.
+    handoff: Handoff | None = None
 
 
 class Proposal(Input):
@@ -92,6 +105,7 @@ class ConversationTask(Input):
     deadline: date | None
     importance_score: Score
     subtasks: Annotated[list[SuggestedTask], Field(max_length=20)]
+    handoff: Handoff | None = None
 
 
 class ConversationProposal(Input):

@@ -5,7 +5,7 @@ from sqlalchemy import func, insert, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
-from .db import accounts, context, events, messages, now, runs, tasks, uid
+from .db import accounts, context, drafts, events, messages, now, runs, tasks, uid
 from .muse import MuseFailure
 from .schemas import RANGES, ConversationProposal, Proposal
 
@@ -48,7 +48,7 @@ def audit(connection, user_id, kind, entity_id, details):
     )
 
 
-def lock_account(connection, user_id):
+def lock_account(connection, user_id, *, read_revision=True):
     # A write serializes this user's mutations on both Postgres and SQLite.
     dialect_insert = sqlite_insert if connection.dialect.name == "sqlite" else pg_insert
     connection.execute(
@@ -61,9 +61,10 @@ def lock_account(connection, user_id):
         .where(accounts.c.user_id == user_id)
         .values(revision=accounts.c.revision)
     )
-    return connection.scalar(
-        select(accounts.c.revision).where(accounts.c.user_id == user_id)
-    )
+    if read_revision:
+        return connection.scalar(
+            select(accounts.c.revision).where(accounts.c.user_id == user_id)
+        )
 
 
 def bump(connection, user_id):
@@ -83,7 +84,7 @@ def check_score(proposal, task):
             )
 
 
-def task_values(user_id, data, position=0, score=None):
+def task_values(user_id, data, position=0, score=None, handoff_source=None):
     return {
         "id": uid(),
         "user_id": user_id,
@@ -94,6 +95,12 @@ def task_values(user_id, data, position=0, score=None):
         "importance_score": score,
         "user_importance_level": data.get("user_importance_level"),
         "status": "pending",
+        "handoff": data.get("handoff"),
+        "handoff_source": (
+            (handoff_source or "user")
+            if data.get("handoff") is not None or handoff_source == "user"
+            else None
+        ),
         "position": position,
         "version": 1,
         "created_at": now(),
@@ -116,11 +123,12 @@ class Service:
                         c,
                         run["id"],
                         "failed",
-                        error="Planning interrupted; retry with a new request_id",
+                        error="Agent request interrupted; retry with a new request_id",
                     )
             data = {"user_id": self.user_id}
             for key, table in (
                 ("tasks", tasks),
+                ("drafts", drafts),
                 ("context", context),
                 ("runs", runs),
                 ("messages", messages),
@@ -157,13 +165,16 @@ class Service:
 
     def edit_task(self, task_id, body):
         with self.engine.begin() as c:
-            lock_account(c, self.user_id)
+            lock_account(c, self.user_id, read_revision=False)
             task = owned(c, tasks, task_id, self.user_id)
             if task["version"] != body.expected_version:
                 raise HTTPException(409, "Task changed; reload before editing")
             changes = body.model_dump(
                 mode="json", exclude_unset=True, exclude={"expected_version"}
             )
+            if "handoff" in changes:
+                # Clearing an assessment is also an intentional user correction.
+                changes["handoff_source"] = "user"
             if (
                 "user_importance_level" in changes
                 and changes["user_importance_level"] is not None
@@ -187,7 +198,9 @@ class Service:
                 task_id,
                 {"before": task, "changes": changes},
             )
-            return owned(c, tasks, task_id, self.user_id)
+            # All changed values are explicit and the owner lock still serializes
+            # edits. Return the saved row without another remote database read.
+            return {**task, **changes}
 
     def save_context(self, context_id, body):
         with self.engine.begin() as c:
@@ -239,7 +252,13 @@ class Service:
             .where(runs.c.id == run_id, runs.c.user_id == self.user_id)
             .values(status=status, updated_at=now(), **changes)
         )
-        audit(c, self.user_id, f"planning.{status}", run_id, changes)
+        run = owned(c, runs, run_id, self.user_id)
+        kind = (
+            "draft"
+            if (run["input_payload"] or {}).get("operation") == "draft"
+            else "planning"
+        )
+        audit(c, self.user_id, f"{kind}.{status}", run_id, changes)
 
     def plan(self, task_id, body):
         with self.engine.begin() as c:
@@ -271,6 +290,14 @@ class Service:
             run_id = uid()
             recent_runs = rows(c, runs, self.user_id)
             recent_messages = rows(c, messages, self.user_id)
+            if task_id is None:
+                recent_runs = [
+                    run
+                    for run in recent_runs
+                    if (run["input_payload"] or {}).get("operation") != "draft"
+                ]
+                run_ids = {run["id"] for run in recent_runs}
+                recent_messages = [m for m in recent_messages if m["run_id"] in run_ids]
             if task_id is None and body.conversation_id is not None:
                 # Saved tasks/context carry forward; chat belongs to this visit.
                 recent_runs = [
@@ -338,7 +365,9 @@ class Service:
                 proposal = ConversationProposal.model_validate(
                     self.muse.converse(snapshot, body.message)
                 )
-                self._check_conversation(proposal, snapshot["tasks"])
+                self._check_conversation(
+                    proposal, snapshot["tasks"], protect_handoff=True
+                )
             error = None
         except MuseFailure, ValueError:
             proposal, error = (
@@ -413,7 +442,12 @@ class Service:
                     self._check_conversation(proposal, rows(c, tasks, self.user_id))
                 except ValueError as exc:
                     raise HTTPException(422, str(exc)) from None
-                self._apply_conversation(c, run_id, proposal)
+                self._apply_conversation(
+                    c,
+                    run_id,
+                    proposal,
+                    ConversationProposal.model_validate(run["proposal"]),
+                )
                 bump(c, self.user_id)
                 self._finish(
                     c, run_id, "applied", proposal=proposal.model_dump(mode="json")
@@ -435,12 +469,19 @@ class Service:
                     )
                 )
                 child_ids = []
+                original = Proposal.model_validate(run["proposal"])
                 for index, child in enumerate(proposal.subtasks):
                     values = task_values(
                         self.user_id,
                         {**child.model_dump(), "parent_task_id": task["id"]},
                         position + index,
                         child.importance_score,
+                        handoff_source=(
+                            "model"
+                            if index < len(original.subtasks)
+                            and child.handoff == original.subtasks[index].handoff
+                            else "user"
+                        ),
                     )
                     c.execute(insert(tasks).values(**values))
                     audit(
@@ -487,7 +528,7 @@ class Service:
             raise HTTPException(409, "Your state changed; request a fresh plan")
         return result
 
-    def _check_conversation(self, proposal, saved_tasks):
+    def _check_conversation(self, proposal, saved_tasks, protect_handoff=False):
         saved = {t["id"]: t for t in saved_tasks}
         seen = set()
         for item in proposal.tasks:
@@ -499,12 +540,33 @@ class Service:
                     )
                 seen.add(task_id)
                 check_score(item, saved[task_id])
+                if protect_handoff and saved[task_id].get("handoff_source") == "user":
+                    value = item.handoff.model_dump() if item.handoff else None
+                    if value != saved[task_id].get("handoff"):
+                        raise ValueError("Preserve the user's handoff classification")
 
-    def _apply_conversation(self, c, run_id, proposal):
-        for item in proposal.tasks:
+    def _apply_conversation(self, c, run_id, proposal, original):
+        for index, item in enumerate(proposal.tasks):
             data = item.model_dump(mode="json", exclude={"task_id", "subtasks"})
+            baseline = original.tasks[index] if index < len(original.tasks) else None
+            source = (
+                "model" if baseline and item.handoff == baseline.handoff else "user"
+            )
             if item.task_id:
                 task = owned(c, tasks, str(item.task_id), self.user_id)
+                # Old pending proposals cannot erase newer classification data.
+                if item.handoff is None and (
+                    baseline is None or baseline.handoff is None
+                ):
+                    data.pop("handoff", None)
+                elif item.handoff is None:
+                    data["handoff_source"] = "user"
+                else:
+                    data["handoff_source"] = (
+                        task["handoff_source"]
+                        if data["handoff"] == task["handoff"]
+                        else source
+                    )
                 changes = {**data, "version": task["version"] + 1, "updated_at": now()}
                 c.execute(
                     update(tasks)
@@ -520,17 +582,22 @@ class Service:
                 )
             else:
                 task = self._insert_conversation_task(
-                    c, data, run_id, item.importance_score
+                    c, data, run_id, item.importance_score, source
                 )
-            for child in item.subtasks:
+            for child_index, child in enumerate(item.subtasks):
                 self._insert_conversation_task(
                     c,
                     {**child.model_dump(mode="json"), "parent_task_id": task["id"]},
                     run_id,
                     child.importance_score,
+                    "model"
+                    if baseline
+                    and child_index < len(baseline.subtasks)
+                    and child.handoff == baseline.subtasks[child_index].handoff
+                    else "user",
                 )
 
-    def _insert_conversation_task(self, c, data, run_id, score):
+    def _insert_conversation_task(self, c, data, run_id, score, handoff_source="model"):
         position = c.scalar(
             select(func.count())
             .select_from(tasks)
@@ -539,7 +606,7 @@ class Service:
                 tasks.c.parent_task_id == data.get("parent_task_id"),
             )
         )
-        record = task_values(self.user_id, data, position, score)
+        record = task_values(self.user_id, data, position, score, handoff_source)
         c.execute(insert(tasks).values(**record))
         audit(
             c,

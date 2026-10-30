@@ -171,3 +171,28 @@ isolation across tasks/context/messages/runs/events, foreign-record rejection,
 saved-state return through a fresh app instance, sign-out/reconnect, access expiry,
 token rotation, workspace/session mismatch, and clearing cookies. Ruff lint/format
 and Git whitespace checks passed. These checks do not verify hosted Neon/Vercel.
+
+## Computer handoff setup
+
+The dashboard exposes **Hand off to Muse**. No machine/worker is connected yet;
+the button currently displays a disconnected message without sending a request
+or changing work state. The earlier text-drafting endpoints have been removed.
+The already-applied `753bc02ac941` migration, draft table, and historical records
+are retained to preserve saved data and migration compatibility.
+
+The next layer needs a connected computer, an authenticated worker, and verified
+screenshot/input controls. A local or remote machine has not been configured.
+
+### Classified task plans
+
+Apply migration `ae73dc160b52` using the normal Alembic upgrade command. It adds
+two nullable fields on tasks: structured `handoff` and its `handoff_source`.
+No existing task is reclassified. The existing Meta structured-output request
+requires a handler, reason, requirements, and a completion result for each new
+task/subtask. Invalid or missing classification fails without changing work.
+
+Reviewed classifications persist with their task. Direct corrections and
+review-edited classifications are marked `user`, are version-checked/audited,
+and cannot be overwritten by later model suggestions. This adds planning data
+and conditional handoff UI, not machine execution. Legacy draft records and
+previously saved proposals are retained.

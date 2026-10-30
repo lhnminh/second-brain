@@ -1,8 +1,8 @@
 # Visual Second Brain — Product Spec
 
 **Status:** MVP product scope defined; technical integration and implementation details open  
-**Version:** 0.15
-**Date:** October 27, 2026\
+**Version:** 0.18
+**Date:** October 30, 2026\
 **Format:** Hosted web application  
 **Working name:** Visual Second Brain
 
@@ -294,3 +294,49 @@ shared demo owner. A persistent browser cookie selects isolated saved state;
 the eight-hour demo access session is separately bound to that workspace.
 No schema migration or automatic transfer of legacy shared data is performed.
 Individual sign-in, account recovery, and cross-device linking remain roadmap work.
+
+## Task assistance direction (October 30)
+
+**Confirmed direction:** The dashboard makes pending work, available agent help,
+and work needing human attention visible. Break tasks around clear outcomes,
+useful handoffs, decisions, and independently reviewable results. The agent can
+help the user get started and take delegated work on a connected computer.
+
+**User correction:** Task interaction should offer a single **Hand off to Muse**
+button. The intended flow hands the selected task to Muse working on a dedicated
+machine. A separate text-drafting mode, artifact editor, and draft-save workflow
+are not the desired task experience and have been removed.
+
+Chat remains available for planning and clarification. In the future execution
+flow, Muse may use chat to ask for missing information before proceeding. The
+runtime and machine connection for that flow remain to be implemented.
+
+**Current implementation:** Tasks and subtasks are classified during planning as
+work Muse or the user can handle, including a reason, requirements, and a
+concrete completion result. The review and task editors support corrections.
+Only unfinished work classified for Muse shows **Hand off to Muse**; human work
+shows **For you**, and old unclassified tasks show **Not assessed**. The sample
+day contains explicit fixture classifications. No computer is connected. Clicking displays a clear
+“No computer connected” setup message and leaves the task and chat unchanged.
+It makes no model/API call, queues no work, and creates no execution run.
+
+**Data preservation:** The draft-storage migration was already applied to the
+configured database. Its table and historical draft records are retained; no
+schema downgrade or data deletion is performed. The text-drafting generation
+and save endpoints have been removed. Legacy records remain diagnostic history.
+
+**Execution demo direction:** A spare computer should be operable by Muse and
+the user, with visible progress, pause, human takeover, and resume. macOS or
+Windows remains a setup choice. The local worker, machine connection, execution,
+and screen viewer are not yet implemented. Only actual accepted worker activity
+may change a task's execution status.
+
+
+**Classification contract:** `handoff` is structured task data containing
+`handler` (`muse` or `user`), `reason`, `requirements`, and `done_when`.
+The model produces it in the same response as the task breakdown. Classification
+is reviewed before applying and remains independent of runtime readiness and
+permission. User corrections are version-checked, audited, and preserved in
+subsequent model interactions. Existing tasks and old pending proposals remain
+unassessed unless reviewed updates or direct user edits classify them.
+Migration `ae73dc160b52` adds nullable task fields without reclassifying data.

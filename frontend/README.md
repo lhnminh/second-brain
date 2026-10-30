@@ -314,3 +314,77 @@ running disclosure transition; reduced motion skips these effects. Existing
 native disclosure/keyboard controls remain in use. All 8 existing checks pass;
 a temporary animation harness verified expand/collapse, rapid reversal, style
 cleanup, reduced motion, and bubble-detail reveal.
+
+## Hand off to Muse (October 30, 2026)
+
+Pending tasks and steps classified for Muse offer one **Hand off to Muse** button, including in
+**Preview sample day**. The intended destination is a computer controlled by
+Muse. A machine has not been connected yet, so clicking the button displays:
+“No computer connected. Connect a computer to let Muse work on [task]. Nothing
+has been started.” The message receives focus and is scrolled into view.
+
+This setup state makes no network or model calls, creates no run, and does not
+change task status or chat contents. Completed work has no handoff button.
+The earlier drafting controls, task-drafting chat mode, and draft editor have
+been removed. The existing planning conversation and voice input remain.
+
+To check the interaction, choose **Preview sample day**, click a task's
+**Hand off to Muse** button, and verify the disconnected message and unchanged
+task. The same behavior applies to saved tasks. A real machine handoff cannot
+be tested until the computer/worker is connected.
+
+The already-applied draft-storage migration and any saved data are retained.
+Apply normal migrations on a new checkout; no downgrade is needed.
+
+### Handoff classification
+
+The planning response now classifies tasks and steps as part of creating them.
+Review **Muse can handle this**, **For you**, or **Not assessed**, expanding the
+assessment to edit its handler, reason, requirements, and “Done when” result.
+Once saved, the task editor supports the same corrections. Only work classified
+for Muse offers **Hand off to Muse**. Computer connectivity remains a separate
+setup state; no execution is performed.
+
+The sample day includes fixture classifications: dashboard work and gathering
+references can be handed off; walking, measuring a room, and personal choices
+need you. Parent plans containing human work stay with you while individual
+Muse steps offer handoff. Sample interactions never write to the backend.
+
+Existing saved tasks initially show **Not assessed**. Edit an assessment directly
+or ask general chat to assess saved tasks and review the proposed updates. Apply
+migration `ae73dc160b52` before running the updated backend. User corrections
+persist across visits and take precedence over later model suggestions.
+
+
+Verification: 113 automated checks pass, including classification persistence,
+review/direct corrections, invalid-output rejection, user isolation, legacy
+migration/proposal compatibility, and conditional handoff rendering. A real Meta
+request with synthetic workshop tasks produced both Muse and human subtasks;
+a saved correction survived a fresh app instance with tasks still pending.
+Migration `ae73dc160b52` was applied to the configured database after explicit
+user approval, and the running localhost app serves the updated controls/API.
+Existing task records remain readable. Browser visual QA remains pending.
+
+### Workspace completion feedback (October 30)
+
+Live task completion now checks the box immediately and shows **Saving…** while
+the PATCH is pending. The saved task returned by the backend updates local task
+state; the next action appears after confirmation and the existing completion
+animation. Failure restores the prior checkbox and shows an error. Uncertain
+network results require refreshing before retrying; no automatic retry is made.
+Undo uses the same version-checked path. Task status is not changed locally until
+the server confirms it, and access expiry never restores cleared private state.
+
+Completion no longer performs the follow-up dashboard, importance-level, and
+health requests, or rerenders chat/proposal editors. This reduces the normal
+completion path from four HTTP requests to one. Backend task edits retain their
+owner lock, version check, workspace revision bump, and audit event while using
+six SQL statements instead of eight. These are request/query-count reductions,
+not measured remote latency claims. Sample completion remains local.
+
+Verification uses isolated SQLite plus a simulated browser controller with
+deferred responses. It checks immediate feedback before confirmation, saved
+versions, undo, network failure, version conflicts, unexpected responses, access
+expiry, and preservation of chat. The user owns the running terminal; no server
+was started or restarted for these checks. Reload the page, and restart the
+backend from that terminal if it is not running with automatic reload.

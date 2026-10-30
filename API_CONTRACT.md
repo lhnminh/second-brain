@@ -327,3 +327,91 @@ shortened before Send. Unsupported/insecure browsers retain text entry.
 
 Verified API references: [Meta speech-to-text guide](https://dev.meta.ai/docs/speech-to-text)
 and [official file-transcription client](https://github.com/meta-models/meta-model-cookbook/blob/main/06_muse_voice/01_voice_api_fundamentals/utils.py).
+
+## Hand off to Muse (October 30)
+
+Pending tasks and steps classified for Muse expose one **Hand off to Muse** action. This is the entry
+point for future work on a connected computer. No computer or worker is connected
+yet. Clicking the button displays “No computer connected” and leaves task state
+unchanged. It does not make an API/model request, queue work, or create a run.
+The sample day exposes the same button and the same disconnected state.
+
+The earlier task-drafting interface and draft-generation/save endpoints have
+been removed following the user's correction. General chat continues to handle
+planning, clarification, and reviewed task updates through existing endpoints.
+
+Migration `753bc02ac941` remains in the schema history because it was already
+applied. Its `task_drafts` table and any saved drafts are retained; no downgrade
+or data deletion is performed. Dashboard `drafts` records and historical draft
+runs remain available for diagnostics. Their presence does not mean a computer
+handoff occurred. Old task-drafting messages are excluded from general chat.
+
+Future integration must authenticate the machine/worker, transfer the selected
+task context, and report actual execution status. A task must not appear running
+until a real worker has accepted it. Computer connection, execution, screen
+viewing, pause/resume, and human takeover are still unimplemented.
+
+## Classify handoffs while creating tasks (October 30)
+
+Migration `ae73dc160b52` adds nullable `tasks.handoff` (JSON) and
+`tasks.handoff_source` (string). Existing tasks remain unassessed; no data is
+backfilled, executed, or assigned automatically.
+
+Every new Meta-generated task and subtask includes:
+
+```json
+{
+  "handoff": {
+    "handler": "muse",
+    "reason": "Computer work that produces a reviewable document.",
+    "requirements": ["Project notes", "Document editor access"],
+    "done_when": "An agenda draft is ready for review."
+  }
+}
+```
+
+`handler` is `muse` or `user`. This is a suitability recommendation, independent
+of task status, machine connectivity, access, or authorization. Mixed work should
+be split at useful human/agent handoffs. Missing context/tools/access are explicit
+requirements rather than proof the task must be done by a human. Required
+human choices and physical work should remain human tasks.
+
+`reason` is 1–1,000 characters; `done_when` is 1–2,000 characters; `requirements`
+is an explicit list of zero to ten nonempty strings, each at most 500 characters.
+The model adapter requires non-null classification on all generated objects in
+the same structured response that creates them. Missing, invalid, or incomplete
+output fails without mutating tasks. Old stored proposals may omit the field and
+remain reviewable; their tasks are unassessed.
+
+Conversation approval persists the reviewed classifications on tasks/children.
+Task-specific plan approval persists them on its new subtasks. An unchanged
+model recommendation uses `handoff_source: model`; a classification edited in
+review uses `user`. Direct task create/edit can also provide `handoff`, using
+`user` provenance. PATCH uses the existing `expected_version` guard, audit
+history, and owner checks. Null explicitly clears an assessment on direct edit.
+Unrelated edits do not change classification provenance. New model suggestions
+cannot override an existing classification with `handoff_source: user`.
+
+The proposal review and direct task editor let the user inspect/correct handler,
+reason, requirements, and completion criteria. The canvas shows **Hand off to
+Muse** only for unfinished tasks with `handoff.handler: muse`. Human tasks show
+**For you**; null/missing classifications show **Not assessed**. Requirements and
+completion criteria are available under Handoff details. The click handler also
+checks saved eligibility, so a human/unassessed task cannot be handed off through
+a stale or manually triggered button. No worker is connected: eligible handoffs
+still show the disconnected message and make no model/execution request.
+
+The sample day has explicit fixture classifications, illustrating Muse work,
+human work, and mixed plans. These examples do not represent a live classifier
+run. General chat can propose classifications for saved, unassessed tasks via
+normal reviewed conversation updates; old data is never silently reclassified.
+
+### Completion response usage
+
+PATCH `/api/tasks/{id}` returns the complete saved task after the transaction
+commits. The canvas uses this response to update just that task and render the
+next action without a full dashboard refresh. A **Saving…** indicator separates
+immediate checkbox feedback from confirmed persistence. Conflict/failure does
+not advance task state. The endpoint retains ownership, optimistic version
+checks, account locking, workspace revision updates, and auditing; avoiding an
+unused account-revision read and a second task read removes two SQL round trips.

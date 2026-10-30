@@ -100,6 +100,14 @@ def test_take_home_cards_survive_review_correction_and_return(setup, monkeypatch
             }
         ],
     }
+    for item in proposal["tasks"]:
+        for step in (item, *item["subtasks"]):
+            step["handoff"] = {
+                "handler": "user",
+                "reason": "The user will prepare and review this submission.",
+                "requirements": ["Assignment brief"],
+                "done_when": "The required work has been prepared and checked.",
+            }
 
     def handler(request):
         body = json.loads(request.content)

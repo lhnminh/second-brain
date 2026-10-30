@@ -45,6 +45,8 @@ tasks = Table(
     Column("importance_score", Integer),
     Column("user_importance_level", String(20)),
     Column("status", String(20), nullable=False),
+    Column("handoff", JSON),
+    Column("handoff_source", String(20)),
     Column("position", Integer, nullable=False),
     Column("version", Integer, nullable=False),
     Column("created_at", String(40), nullable=False),
@@ -86,6 +88,18 @@ context = Table(
     Column("source", String(50), nullable=False),
     Column("version", Integer, nullable=False),
     Column("updated_at", String(40), nullable=False),
+)
+drafts = Table(
+    "task_drafts",
+    metadata,
+    Column("id", String(36), primary_key=True),
+    Column("user_id", String(100), nullable=False, index=True),
+    Column("title", String(300), nullable=False),
+    Column("content", String(20000), nullable=False),
+    Column("version", Integer, nullable=False),
+    Column("created_at", String(40), nullable=False),
+    Column("updated_at", String(40), nullable=False),
+    ForeignKeyConstraint(["user_id", "id"], ["tasks.user_id", "tasks.id"]),
 )
 runs = Table(
     "runs",

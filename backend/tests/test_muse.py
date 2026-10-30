@@ -149,3 +149,74 @@ def test_conversation_uses_structured_objects(monkeypatch):
         )
 
     assert configure(monkeypatch, handler).converse({}, "Homework").tasks == []
+
+
+@pytest.mark.parametrize("kind", ["plan", "conversation"])
+@pytest.mark.parametrize("classified", [True, False])
+def test_classification_is_part_of_the_structured_generation(
+    monkeypatch, kind, classified
+):
+    handoff = {
+        "handler": "muse",
+        "reason": "Computer work",
+        "requirements": ["Notes"],
+        "done_when": "An outline is ready",
+    }
+    child = {
+        "title": "Draft an outline",
+        "description": "Use the notes",
+        "importance_score": 60,
+    }
+    if classified:
+        child["handoff"] = handoff
+    result = (
+        {"reply": "Review", "importance_score": 60, "subtasks": [child]}
+        if kind == "plan"
+        else {
+            "reply": "Review",
+            "tasks": [
+                {
+                    "task_id": None,
+                    "title": "Prepare proposal",
+                    "description": "Use the notes",
+                    "deadline": None,
+                    "importance_score": 60,
+                    "handoff": handoff,
+                    "subtasks": [child],
+                }
+            ],
+        }
+    )
+
+    def handler(request):
+        body = json.loads(request.content)
+        assert (
+            "handoff"
+            in body["response_format"]["json_schema"]["schema"]["$defs"][
+                "SuggestedTask"
+            ]["required"]
+        )
+        assert (
+            "Classify every proposed task and subtask" in body["messages"][0]["content"]
+        )
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "finish_reason": "stop",
+                        "message": {"content": json.dumps(result)},
+                    }
+                ]
+            },
+        )
+
+    muse = configure(monkeypatch, handler)
+    call = muse.plan if kind == "plan" else muse.converse
+    if classified:
+        response = call({}, "Plan it")
+        steps = response.subtasks if kind == "plan" else response.tasks[0].subtasks
+        assert steps[0].handoff.handler == "muse"
+    else:
+        with pytest.raises(MuseFailure):
+            call({}, "Plan it")
