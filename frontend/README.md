@@ -213,3 +213,49 @@ browser and network interfaces. They cover discovery/registration, unsupported
 browsers, input validation, authenticated read options, access/network errors,
 cancellation, preservation of drafts and edits, and navigation cleanup. They do
 not verify native WebMCP discovery in Chrome or a deployed browser-agent journey.
+
+## Three-panel dashboard draft (October 30, 2026)
+
+The main workspace now shows **Your top 3**, **Long-term focus**, and a monthly
+**Your progress** calendar. Live priorities show up to three incomplete top-level
+plans, ordered by the existing importance score. Each priority shows up to three
+unfinished leaf steps immediately, in saved plan order, with completion controls
+and clickable titles for editing. Expand for remaining steps and plan controls;
+completed steps and notes have separate disclosures. Plans without subtasks show
+the task itself as the action. Completing steps does not complete the parent. **All saved plans** includes every plan,
+including completed ones. Muse and proposal review keep their existing flows.
+
+Choose **Preview sample day**, or open `http://localhost:8000/?draft=1`, to see the
+populated visual direction. A visible **Design draft · sample data** label marks
+this mode. Sample completion controls update only the in-memory sample calendar;
+month arrows and day selection are interactive. Reload resets sample changes.
+**Back to my workspace** returns to the real task view. Sample data never enters
+API state, proposal review, or Muse context. Chat, if opened, still uses the real
+workspace and existing backend; sample mode does not simulate Muse.
+
+Long-term goals and completion history are layout placeholders in the live view.
+Their API mapping and history semantics remain open; the interface does not
+invent goals or treat task modification dates as completion dates. The live
+calendar explicitly marks history as unavailable. No backend/API changes or
+frontend dependencies were added.
+
+Verification: existing frontend, voice, chat lifecycle, and WebMCP checks passed
+(8 tests). An additional temporary Node harness exercised the shipped overview
+functions with DOM doubles: sample completion/reopening without changing API
+state, month navigation, sample/live switching, empty states, importance ordering,
+and title escaping. These are simulated DOM checks. Desktop/mobile visual review
+is left to the user; browser automation was unavailable during this pass. No live
+model calls were made for this draft.
+
+
+The October 30 refinement uses the full available desktop width with small side
+margins and removes the large introductory headline. Expanded saved plans use
+compact checklists instead of repeating descriptions, importance badges, and Edit
+buttons on every row. Child groups and notes are collapsible. Sample priorities
+use the same action-first renderer, including in-memory step completion.
+
+Verification for this refinement: the same 8 existing tests pass. The temporary
+Node harness additionally checked nested Duolingo-style steps, saved ordering,
+visible completion/edit targets, hiding completed steps, advancing the next
+visible step after completion, and keeping sample step changes separate from live
+state. Visual review is delegated to the user at their request.
