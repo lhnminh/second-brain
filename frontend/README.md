@@ -1,5 +1,24 @@
 # Conversation canvas and development workspace
 
+### Visual direction (October 31)
+
+The dashboard uses a warm paper background, dark ink, a lime workspace summary,
+and peach, yellow, sage, teal, and lavender task bubbles. Priority titles are
+25–34px on desktop and 28px on narrow screens; bubble titles are 18–29px on
+desktop. System fonts and Georgia keep the design independent of external assets.
+Repeated section captions and chat instructions are removed. Each priority still
+shows its next action, with remaining steps, notes, and task controls expandable.
+“The big picture” summarizes open tasks, the nearest unfinished deadline, and
+step progress from saved records. Plans with every step checked off remain open
+until explicitly completed. Empty and fully completed workspaces have distinct
+summaries. This uses no model call; importance levels, saved state, and the API
+are unchanged.
+
+Browser review used the isolated sample day in the existing local app: completion
+advanced the next action and progress, and selecting a bubble opened its details.
+Sample actions do not change saved tasks. Mobile styling is implemented but has
+not been visually checked on a narrow viewport.
+
 The workspace lives in `dashboard.py` and the developer console in `dev.py`,
 following the repository's `.py` source convention. FastAPI serves the canvas at `/` and development tools at
 `/dev`. Both call the same-origin API; no frontend framework or build is needed.
