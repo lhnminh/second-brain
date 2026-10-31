@@ -192,7 +192,7 @@ h1{font-size:36px}
 .panel-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:var(--soft);font-size:21px;color:var(--green)}
 .focus-list{display:grid;gap:12px}.focus-item{padding:18px;background:#f5f5ef;border:1px solid transparent;border-radius:14px;min-width:0}.focus-item:first-child{background:#ecf1df;border-color:#dce5c9}
 .focus-context{display:flex;align-items:center;gap:10px;margin-bottom:12px;min-width:0}.focus-rank{font-size:10px;color:var(--muted)}.focus-plan{font-size:15px;font-weight:600;line-height:1.45;color:var(--ink);flex:1;min-width:0;overflow-wrap:anywhere}.focus-plan button{font:inherit;color:inherit;text-align:left;padding:0;border:0;background:none}.focus-plan button:hover{text-decoration:underline;background:none}.next-action-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}.focus-item.is-single .step-title{font-size:15px;font-weight:600}.focus-item:not(.is-single)>.next-steps .step-title{font-size:13px}.focus-fraction{font-size:10px;color:var(--muted);white-space:nowrap}.focus-context progress{width:52px;flex:none}
-.next-steps{display:grid;gap:10px}.step-line{display:flex;align-items:flex-start;gap:10px;min-width:0}.step-title{flex:1;min-width:0;text-align:left;padding:0;border:0;background:none;font-size:14px;font-weight:500;line-height:1.6;overflow-wrap:anywhere}.step-title:hover{background:none;text-decoration:underline}.step-title.done{text-decoration:line-through;color:var(--muted)}.step-line.is-finishing .step-title{text-decoration:line-through;color:var(--green)}.step-line.is-finishing{background:#e0edcf;border-radius:6px}.next-steps{min-height:24px}.step-line .check{margin-top:4px;width:17px;height:17px}.step-state{font-size:10px;color:var(--muted);white-space:nowrap;padding-top:4px}.steps-finished{font-size:12px;color:var(--muted)}.sample-check{padding:0;width:18px;flex:none;border:0;background:transparent;font-size:19px;line-height:23px;font-weight:400}
+.next-steps{display:grid;gap:10px}.step-line{display:flex;align-items:flex-start;gap:10px;min-width:0}.step-title{flex:1;min-width:0;text-align:left;padding:0;border:0;background:none;font-size:14px;font-weight:500;line-height:1.6;overflow-wrap:anywhere}.step-title:hover{background:none;text-decoration:underline}.step-title.done{text-decoration:line-through;color:var(--muted)}.next-steps{min-height:24px}.step-line .check{margin-top:4px;width:17px;height:17px}.step-state{font-size:10px;color:var(--muted);white-space:nowrap;padding-top:4px}.steps-finished{font-size:12px;color:var(--muted)}.sample-check{padding:0;width:18px;flex:none;border:0;background:transparent;font-size:19px;line-height:23px;font-weight:400}
 .focus-details{margin-top:14px;border-top:1px solid #dce2d1;padding-top:10px}.focus-details>summary,.completed-steps>summary{cursor:pointer;font-size:11px;color:var(--muted);list-style:none}.focus-details>summary::after{content:' ＋';float:right}.focus-details[open]>summary::after{content:' −'}.focus-details summary::-webkit-details-marker{display:none}.plan-info{margin-top:12px}.plan-info p{font-size:12px;color:var(--muted);margin-top:10px;white-space:pre-wrap;overflow-wrap:anywhere;max-width:65ch}.focus-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:10px;color:var(--muted)}.focus-details .card-actions{margin-top:12px;padding-top:10px;gap:8px}.focus-details .step-title{font-size:12px}.remaining-steps{display:grid;gap:10px;margin-top:14px}.completed-steps{margin-top:14px}.completed-steps .step-line{margin-top:10px}
 .plan-notes{margin:10px 0 0}.plan-step{padding:12px 0;border-bottom:1px solid var(--line)}.plan-step:last-child{border-bottom:0}.step-notes,.step-children{margin:6px 0 0 27px;font-size:11px;color:var(--muted)}.step-notes summary,.step-children summary{cursor:pointer}.step-notes p{margin:8px 0;white-space:pre-wrap;overflow-wrap:anywhere}.step-children .plan-step{padding:10px 0}.all-plans>.plan-step{padding:14px 0}
 .panel-foot{margin-top:20px;font-size:11px;color:var(--muted)}.all-plans{margin-top:18px}.all-plans>summary{font-size:12px;cursor:pointer;color:var(--green)}.all-plans .task{padding:12px 0}.quiet-empty{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-height:222px;gap:12px;color:var(--muted)}.quiet-empty strong{font-size:17px;font-weight:500;color:var(--ink)}.quiet-empty p{font-size:12px;max-width:260px}.quiet-empty .chat-entry{margin-top:0}
@@ -202,6 +202,9 @@ h1{font-size:36px}
 @media(max-width:650px){.overview-grid{grid-template-columns:1fr}.backlog-panel{grid-column:auto}.overview-toolbar{align-items:flex-start;gap:8px;flex-wrap:wrap}.panel-top{flex-wrap:wrap}.goal-title{font-size:16px}.bubble-field{min-height:280px}.task-bubble{width:calc(var(--bubble-size)*.82);height:calc(var(--bubble-size)*.82);padding:16px}.task-bubble.very_high .bubble-title{font-size:17px}.task-bubble.high .bubble-title{font-size:15px}.bubble-title{font-size:12px}.task-bubble.very_low .bubble-title{font-size:11px}.bubble-detail{padding:18px}}
 
 .handoff-fields{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:10px}.handoff-fields .field:last-child{margin-bottom:0}.handoff-fields textarea{min-height:55px;font-size:12px}.handoff-details{font-size:11px;color:var(--muted);max-width:56ch}.handoff-details summary{cursor:pointer}.handoff-details p{margin:7px 0;white-space:pre-wrap;overflow-wrap:anywhere}.step-line.is-saving::after{content:"Saving…";font-size:10px;color:var(--muted);padding-top:4px;white-space:nowrap}.agent-actions{flex-wrap:wrap;align-items:center;display:flex;gap:8px;margin-top:8px}.agent-actions button{font-size:11px;padding:6px 10px}.card-actions .agent-actions{margin:0 auto 0 0}
+/* Give immediate completion feedback while the save runs. */
+.step-line.is-saving .step-title:disabled,.step-line.is-finishing .step-title:disabled{opacity:1}
+.is-finishing .step-title{text-decoration:line-through;color:var(--green)}
 </style></head><body>
 <header class="topbar row between"><div class="row"><span class="brand-mark" aria-hidden="true">✳</span><span class="brand">Visual Second Brain</span></div><nav class="row"><button id="refresh" class="small ghost">Refresh</button><a href="/dev">Dev ↗</a><button id="signout" class="small ghost" hidden>Sign out</button></nav></header>
 <main><div id="error" class="error" role="alert" hidden></div><div id="notice" class="notice" role="status" aria-live="polite" tabindex="-1"></div>
@@ -461,7 +464,7 @@ function revealBubbleDetails(){
  const finish=()=>{panel.style.overflow=overflow;};animation.finished.then(finish,finish);
 }
 
-// Completion motion uses confirmed live state, or explicitly labeled sample state.
+// Completion feedback starts on click; failed saves restore the previous task.
 function completionTarget(id){
  const canvas=$('#canvas'),rows=[...canvas.querySelectorAll('.next-steps [data-step-id],.backlog-details [data-step-id]')].filter(el=>el.dataset.stepId===id);
  const row=rows.find(el=>el.contains(document.activeElement))||rows[0],cards=[...canvas.querySelectorAll('[data-plan-id],[data-backlog-id]')];
@@ -470,27 +473,28 @@ function completionTarget(id){
  return card?{node:row||card,planId:card.dataset.planId||card.dataset.backlogId,rank:board?[...canvas.querySelectorAll('[data-backlog-id]')].indexOf(card):card.dataset.focusRank,board,open:card.open,hadFocus:card.contains(document.activeElement)}:null;
 }
 function motionAllowed(){return !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;}
-async function animateTaskExit(id){
- const target=completionTarget(id);if(!target)return null;
- if(!motionAllowed()||!target.node.animate)return target;
- const row=target.node,check=row.querySelector('input.check'),sampleCheck=row.querySelector('.sample-check');
- row.classList.add('is-finishing');if(check)check.checked=true;if(sampleCheck)sampleCheck.textContent='✓';
- try{await row.animate([{opacity:1,transform:'translateY(0)'},{opacity:1,transform:'translateY(0)',offset:.45},{opacity:0,transform:'translateY(-8px)'}],{duration:360,easing:'ease-in'}).finished;}catch{/* A canceled animation must never prevent a saved update from rendering. */}
+async function animateTaskExit(target){
+ if(!target)return;
+ const row=target.node;row.classList.add('is-finishing');
+ const check=row.querySelector('.sample-check');if(check)check.textContent='✓';
+ try{
+  if(motionAllowed()&&row.animate)await row.animate([{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(-4px)'}],{delay:120,duration:380,easing:'ease-in-out',fill:'backwards'}).finished;
+ }catch{/* Canceled motion must not interrupt saving or rollback. */}
  finally{row.classList.remove('is-finishing');}
- return target;
 }
 function animateTaskEntry(transition){
  if(!transition)return;
  const cards=[...$('#canvas').querySelectorAll(transition.board?'[data-backlog-id]':'[data-plan-id]')],card=cards.find(el=>(el.dataset.planId||el.dataset.backlogId)===transition.planId)||(transition.board?cards[Number(transition.rank)]:cards.find(el=>el.dataset.focusRank===transition.rank))||cards.at(-1);
  if(transition.board&&card&&transition.open)card.open=true;
  const next=card?.querySelector(transition.board?'.backlog-details':'.next-steps');
- if(next&&motionAllowed()&&next.animate)next.animate([{opacity:0,transform:'translateY(10px)'},{opacity:1,transform:'translateY(0)'}],{duration:260,easing:'ease-out'});
+ if(next&&motionAllowed()&&next.animate)next.animate([{opacity:.7},{opacity:1}],{duration:160,easing:'ease-out'});
  if(transition.hadFocus){const control=next?.querySelector('input,button')||card?.querySelector('summary')||(transition.board?$('#canvas').querySelector('[data-bubble]'):null);if(control)control.focus({preventScroll:true});else{const heading=$('#focus-title');heading?.setAttribute('tabindex','-1');heading?.focus({preventScroll:true});}}
 }
 async function completeSampleStep(task){
  if(completionAnimating)return;completionAnimating=true;
  try{
-  const completing=task.status!=='completed',transition=completing?await animateTaskExit(task.id):null;
+  const completing=task.status!=='completed',transition=completing?completionTarget(task.id):null;
+  if(completing)await animateTaskExit(transition);
   task.status=completing?'completed':'pending';
   renderOverview();animateTaskEntry(transition);
  }finally{completionAnimating=false;}
@@ -531,19 +535,27 @@ async function complete(id,value){
  setBusy(true);$('#error').hidden=true;$('#notice').textContent='Saving task…';
  checks.forEach(el=>{el.checked=value;el.setAttribute('aria-busy','true');});
  rows.forEach(row=>row.classList.add('is-saving'));toggles.forEach(el=>el.textContent='Saving…');
- let confirmed=false;
+ const transition=value?completionTarget(id):null,optimistic={...task,status:value?'completed':'pending'};
+ state.tasks=state.tasks.map(t=>t.id===id?optimistic:t);
+ const motion=value?animateTaskExit(transition):Promise.resolve();
+ const reveal=motion.then(()=>{
+  if(!state.tasks.includes(optimistic))return;
+  renderOverview();animateTaskEntry(transition);setBusy(true);
+ });
  try{
-  const saved=await api('/api/tasks/'+id,'PATCH',{expected_version:task.version,status:value?'completed':'pending'});
+  const [saved]=await Promise.all([api('/api/tasks/'+id,'PATCH',{expected_version:task.version,status:value?'completed':'pending'}),reveal]);
   if(saved?.id!==id||saved.status!==(value?'completed':'pending'))throw Error('Could not confirm the task update. Refresh to check its saved state.');
-  state.tasks=state.tasks.map(t=>t.id===id?saved:t);confirmed=true;
+  state.tasks=state.tasks.map(t=>t.id===id?saved:t);
   checks.forEach(el=>el.removeAttribute('aria-busy'));rows.forEach(row=>row.classList.remove('is-saving'));
   $('#notice').textContent='Task saved.';
-  const transition=value?await animateTaskExit(id):null;
-  renderOverview();animateTaskEntry(transition);
+  renderOverview();
  }catch(e){
+  await reveal;
   $('#notice').textContent='';
-  if(confirmed)renderOverview();
-  else checks.forEach(el=>{el.checked=task.status==='completed';});
+  const restore=state.tasks.includes(optimistic);
+  state.tasks=state.tasks.map(t=>t===optimistic?task:t);
+  checks.forEach(el=>{el.checked=task.status==='completed';});
+  if(restore)renderOverview();
   error(e);
  }finally{
   checks.forEach(el=>el.removeAttribute('aria-busy'));rows.forEach(row=>row.classList.remove('is-saving'));

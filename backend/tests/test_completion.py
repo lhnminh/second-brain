@@ -78,7 +78,7 @@ def test_browser_completion_feedback_confirmation_and_failure():
     full_js = page.split("<script>", 1)[1].split("</script>", 1)[0]
     script = r"""
 const assert=require('node:assert/strict'),vm=require('node:vm');new vm.Script(FULL_JS);
-let busy=false,renders=0,exits=0,entries=0,resolvePatch,rejectPatch;
+let busy=false,renders=0,exits=0,entries=0,resolvePatch,rejectPatch,resolveMotion;
 let state={tasks:[{id:'a',status:'pending',version:1},{id:'b',status:'pending',version:5}],messages:[{content:'Keep this'}],runs:[]};
 const requests=[],errors=[],classes=new Set(),row={classList:{add:c=>classes.add(c),remove:c=>classes.delete(c)}};
 const checkbox={dataset:{complete:'a'},checked:false,attrs:{},closest:()=>row,setAttribute(k,v){this.attrs[k]=v;},removeAttribute(k){delete this.attrs[k];}};
@@ -89,7 +89,8 @@ function setBusy(value){busy=value;}
 function refresh(){throw Error('Completion must not refetch the dashboard');}
 function render(){throw Error('Completion must preserve chat and proposal drafts');}
 function renderOverview(){renders++;}
-async function animateTaskExit(){exits++;return {planId:'plan'};}
+function completionTarget(){return {planId:'plan'};}
+function animateTaskExit(){exits++;return new Promise(resolve=>{resolveMotion=resolve;});}
 function animateTaskEntry(value){if(value)entries++;}
 function error(e){errors.push(e.message);}
 function api(path,method,body){requests.push({path,method,body});return new Promise((resolve,reject)=>{resolvePatch=resolve;rejectPatch=reject;});}
@@ -97,29 +98,32 @@ FUNCTION
 (async()=>{
  const saving=complete('a',true);
  assert.equal(checkbox.checked,true);assert.equal(classes.has('is-saving'),true);assert.equal(checkbox.attrs['aria-busy'],'true');
- assert.equal(state.tasks[0].status,'pending');assert.equal(busy,true);assert.equal(exits,0);assert.equal(renders,0);
+ assert.equal(state.tasks[0].status,'completed');assert.equal(busy,true);assert.equal(exits,1);assert.equal(renders,0);
  assert.match($('#notice').textContent,/Saving/);assert.equal(toggle.textContent,'Saving…');
  assert.deepEqual(requests,[{path:'/api/tasks/a',method:'PATCH',body:{expected_version:1,status:'completed'}}]);
+ // The next task appears after motion, while the save is still pending.
+ resolveMotion();await Promise.resolve();await Promise.resolve();
+ assert.equal(renders,1);assert.equal(entries,1);assert.equal(busy,true);assert.match($('#notice').textContent,/Saving/);
  resolvePatch({id:'a',status:'completed',version:2});await saving;
  assert.equal(state.tasks[0].status,'completed');assert.equal(state.tasks[0].version,2);assert.equal(state.tasks[1].version,5);
- assert.equal(requests.length,1);assert.equal(renders,1);assert.equal(exits,1);assert.equal(entries,1);
+ assert.equal(requests.length,1);assert.equal(renders,2);assert.equal(exits,1);assert.equal(entries,1);
  assert.equal(busy,false);assert.equal(classes.size,0);assert.equal(checkbox.attrs['aria-busy'],undefined);
  assert.equal(state.messages[0].content,'Keep this');assert.equal(toggle.textContent,'Complete plan');
  // Undo also responds immediately and uses the current saved version.
- const undo=complete('a',false);assert.equal(checkbox.checked,false);assert.equal(state.tasks[0].status,'completed');
+ const undo=complete('a',false);assert.equal(checkbox.checked,false);assert.equal(state.tasks[0].status,'pending');
  resolvePatch({id:'a',status:'pending',version:3});await undo;assert.equal(exits,1);assert.equal(state.tasks[0].status,'pending');
  // A failed or conflicting save restores the checkbox without changing task state.
  for(const message of ['Offline','Task changed; reload before editing']){
   const count=renders,attempt=complete('a',true);assert.equal(checkbox.checked,true);
-  rejectPatch(Error(message));await attempt;
+  resolveMotion();rejectPatch(Error(message));await attempt;
   assert.equal(checkbox.checked,false);assert.equal(state.tasks[0].status,'pending');assert.equal(state.tasks[0].version,3);
-  assert.equal(renders,count);assert.equal(errors.at(-1),message);assert.equal(busy,false);assert.equal(classes.size,0);
+  assert.equal(renders,count+2);assert.equal(errors.at(-1),message);assert.equal(busy,false);assert.equal(classes.size,0);
  }
  // An unexpected response cannot manufacture successful completion.
- const unexpected=complete('a',true);resolvePatch({id:'a',status:'pending',version:3});await unexpected;
+ const unexpected=complete('a',true);resolveMotion();resolvePatch({id:'a',status:'pending',version:3});await unexpected;
  assert.equal(checkbox.checked,false);assert.equal(state.tasks[0].status,'pending');assert.match(errors.at(-1),/Could not confirm/);
  // Access expiry clears private state in api(); completion must not resurrect it.
- const expiry=complete('a',true);state={tasks:[],messages:[],runs:[]};rejectPatch(Error('Access expired'));await expiry;
+ const expiry=complete('a',true);state={tasks:[],messages:[],runs:[]};resolveMotion();rejectPatch(Error('Access expired'));await expiry;
  assert.deepEqual(state.tasks,[]);assert.equal(busy,false);
  const count=requests.length;await complete('missing',true);assert.equal(requests.length,count);
 })().catch(e=>{console.error(e);process.exitCode=1;});
