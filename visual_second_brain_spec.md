@@ -1,7 +1,7 @@
 # Visual Second Brain — Product Spec
 
 **Status:** MVP product scope defined; technical integration and implementation details open  
-**Version:** 0.18
+**Version:** 0.19
 **Date:** October 30, 2026\
 **Format:** Hosted web application  
 **Working name:** Visual Second Brain
@@ -14,8 +14,10 @@ Visual Second Brain is a visual dashboard you open daily, especially at the star
 
 **Confirmed interaction direction:** Start with a mostly blank canvas and a prominent
 text conversation. The user describes what they need to do; Muse proposes structured
-task objects and their plans, and the frontend renders them as editable cards. The
-user reviews changes before saving. Saved objects populate the canvas on return.
+task objects and their plans, and the frontend renders them as editable cards. Validated task objects save directly and appear on the dashboard. The user
+corrects saved tasks through direct editing or follow-up conversation. Saved
+objects populate the canvas on return; no proposal editor or approval step is
+required for new chat requests.
 Muse creates task data, rather than generating arbitrary UI code or widget types.
 The desktop workspace always uses the same canvas-left/chat-right layout, including
 when no tasks exist. The empty canvas has a quiet placeholder rather than a separate
@@ -97,7 +99,11 @@ This keeps fine-grained scoring with the agent and reduces the user's decision b
 | High | 60–79 |
 | Very high | 80–100 |
 
-**Decision:** Generated task breakdowns and importance scores require user review before they are applied. The user may revise or reject the proposal.
+**Decision (October 30):** Generated task breakdowns, importance scores, and
+handoff classifications are validated and saved directly when the user describes
+concrete work. The user corrects the actual task afterward. Server-side
+validation, ownership, stale-update protection, and audit history remain required.
+Saving tasks does not authorize execution of their underlying work.
 
 ## 4. Agent activity
 
@@ -194,9 +200,11 @@ A relational database with flexible JSON fields is the proposed storage approach
 Use one concrete daily scenario to demonstrate the complete experience:
 
 1. Open a mostly blank workspace and describe homework due next Sunday through text chat.
-2. Answer any clarifying questions and review the proposed task and steps.
-3. Correct the proposal directly or through a follow-up message, confirm its deadline, then save it.
-4. See the saved task objects and steps appear on the canvas; choose among five importance levels through direct editing.
+2. See actual saved tasks and useful classified steps appear on the dashboard.
+3. Answer any focused clarification questions and correct the saved tasks directly
+   or through follow-up messages. Unsupported details remain unset.
+4. Choose among five importance levels and adjust handoff classifications through
+   direct task editing; no separate save-plan step is needed.
 5. Continue the conversation to plan additional work or propose corrections. Inspect saved objects and activity at `/dev`.
 6. Edit the breakdown, adjust an importance level, or mark work complete.
 7. Return to the dashboard and see the updated state persist for that user.
@@ -245,7 +253,7 @@ Decided stack: Vercel-hosted frontend, Python backend on Vercel serverless (owne
 | Importance levels | Confirmed: Very low 0–19, Low 20–39, Medium 40–59, High 60–79, Very high 80–100. |
 | Priority and time horizons | How do importance, deadlines, and work state determine priority, and what counts as short-term or long-term? |
 | Dashboard layout | Confirmed starting point: a mostly blank canvas with prominent chat; render structured tasks and plans as editable cards. Detailed visual design remains iterative. |
-| Planning updates | Confirmed: review before saving; proposals may be revised or rejected. |
+| Planning updates | Confirmed: validated chat updates save directly; users correct actual tasks afterward. Legacy proposals remain recoverable. |
 | Task relationships | How are subtasks ordered, when is a parent complete, and do deadline or importance values propagate? |
 | Running work | Should the dashboard include user work and other processes alongside agent tasks? |
 | Future screen visibility | When screen-based execution is added: live view, periodic screenshots, step-linked captures, or a combination? |
@@ -313,7 +321,7 @@ runtime and machine connection for that flow remain to be implemented.
 
 **Current implementation:** Tasks and subtasks are classified during planning as
 work Muse or the user can handle, including a reason, requirements, and a
-concrete completion result. The review and task editors support corrections.
+concrete completion result. Classifications save with their tasks; the task editor supports corrections.
 Only unfinished work classified for Muse shows **Hand off to Muse**; human work
 shows **For you**, and old unclassified tasks show **Not assessed**. The sample
 day contains explicit fixture classifications. No computer is connected. Clicking displays a clear
@@ -335,8 +343,43 @@ may change a task's execution status.
 **Classification contract:** `handoff` is structured task data containing
 `handler` (`muse` or `user`), `reason`, `requirements`, and `done_when`.
 The model produces it in the same response as the task breakdown. Classification
-is reviewed before applying and remains independent of runtime readiness and
+is validated and saved with the task and remains independent of runtime readiness and
 permission. User corrections are version-checked, audited, and preserved in
 subsequent model interactions. Existing tasks and old pending proposals remain
 unassessed unless reviewed updates or direct user edits classify them.
 Migration `ae73dc160b52` adds nullable task fields without reclassifying data.
+
+
+## Direct task interaction decision (October 30)
+
+When the user defines concrete work, Muse puts it on the dashboard as an actual
+saved task, with useful subtasks and handoff classifications. The user adjusts
+those objects afterward. This supersedes earlier review-before-save references
+in the implementation history. Broad personal context alone should not create
+invented work; a concrete commitment can appear even when some details are still
+unknown. Chat can gather those details as the saved task develops.
+
+The frontend sends `apply_immediately: true`. Validated updates are saved
+atomically before the reply returns, with idempotent retries, ownership checks,
+revision checks, and audit records. Corrections made during a model call prevent
+its stale updates from being applied. The API's existing review mode remains
+for compatibility, and earlier unsaved plans have compact recovery controls.
+No draft editor is shown for new work. There is no new migration or automatic
+machine execution, and task completion remains a separate user action.
+
+**Finished-history correction (October 30):** Completed tasks must not block new
+commitments with similar titles. Muse receives active work and finished history
+separately. Plans with all leaf steps complete are historical for planning even
+if their stored parent status is still pending; this does not automatically
+mark parents complete. A new Duolingo assessment is a fresh task even when an
+older assessment is finished. Old requirements and deadlines must not be copied
+into the new commitment. Recent chat/proposal text cannot override current work
+state. The old record remains preserved and explicit corrections are supported.
+
+**Outcome versus clarification (October 30):** The parent task must express the
+user's intended outcome and be prominent in the priority card. The next step is
+labeled separately so an information request cannot visually replace the main
+task. Ask for missing inputs through chat. A take-home assessment with no brief
+can have a broad requirements/work/check scaffold, while assignment-specific
+requirements and exact dates remain unknown. Existing clarification-only plans
+should be refined using their saved IDs rather than duplicated.

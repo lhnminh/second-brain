@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+from functools import cache
 
 from fastapi import HTTPException
 from sqlalchemy import func, insert, select, update
@@ -106,6 +107,53 @@ def task_values(user_id, data, position=0, score=None, handoff_source=None):
         "created_at": now(),
         "updated_at": now(),
     }
+
+
+def planning_tasks(saved_tasks):
+    """Separate current work from history, including plans with no open steps.
+
+    This is model context only: parent completion remains an explicit user edit.
+    """
+    by_id = {task["id"]: task for task in saved_tasks}
+    children = {}
+    for task in saved_tasks:
+        children.setdefault(task["parent_task_id"], []).append(task["id"])
+
+    @cache
+    def leaves_completed(task_id):
+        descendants = children.get(task_id, [])
+        return (
+            all(leaves_completed(child) for child in descendants)
+            if descendants
+            else by_id[task_id]["status"] == "completed"
+        )
+
+    finished = {
+        task["id"]: (
+            "completed" if task["status"] == "completed" else "all_steps_completed"
+        )
+        for task in saved_tasks
+        if task["status"] == "completed"
+        or (children.get(task["id"]) and leaves_completed(task["id"]))
+    }
+    active, history = [], []
+    for task in saved_tasks:
+        current = task
+        while current is not None:
+            if current["id"] in finished:
+                history.append(
+                    {
+                        **task,
+                        "completion_reason": finished[current["id"]]
+                        if current["id"] == task["id"]
+                        else "completed_parent",
+                    }
+                )
+                break
+            current = by_id.get(current["parent_task_id"])
+        else:
+            active.append(task)
+    return active, history
 
 
 class Service:
@@ -275,12 +323,15 @@ class Service:
                 .first()
             )
             if previous:
+                previous_input = previous["input_payload"]
+                if task_id is None and previous_input is not None:
+                    previous_input = {"apply_immediately": False, **previous_input}
                 if (
                     previous["task_id"] != task_id
                     or previous["message"] != body.message
                     or (
-                        previous["input_payload"] is not None
-                        and previous["input_payload"] != body.model_dump(mode="json")
+                        previous_input is not None
+                        and previous_input != body.model_dump(mode="json")
                     )
                 ):
                     raise HTTPException(
@@ -312,11 +363,16 @@ class Service:
                     for message in recent_messages
                     if message["run_id"] in run_ids
                 ]
+            saved_tasks = rows(c, tasks, self.user_id)
+            active_tasks, completed_tasks = planning_tasks(saved_tasks)
             snapshot = {
+                "apply_immediately": task_id is None
+                and getattr(body, "apply_immediately", False),
                 "reference_date_utc": datetime.now(UTC).date().isoformat(),
                 "recent_runs": sorted(recent_runs, key=lambda r: r["created_at"])[-10:],
                 "task": task,
-                "tasks": rows(c, tasks, self.user_id),
+                "tasks": active_tasks,
+                "completed_tasks": completed_tasks,
                 "context": rows(c, context, self.user_id),
                 "recent_messages": sorted(
                     recent_messages, key=lambda m: m["created_at"]
@@ -324,7 +380,7 @@ class Service:
             }
             if task_id is None and body.review_draft is not None:
                 try:
-                    self._check_conversation(body.review_draft, snapshot["tasks"])
+                    self._check_conversation(body.review_draft, saved_tasks)
                 except ValueError as exc:
                     raise HTTPException(422, str(exc)) from None
                 snapshot["review_draft"] = body.review_draft.model_dump(mode="json")
@@ -365,14 +421,20 @@ class Service:
                 proposal = ConversationProposal.model_validate(
                     self.muse.converse(snapshot, body.message)
                 )
+                if body.apply_immediately and any(
+                    (item.task_id is None and item.handoff is None)
+                    or any(child.handoff is None for child in item.subtasks)
+                    for item in proposal.tasks
+                ):
+                    raise ValueError("New tasks must include handoff classifications")
                 self._check_conversation(
-                    proposal, snapshot["tasks"], protect_handoff=True
+                    proposal, saved_tasks, protect_handoff=True, protect_history=True
                 )
             error = None
         except MuseFailure, ValueError:
             proposal, error = (
                 None,
-                "Muse could not produce a valid proposal. Your tasks are unchanged.",
+                "Muse could not produce valid task updates. Your tasks are unchanged.",
             )
         with self.engine.begin() as c:
             current_revision = lock_account(c, self.user_id)
@@ -400,6 +462,12 @@ class Service:
                                 and old["status"] == "awaiting_review"
                             ):
                                 self._finish(c, old["id"], "superseded")
+                        if body.apply_immediately:
+                            # The input, validated updates, audit records, and final
+                            # run state commit together. No intermediate review step.
+                            self._apply_conversation(c, run_id, proposal, proposal)
+                            bump(c, self.user_id)
+                            status = "applied"
                 self._finish(
                     c, run_id, status, proposal=proposal.model_dump(mode="json")
                 )
@@ -528,8 +596,15 @@ class Service:
             raise HTTPException(409, "Your state changed; request a fresh plan")
         return result
 
-    def _check_conversation(self, proposal, saved_tasks, protect_handoff=False):
+    def _check_conversation(
+        self, proposal, saved_tasks, protect_handoff=False, protect_history=False
+    ):
         saved = {t["id"]: t for t in saved_tasks}
+        historical_ids = (
+            {t["id"] for t in planning_tasks(saved_tasks)[1]}
+            if protect_history
+            else set()
+        )
         seen = set()
         for item in proposal.tasks:
             if item.task_id is not None:
@@ -540,6 +615,8 @@ class Service:
                     )
                 seen.add(task_id)
                 check_score(item, saved[task_id])
+                if task_id in historical_ids and item.subtasks:
+                    raise ValueError("Create new work separately from a finished plan")
                 if protect_handoff and saved[task_id].get("handoff_source") == "user":
                     value = item.handoff.model_dump() if item.handoff else None
                     if value != saved[task_id].get("handoff"):

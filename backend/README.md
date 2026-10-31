@@ -1,7 +1,7 @@
 # Backend
 
-First slice: user context and homework task → Muse breakdown → user review →
-persisted subtasks and corrections. Python/FastAPI, SQLAlchemy, Alembic, Neon
+Current dashboard flow: describe work → Muse creates classified tasks →
+validated updates save atomically → user edits saved tasks. Python/FastAPI, SQLAlchemy, Alembic, Neon
 (Postgres). SQLite is a local-development/test option only.
 
 ## Local setup
@@ -121,10 +121,11 @@ Integration references verified October 26, 2026:
 
 ## Conversation canvas
 
-The homepage now uses `POST /api/conversation` to start planning without an
-existing task. Muse returns validated task objects and their subtasks, or a
-clarifying text reply. Acceptance through `/api/conversation/{id}/approve` applies
-all reviewed objects in one transaction. The original task-specific planning
+The homepage uses `POST /api/conversation` with `apply_immediately: true` to
+create or update saved tasks directly. Muse returns validated task objects and
+classified steps, or a clarifying reply. Direct-save requests atomically apply
+the changes before returning. The optional legacy review mode and its approval
+endpoint remain available to existing API clients. The original task-specific planning
 endpoint remains available through the API. `/dev` is a read-only diagnostic
 console for runs, request inputs, proposals, messages, saved objects, and events. See `API_CONTRACT.md` for shapes and retry/review behavior.
 
@@ -196,3 +197,56 @@ review-edited classifications are marked `user`, are version-checked/audited,
 and cannot be overwritten by later model suggestions. This adds planning data
 and conditional handoff UI, not machine execution. Legacy draft records and
 previously saved proposals are retained.
+
+
+## Direct conversation task saving
+
+The dashboard opts into `apply_immediately: true` on `/api/conversation`. The
+service validates generated objects, classifications, ownership, importance
+bounds, and user corrections, then applies them in the final locked transaction
+if the workspace revision still matches. A newer overlapping request or user
+edit makes the older reply stale. Successful concrete updates finish as
+`applied`; clarification without changes finishes as `answered`. Failures never
+partially save a plan or record a successful assistant reply.
+
+The API flag defaults to false for existing review-mode clients and stored
+proposals. Mode is part of retry identity. Retries of old payloads without the
+new flag continue to work. There is no new migration, dependency, or provider.
+The earlier review-oriented demo above remains an API compatibility check;
+use the main dashboard journey in the frontend README to test the new flow.
+
+### Finished tasks are not active duplicates
+
+The planning snapshot separates active `tasks` from `completed_tasks` history.
+This includes plans whose leaf steps are finished even when the parent's stored
+status remains pending, plus work beneath completed parents. A new commitment
+matching a historical title creates a new task; old deadlines, briefs, and
+completion state must not be reused. Earlier conversation/run text does not
+replace current saved completion state. Historical records are preserved and
+remain explicitly editable. New steps cannot be added beneath a finished plan.
+
+Verification: 139 automated checks pass, including completed-parent history,
+all-steps-completed history, partially finished plans, nested steps, old chat
+context, separate new assessment IDs, follow-up corrections, and preservation
+of historical records. Two real Meta requests using the reported Duolingo
+wording created new pending assessments in both completion scenarios. These
+checks used synthetic data and disposable SQLite. No existing workspace was
+modified and no server was started or restarted. No migration is required.
+
+### Clarification is not the user's outcome
+
+Root tasks should name what the user wants to finish. Missing inputs belong in
+the reply rather than becoming the entire plan. For an assessment with no brief,
+Muse should create the assessment task and a grounded scaffold for reviewing
+requirements, completing the specified work, and checking the result. It asks
+for the brief and exact due date in chat before inventing implementation detail.
+If the existing active plan contains only a clarification step, use its parent
+and child IDs to improve it and append only missing work. Saved records are not
+silently rewritten when prompts change; the next chat request can refine them.
+
+Structured task responses now have an 8,192-completion-token allowance to support
+classified scaffolds and repairs involving multiple saved objects. Truncated
+responses are still rejected, without partial task changes. Existing unassessed
+tasks can retain null handoff data when updated; new tasks/steps must still have
+a classification. This supports repairing older plans without inventing an
+assessment of existing work.

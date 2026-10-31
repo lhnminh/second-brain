@@ -18,22 +18,26 @@ backend reload, use `uv run uvicorn backend.app:app --reload --port 8000`.
 
 ## Main journey
 
-1. Start with a full-width workspace canvas. Click the circular Muse launcher
-   at the bottom right to expand chat. No task form is required.
-2. Answer clarifying questions or review the task objects and steps Muse proposes.
-   Proposals appear above saved plans on the wider canvas; the Muse panel links
-   to pending reviews. They remain unsaved until explicitly approved.
-3. Revise through chat or edit proposed titles, descriptions, and deadlines directly.
-   You can remove unwanted tasks or steps. Follow-up messages carry unsaved edits.
-4. Save the reviewed plan. Persisted task objects become cards on the canvas.
-5. Edit saved tasks, choose among five importance levels, or mark work complete.
-6. Return to saved tasks with a fresh chat on each page load or login. Demo login stays connected for
-   eight hours across both pages and reloads; Sign out ends access while retaining this browser’s workspace.
+1. Open Muse from the corner launcher and describe concrete work.
+2. Muse identifies the task and useful steps, classifies who can handle each,
+   and saves the validated objects directly to the dashboard.
+3. If essential details are missing, answer a focused question in chat. A clearly
+   identified task can already appear with unknown details left unset.
+4. Edit a saved task or step, adjust importance or handoff suitability, or send a
+   follow-up correction. Follow-ups target saved task IDs rather than new drafts.
+5. Mark work complete and return later to the saved state. Each page load or
+   login still starts a fresh chat; saved tasks and user context carry forward.
 
-Model proposals remain separate from saved work until accepted. Conversation
-corrections can update existing task objects; steps append to existing plans.
-The model can correct an existing step by ID. The UI renders fixed task components,
-not generated HTML or arbitrary widgets. See `API_CONTRACT.md` for object shapes.
+New chat requests use `apply_immediately: true`. There is no proposal editor or
+**Save reviewed plan** step. Validated changes and their audit events commit
+atomically before the response returns. A failed or stale response changes no
+tasks. Network retries retain the original message and request ID so a reply
+lost after a successful save cannot create duplicate tasks.
+
+Earlier unsaved plans remain as compact recovery cards with **Add these tasks**
+and **Dismiss**. The legacy review API remains available. These cards do not
+contain the previous large editing form; tasks can be edited after adding them.
+The UI uses fixed task components; the model does not generate HTML or widgets.
 
 ## Development tools
 
@@ -46,7 +50,7 @@ not generated HTML or arbitrary widgets. See `API_CONTRACT.md` for object shapes
 - Searchable change history and the full account snapshot.
 - Manual refresh and optional ten-second refresh while the page is visible.
 
-Proposals are reviewed on the workspace. The console labels pending changes,
+New task updates save directly on the workspace; earlier unsaved plans remain recoverable there. The console labels pending changes,
 stale data after a connection failure, and the limits of health/timing information.
 Snapshot fetch timing is measured in the browser; provider latency and token usage
 are not recorded. There are no task/context mutation controls in the dev console;
@@ -91,7 +95,7 @@ used an isolated local SQLite database, not deployed Neon.
 Choose the **microphone icon**, allow microphone access, record up to one minute,
 then choose the **stop icon** (labelled **Stop & transcribe**). Meta Voice Transcribe returns text into the composer.
 Review/edit it and choose **Send** to use the existing Muse conversation and
-proposal-review flow. No task changes are saved until you approve the proposal.
+conversation flow. After you send the reviewed transcript, validated task updates save directly.
 
 Capture uses `getUserMedia` and an AudioWorklet, with mono PCM16 WAV encoding at
 24 kHz. It requires HTTPS or localhost and microphone/Web Audio support. It does
@@ -177,7 +181,7 @@ The workspace registers four tools through `document.modelContext.registerTool()
 | `show_pending_reviews` | Scroll to and focus pending proposal reviews. |
 
 These tools support the existing journey: inspect saved homework, stage a planning
-request, then bring the resulting review into view. Sending, editing, approval,
+request, then inspect the saved tasks. show_pending_reviews supports only earlier unsaved plans. Sending, editing, approval,
 and persistence still use the existing visible controls and backend contracts.
 The tools do not invoke Muse or save changes themselves. UI actions refuse to
 interrupt requests, voice capture, or an open editor. Saved-state reads go to the
@@ -196,8 +200,8 @@ For local setup:
    in Chrome's instructions to discover the four tools.
 5. Call `get_dashboard`, then `draft_muse_message` with
    `{"message":"Help me plan my homework due next Sunday."}`. Check that the text
-   appears in Muse without being sent. Send it manually, review the real proposal,
-   save it, and reload to check persistence using the normal app flow.
+   appears in Muse without being sent. Send it manually, inspect the saved tasks,
+   correct one, and reload to check persistence using the normal app flow.
 
 Registration requires a secure context (HTTPS or localhost) and the current
 `document.modelContext` API. Browsers exposing only the older
@@ -388,3 +392,42 @@ versions, undo, network failure, version conflicts, unexpected responses, access
 expiry, and preservation of chat. The user owns the running terminal; no server
 was started or restarted for these checks. Reload the page, and restart the
 backend from that terminal if it is not running with automatic reload.
+
+
+### Direct task creation (October 30)
+
+This replaces the earlier review-before-save product flow. The chat now creates
+and updates actual tasks in one request, followed by one dashboard refresh.
+The task editor remains the place for direct corrections; handoff classification
+is still generated with the breakdown. Saving a task does not execute its work,
+change its completion status, or start a machine session.
+
+Restart your backend after this update if you are not using automatic reload,
+then refresh the page. No database migration or new provider configuration is
+needed. No server was started or restarted by this change.
+
+Verification of direct saving: 131 automated tests pass. Coverage includes
+immediate task persistence, classified steps, follow-up corrections, retry
+idempotency, stale responses, ownership, transaction rollback, failure text
+preservation, cleared user assessments, legacy compatibility, and the browser
+submission/rendering controller with simulated interfaces. Two real Meta calls
+using synthetic workshop data verified direct creation and a follow-up rename;
+a manual child-task correction survived the rename and a fresh app instance.
+The live check used disposable SQLite and did not start a server or change the
+configured workspace. Visual browser QA remains for the user's running app.
+
+### Keep the outcome visible above its next action
+
+Priority cards now show the parent task as the primary heading, with a separately
+labeled **Next action** underneath. Select the heading to edit the parent task;
+the next-action checkbox still completes only that step. Tasks without steps
+show their own title once. The sample day uses the same hierarchy.
+
+This addresses the assessment case where the model had saved **Complete Duolingo
+take-home assessment**, but its only child, **Share current brief and confirm
+deadline**, was visually promoted over the actual outcome. Planning guidance now
+keeps clarification questions in chat and requests substantive work stages at
+the level supported by the known facts. Unknown briefs support a broad scaffold
+(requirements review, required work, and checking the result); specific tools,
+deliverables, or exact dates must not be invented. Existing clarification-only
+plans should be improved by saved task/step IDs rather than duplicated.

@@ -220,3 +220,148 @@ def test_classification_is_part_of_the_structured_generation(
     else:
         with pytest.raises(MuseFailure):
             call({}, "Plan it")
+
+
+def test_direct_mode_instructions_and_cleared_assessment_are_preserved(monkeypatch):
+    task_id = "3f6c5e94-df91-4734-a67b-71d2ea89f643"
+
+    def handler(request):
+        body = json.loads(request.content)
+        instructions = body["messages"][0]["content"]
+        assert "The app will save" in instructions
+        assert "only the user's later approval" not in instructions
+        result = {
+            "reply": "The task title is updated.",
+            "tasks": [
+                {
+                    "task_id": task_id,
+                    "title": "Updated title",
+                    "description": "",
+                    "deadline": None,
+                    "importance_score": 60,
+                    "subtasks": [],
+                    "handoff": None,
+                }
+            ],
+        }
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "finish_reason": "stop",
+                        "message": {"content": json.dumps(result)},
+                    }
+                ]
+            },
+        )
+
+    snapshot = {
+        "apply_immediately": True,
+        "tasks": [{"id": task_id, "handoff": None, "handoff_source": "user"}],
+    }
+    result = configure(monkeypatch, handler).converse(snapshot, "Rename the task")
+    assert result.tasks[0].handoff is None
+
+
+def test_finished_assessment_is_not_an_active_duplicate_in_model_context(monkeypatch):
+    old_id = "b0842fd6-8cbb-4936-b323-7373b5258c4e"
+    snapshot = {
+        "apply_immediately": True,
+        "tasks": [],
+        "completed_tasks": [
+            {
+                "id": old_id,
+                "title": "Duolingo Takehome assessment",
+                "status": "completed",
+                "completion_reason": "completed",
+            }
+        ],
+    }
+
+    def handler(request):
+        body = json.loads(request.content)
+        instructions = body["messages"][0]["content"]
+        assert "state.tasks list is current work" in instructions
+        assert "state.completed_tasks is finished history" in instructions
+        assert "completed history is not an active match" in instructions
+        assert "Never duplicate saved tasks" not in instructions
+        assert json.loads(body["messages"][1]["content"])["state"] == snapshot
+        task = {
+            "task_id": None,
+            "title": "Current Duolingo assessment",
+            "description": "Exact due date and brief needed",
+            "deadline": None,
+            "importance_score": 70,
+            "subtasks": [],
+            "handoff": {
+                "handler": "user",
+                "reason": "The user owns the assessment",
+                "requirements": ["Current brief"],
+                "done_when": "Current assessment completed",
+            },
+        }
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "finish_reason": "stop",
+                        "message": {
+                            "content": json.dumps(
+                                {
+                                    "reply": "Here is the new assessment task.",
+                                    "tasks": [task],
+                                }
+                            )
+                        },
+                    }
+                ]
+            },
+        )
+
+    result = configure(monkeypatch, handler).converse(
+        snapshot, "I have a Duolingo Takehome assessment need to be done by next week."
+    )
+    assert result.tasks[0].task_id is None
+
+
+def test_existing_unassessed_task_can_be_updated_without_inventing_classification(
+    monkeypatch,
+):
+    task_id = "92591fe7-3625-48fb-a1a9-5714c714535e"
+    result = {
+        "reply": "The task now reflects the requested outcome.",
+        "tasks": [
+            {
+                "task_id": task_id,
+                "title": "Review the current assessment requirements",
+                "description": "Read the requirements in the current brief.",
+                "deadline": None,
+                "importance_score": 60,
+                "handoff": None,
+                "subtasks": [],
+            }
+        ],
+    }
+
+    def handler(request):
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "finish_reason": "stop",
+                        "message": {"content": json.dumps(result)},
+                    }
+                ]
+            },
+        )
+
+    muse = configure(monkeypatch, handler)
+    snapshot = {
+        "apply_immediately": True,
+        "tasks": [{"id": task_id, "handoff": None, "handoff_source": None}],
+    }
+    value = muse.converse(snapshot, "Improve the existing step")
+    assert str(value.tasks[0].task_id) == task_id and value.tasks[0].handoff is None

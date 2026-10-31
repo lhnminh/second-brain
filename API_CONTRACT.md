@@ -5,6 +5,11 @@ flow has been verified locally in a browser. All paths are relative to the backe
 response bodies use snake_case. Interactive schemas: `/docs`; machine schema:
 `/openapi.json`.
 
+**Current dashboard behavior (October 30):** Chat requests set
+`apply_immediately: true` and save validated task objects directly. The review
+flow below remains supported for legacy API clients that omit or disable this
+flag. See “Direct task creation from conversation” for the current app flow.
+
 ## Identity and transport
 
 The hackathon MVP uses one anonymous workspace per browser profile and app origin.
@@ -378,7 +383,7 @@ human choices and physical work should remain human tasks.
 
 `reason` is 1–1,000 characters; `done_when` is 1–2,000 characters; `requirements`
 is an explicit list of zero to ten nonempty strings, each at most 500 characters.
-The model adapter requires non-null classification on all generated objects in
+The model adapter requires non-null classification on all newly created objects in
 the same structured response that creates them. Missing, invalid, or incomplete
 output fails without mutating tasks. Old stored proposals may omit the field and
 remain reviewable; their tasks are unassessed.
@@ -415,3 +420,84 @@ immediate checkbox feedback from confirmed persistence. Conflict/failure does
 not advance task state. The endpoint retains ownership, optimistic version
 checks, account locking, workspace revision updates, and auditing; avoiding an
 unused account-revision read and a second task read removes two SQL round trips.
+
+
+## Direct task creation from conversation
+
+POST `/api/conversation` adds optional strict boolean `apply_immediately`
+(default false for API compatibility). The dashboard always sends true:
+
+```json
+{
+  "request_id": "8a9883da-52c7-47d1-8715-5988f0958e1e",
+  "conversation_id": "1ba280a7-de43-4676-8d6a-d676870a13ca",
+  "message": "Prepare a team workshop with an agenda and a room measurement",
+  "apply_immediately": true
+}
+```
+
+The response remains a persisted run with validated task data in `proposal`.
+That field name supports diagnostics and older clients; it does not mean the
+objects are unsaved. A nonempty valid response is applied in the same final
+transaction as audit events, the assistant message, and the `applied` run state.
+There is no intermediate `awaiting_review` response or extra approval request.
+Use `/api/dashboard` to read the resulting saved objects and their IDs.
+
+A reply with no task updates ends as `answered`. A clearly identified task may
+save while the reply asks for missing details; unsupported steps and deadlines
+must not be invented. Generated new tasks and subtasks require valid handoff
+classifications. User-cleared assessments on existing tasks remain preservable.
+Model/data validation failure produces `failed` with saved tasks unchanged.
+A workspace edit or newer overlapping conversation produces `stale`, applying
+no changes. Transaction failure rolls back task writes, audit changes, and any
+successful assistant reply together. External execution and completion status
+are not affected by direct task saving.
+
+Retries reuse the same request ID, message, conversation ID, and save mode; they
+return the original run without duplicate tasks or another model call. Changing
+mode with a used ID returns 409. Historical requests that omitted the new flag
+are normalized to false when comparing retry identity. Unknown/invalid fields
+continue to be rejected. API review endpoints and old pending proposals remain
+supported; the canvas shows only compact recovery controls for those plans.
+A successful new task response supersedes older pending conversation proposals
+using the existing behavior, preventing later acceptance of obsolete versions.
+
+Follow-up corrections reference the exact saved task ID. Unrelated fields,
+existing steps, user importance choices, and user handoff corrections remain
+protected. Version/revision checks prevent an in-flight model response from
+overwriting a newer direct edit. Each automatic task change is audited.
+No schema migration is required for this mode.
+
+### Active work versus finished history
+
+Model snapshots now place active work in `tasks` and historical work in
+`completed_tasks`. A task is historical if it is explicitly completed, its
+leaf steps are all completed, or it belongs beneath a finished parent. History
+records include a model-context-only `completion_reason`: `completed`,
+`all_steps_completed`, or `completed_parent`. Stored task status is not changed;
+manual parent completion and the dashboard/API task records retain their
+existing semantics. A partially completed plan with unfinished steps stays active.
+
+A finished task with the same title must not suppress a new commitment. The
+model must create a fresh task ID, preserving the historical record and not
+inheriting its deadline, brief, steps, or completion state. Duplicate avoidance
+applies to active commitments. Current state is authoritative over earlier chat
+messages and old run proposals. Explicit historical record corrections remain
+possible because output validation checks all owned saved tasks, not only the
+active list. Generated subtasks cannot be appended to a historical parent;
+new work belongs to a separate active task. No migration is needed.
+
+### Preserve the outcome while clarifying details
+
+Task titles name the user's intended outcome. Missing inputs are requested in
+`reply`; they must not become the entire work breakdown. Unknown assessment
+requirements can support a broad requirements/work/check scaffold, with exact
+implementation details and ambiguous deadlines left unset. An existing active
+clarification-only plan should be refined using its parent/step IDs and only
+missing work appended. Existing unassessed task records may keep null handoff
+data during an update; all newly created tasks and subtasks still require valid
+classifications. User-cleared assessments remain protected.
+
+The provider response allowance is 8,192 completion tokens for structured task
+plans and multi-object repairs. Truncated or invalid responses remain failures
+and are never partially saved. No schema or model-provider change is required.

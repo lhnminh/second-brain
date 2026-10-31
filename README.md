@@ -8,7 +8,7 @@ space you can understand at a glance and change directly.
 
 Visual Second Brain is building that space: a daily dashboard where you and your
 agent work together. Start with a mostly blank canvas, tell Muse what you need to do, and watch a
-reviewable plan take shape. Return to saved work when you need it. Less time reconstructing context. More room to
+actual tasks take shape on the dashboard. Return to saved work when you need it. Less time reconstructing context. More room to
 think and get things done.
 
 ## See it. Shape it. Move forward.
@@ -20,8 +20,8 @@ happening. The interface itself should be how you steer the work.
 - **See what matters.** Bring priorities, commitments, and next actions into view.
 - **Shape the plan directly.** Edit a task, adjust its importance, or revise a
   suggested step where it appears.
-- **Understand the agent's work.** See its planning activity and inspect what it
-  proposes before accepting changes.
+- **Understand the agent's work.** See its planning activity, saved changes, and
+  which tasks can be handed off to Muse.
 - **Carry your context forward.** Return to a workspace that remembers your
   corrections and the work you've already done.
 - **Talk when it helps.** The broader experience includes a corner companion
@@ -32,14 +32,15 @@ helps turn it into a plan you can see and steer.
 
 ## The first experience
 
-You have homework due next Sunday. Tell Muse through chat, answer any questions,
-and review the proposed task and steps. Revise the proposal through conversation,
-edit a step directly, and save it when it feels right. The canvas renders those
-saved objects as cards. Mark work complete, return later, and pick up where you left off.
+You have homework due next Sunday. Tell Muse through chat and the task appears
+on your dashboard with useful steps. Answer a focused question if details are
+missing, then change the saved task directly or through a follow-up message.
+There is no separate proposal form or save-plan step. Mark work complete, return
+later, and pick up where you left off.
 
 The current prototype supports conversation-based task creation and corrections,
 task and subtask editing, five importance levels, saved context, real Muse planning,
-and review before saving. `/dev` provides a read-only developer console for model runs, request inputs,
+and direct saving of validated task updates. `/dev` provides a read-only developer console for model runs, request inputs,
 proposals, saved objects, and change history. Each browser has its own saved workspace, protected by a shared demo access token.
 Microphone recording and Meta transcription feed the reviewed text conversation (see `frontend/README.md`).
 Automatic onboarding and an animated companion remain incomplete. Individual sign-in

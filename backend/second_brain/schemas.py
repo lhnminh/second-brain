@@ -2,7 +2,15 @@ from datetime import date
 from typing import Annotated, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, SecretStr, StrictInt, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SecretStr,
+    StrictBool,
+    StrictInt,
+    model_validator,
+)
 
 Importance = Literal["very_low", "low", "medium", "high", "very_high"]
 Status = Literal["pending", "in_progress", "completed"]
@@ -120,3 +128,5 @@ class ConversationApproval(Input):
 class ConversationRequest(PlanRequest):
     conversation_id: UUID | None = None
     review_draft: ConversationProposal | None = None
+    # The dashboard saves directly. False preserves existing review-mode API clients.
+    apply_immediately: StrictBool = False

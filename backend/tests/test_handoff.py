@@ -54,16 +54,14 @@ assert.deepEqual(state,original);assert.equal($('#message').value,'Unsent messag
 samplePreview=true;handoffToMuse('sample');assert.match($('#notice').textContent,/Sample task/);
 const previous=$('#notice').textContent;handoffToMuse('missing');assert.equal($('#notice').textContent,previous);
 samplePreview=false;handoffToMuse('human');handoffToMuse('unknown');assert.equal($('#notice').textContent,previous);
-const proposal={title:'A step'};
-setProposalField(proposal,'handoff.handler','muse');
-setProposalField(proposal,'handoff.reason','Computer work');
-setProposalField(proposal,'handoff.requirements',' Notes\n\nBrowser ');
-setProposalField(proposal,'handoff.done_when','A useful result');
-assert.deepEqual(proposal.handoff.requirements,['Notes','Browser']);assert.ok(validHandoff(proposal.handoff));
-assert.match(handoffFields(proposal,'test'),/value="muse" selected/);
+$('#edit-handoff-handler').value='muse';$('#edit-handoff-reason').value='Computer work';
+$('#edit-handoff-requirements').value=' Notes\n\nBrowser ';$('#edit-handoff-done').value='A useful result';
+const handoff=readEditorHandoff();
+assert.deepEqual(handoff.requirements,['Notes','Browser']);assert.ok(validHandoff(handoff));
+assert.match(handoffFields({handoff},'test'),/value="muse" selected/);
 assert.match(handoffFields({handoff:{...assessment,reason:'<script>'}},'test'),/&lt;script&gt;/);
-setProposalField(proposal,'handoff.handler','user');assert.equal(proposal.handoff.handler,'user');
-setProposalField(proposal,'handoff.handler','');assert.equal(proposal.handoff,null);
+$('#edit-handoff-handler').value='user';assert.equal(readEditorHandoff().handler,'user');
+$('#edit-handoff-handler').value='';assert.equal(readEditorHandoff(),null);
 busy=true;samplePreview=false;handoffToMuse('live');assert.equal($('#notice').textContent,previous);
 assert.deepEqual(state,original);
 """.replace("CONTROLLER", controller).replace("FULL_JS", json.dumps(full_js))
