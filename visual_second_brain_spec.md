@@ -383,3 +383,11 @@ task. Ask for missing inputs through chat. A take-home assessment with no brief
 can have a broad requirements/work/check scaffold, while assignment-specific
 requirements and exact dates remain unknown. Existing clarification-only plans
 should be refined using their saved IDs rather than duplicated.
+
+**Task naming and controls (October 31):** Task and subtask names are
+inline input fields. Enter or leaving the field saves; Escape cancels the edit. A rename
+preserves the task ID, saves across visits, and supplies the current title to
+subsequent Muse requests. Task cards omit the “For Muse” badge and “Why?”
+disclosure; the handoff button remains available for eligible unfinished work.
+Classification details remain editable under Handoff settings. Machine execution
+remains unimplemented.

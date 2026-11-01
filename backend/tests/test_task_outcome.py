@@ -130,14 +130,14 @@ const esc=value=>String(value??'').replaceAll('<','&lt;').replaceAll('>','&gt;')
 function agentActions(){return '';}function badge(){return '';}
 function orderedChildren(FUNCTIONS
 const html=overviewFocus(state.tasks[0],0);
-assert.match(html,/<h3 class="focus-plan"><button type="button" data-edit="parent">Complete Duolingo take-home assessment<\/button><\/h3>/);
+assert.match(html,/<h3 class="focus-plan"><input[^>]*data-task-name="parent"[^>]*value="Complete Duolingo take-home assessment"/);
 assert.ok(html.indexOf('Complete Duolingo take-home assessment')<html.indexOf('Next action'));
 assert.ok(html.indexOf('Next action')<html.indexOf('Review the current requirements'));
 assert.match(html,/data-complete="child"/);assert.doesNotMatch(html,/data-complete="parent"/);
 const sample=overviewFocus(state.tasks[0],0,state.tasks,true);assert.match(sample,/<h3 class="focus-plan">Complete Duolingo take-home assessment<\/h3>/);
 const single={id:'single',title:'One task',status:'pending'};
 const singleHtml=overviewFocus(single,0,[single]);assert.match(singleHtml,/is-single/);assert.doesNotMatch(singleHtml,/next-action-label/);
-assert.equal((singleHtml.match(/>One task<\/button>/g)||[]).length,1);
+assert.equal((singleHtml.match(/value="One task"/g)||[]).length,1);
 const unsafe={...state.tasks[0],title:'<script>bad</script>'};assert.doesNotMatch(overviewFocus(unsafe,0),/<script>bad/);
 """.replace("FUNCTIONS", functions).replace(
         "FULL_JS", json.dumps(page.split("<script>", 1)[1].split("</script>", 1)[0])

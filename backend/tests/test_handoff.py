@@ -39,13 +39,13 @@ function fetch(){throw Error('Handoff must not make network requests');}
 CONTROLLER
 assert.match(agentActions(state.tasks[0]),/Hand off to Muse/);
 assert.doesNotMatch(agentActions(state.tasks[1]),/data-handoff=/);
-assert.match(agentActions(state.tasks[1]),/For you/);
+assert.equal(agentActions(state.tasks[1]),'');
 assert.doesNotMatch(agentActions(state.tasks[2]),/data-handoff=/);
 assert.match(agentActions(state.tasks[2]),/Not assessed/);
-assert.match(agentActions(state.tasks[0]),/Needs: Notes/);
-assert.match(agentActions(state.tasks[0]),/Done when: An outline/);
-assert.equal(agentActions({id:'done',status:'completed'}),'');
-assert.equal(agentActions({id:'done-sample',completed:true}),'');
+assert.doesNotMatch(agentActions(state.tasks[0]),/For Muse|Why\?|handoff-details/);
+assert.doesNotMatch(agentActions(state.tasks[0]),/Rename/);
+assert.equal(agentActions({id:'done',title:'Done',status:'completed'}),'');
+samplePreview=true;assert.equal(agentActions({id:'done-sample',completed:true}),'');samplePreview=false;
 handoffToMuse('live');
 assert.match($('#notice').textContent,/No computer connected/);
 assert.match($('#notice').textContent,/Nothing has been started/);
