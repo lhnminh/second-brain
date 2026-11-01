@@ -501,3 +501,28 @@ classifications. User-cleared assessments remain protected.
 The provider response allowance is 8,192 completion tokens for structured task
 plans and multi-object repairs. Truncated or invalid responses remain failures
 and are never partially saved. No schema or model-provider change is required.
+
+
+## WebMCP browser action boundary
+
+The dashboard exposes the existing authenticated contracts through same-origin
+`document.modelContext` tools; no additional HTTP endpoints are introduced.
+
+| Tool | Existing HTTP operation |
+| --- | --- |
+| `get_dashboard` | `GET /api/dashboard`; project saved tasks, handoff assessments, pending conversation proposals, and current-chat run summaries. Optional `request_id` selects a run across visits. Omit owner IDs and internal scores. |
+| `create_task` | `POST /api/tasks`; optional `parent_task_id` creates a subtask. |
+| `update_task` | `PATCH /api/tasks/{task_id}`; require `expected_version` and at least one editable field. |
+| `send_muse_message` | `POST /api/conversation`; require message and caller request UUID, set this visit's `conversation_id` and `apply_immediately: true`. |
+| `resolve_pending_review` | `POST /api/conversation/{run_id}/approve` or `POST /api/runs/{run_id}/reject`. |
+
+The three existing UI helpers (`draft_muse_message`, `open_task_editor`, and
+`show_pending_reviews`) remain optional. Mutations return authoritative saved
+records or actual run statuses, refresh the dashboard, and preserve unsaved user
+edits. Server ownership, validation, audit, and revision rules remain authoritative.
+Transport interruption returns `outcome: "unknown"` with verification guidance;
+HTTP rejection returns `outcome: "rejected"` and status. A refresh failure after
+a successful write returns `ui_warning` alongside the saved result. Creation has
+no automatic idempotency: inspect saved state before retrying. Muse request UUIDs
+retain the existing idempotency behavior for the same message and conversation.
+No tool connects a machine or claims execution has started.

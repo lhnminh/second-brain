@@ -27,13 +27,13 @@ function browser({supported=true,secure=true,registrationFailure=false}={}){
  const $=selector=>{if(!elements.has(selector))elements.set(selector,{hidden:true,value:'',open:false,focus(){this.focused=true;},scrollIntoView(){this.scrolled=true;}});return elements.get(selector);};
  const state={tasks:[{id:'task-1',title:'Homework',version:2,description:'Saved',user_id:'private-owner',importance_score:75}],runs:[{id:'run-1',task_id:null,status:'awaiting_review'}]};
  let response={ok:true,json:async()=>structuredClone(state)};
- const document=supported?{modelContext:{async registerTool(tool,{signal}){
+ const document=supported?{querySelectorAll:()=>[],modelContext:{async registerTool(tool,{signal}){
   if(registrationFailure&&tools.size===1)throw Error('unsupported');
   assert.equal(tools.has(tool.name),false);tools.set(tool.name,tool);
   signal.addEventListener('abort',()=>tools.delete(tool.name),{once:true});
  }}}:{};
  const context=vm.createContext({document,window:{isSecureContext:secure,addEventListener:(name,fn)=>events[name]=fn},
-  $,state,busy:false,voiceSession:null,AbortController,console:{warn(){}},
+  $,state,busy:false,voiceSession:null,samplePreview:false,pending:null,conversationId:'visit',AbortController,console:{warn(){}},
   setMuseOpen:(...args)=>opens.push(args),openEditor:id=>{editors.push(id);$('#edit-dialog').open=true;},
   fetch:async(path,options)=>{calls.push({path,...options});options.signal?.throwIfAborted();return response;}});
  vm.runInContext(SCRIPT,context);
@@ -44,7 +44,7 @@ function browser({supported=true,secure=true,registrationFailure=false}={}){
  for(const opts of [{supported:false},{secure:false}]){
   const b=browser(opts);await flush();assert.equal(b.tools.size,0);
  }
- let b=browser();await flush();assert.equal(b.tools.size,4);
+ let b=browser();await flush();assert.equal(b.tools.size,8);
  const result=await b.call('get_dashboard');assert.equal(result.tasks[0].title,'Homework');
  assert.equal(result.tasks[0].user_id,undefined);assert.equal(result.tasks[0].importance_score,undefined);
  assert.equal(result.reviews[0].id,'run-1');assert.equal(b.calls[0].credentials,'same-origin');
@@ -86,8 +86,8 @@ function browser({supported=true,secure=true,registrationFailure=false}={}){
  assert.ok(b.calls.every(call=>call.path==='/api/dashboard'&&!call.method));
  // Navigation unregisters tools; BFCache restoration registers exactly once.
  b.events.pagehide();assert.equal(b.tools.size,0);
- b.events.pageshow();await flush();assert.equal(b.tools.size,4);
- b.events.pageshow();await flush();assert.equal(b.tools.size,4);
+ b.events.pageshow();await flush();assert.equal(b.tools.size,8);
+ b.events.pageshow();await flush();assert.equal(b.tools.size,8);
  b=browser({registrationFailure:true});await flush();assert.equal(b.tools.size,0);
  // Navigation during asynchronous registration cannot leave partial tools behind.
  b=browser();b.events.pagehide();await flush();assert.equal(b.tools.size,0);

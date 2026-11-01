@@ -391,3 +391,15 @@ subsequent Muse requests. Task cards omit the “For Muse” badge and “Why?�
 disclosure; the handoff button remains available for eligible unfinished work.
 Classification details remain editable under Handoff settings. Machine execution
 remains unimplemented.
+
+
+**WebMCP task actions (October 31):** Browser agents can read saved dashboard
+state, create tasks/subtasks, update task fields with version checks, send Muse
+messages with request UUIDs, and apply/dismiss legacy conversation plans through
+registered tools. These actions reuse the existing authenticated backend and
+refresh the visible dashboard; browser clicks are optional for the task journey.
+Reads include handoff assessments and explicit machine-execution unavailability.
+Unsaved user edits are preserved. Ambiguous write responses require verification
+rather than a success claim or blind creation retry. Automated checks exercise
+the shipped tools against FastAPI/SQLite with simulated browser registration and
+Muse responses; native browser discovery and hosted agent operation are unverified.

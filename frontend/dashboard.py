@@ -841,7 +841,7 @@ $('#voice-status').textContent=voiceAvailable?'':!window.isSecureContext?'Voice 
 syncVoice();
 // End voice input.
 
-// WebMCP: browser-agent access to saved state and reviewable UI actions.
+// WebMCP: browser-agent access to persisted dashboard actions.
 let webMCPController=null;
 async function registerWebMCP(){
  if(!window.isSecureContext||!document.modelContext?.registerTool||webMCPController)return;
@@ -854,20 +854,121 @@ async function registerWebMCP(){
   if(!$('#access').hidden)return {error:'Connect using the visible demo access form first.'};
   if(busy||voiceSession)return {error:'Wait for the current request or stop voice capture before changing the interface.'};
   if($('#edit-dialog').open)return {error:'Save or close the open task editor first; its unsaved changes are preserved.'};
+  if([...document.querySelectorAll('[data-task-name]')].some(input=>input.value!==state.tasks.find(task=>task.id===input.dataset.taskName)?.title))return {error:'Save or cancel the inline task-name edit first; its unsaved text is preserved.'};
+ }
+ const uuid={type:'string',format:'uuid',pattern:'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'};
+ const isUUID=value=>typeof value==='string'&&new RegExp(uuid.pattern).test(value);
+ const handoffSchema={type:['object','null'],properties:{handler:{type:'string',enum:['muse','user']},reason:{type:'string',minLength:1,maxLength:1000},requirements:{type:'array',maxItems:10,items:{type:'string',minLength:1,maxLength:500}},done_when:{type:'string',minLength:1,maxLength:2000}},required:['handler','reason','requirements','done_when'],additionalProperties:false};
+ const taskFields={title:{type:'string',minLength:1,maxLength:300},description:{type:'string',maxLength:10000},deadline:{type:['string','null'],format:'date',description:'YYYY-MM-DD, or null to clear. Never invent a deadline.'},user_importance_level:{type:['string','null'],enum:['very_low','low','medium','high','very_high',null]},handoff:handoffSchema};
+ function taskError(input){
+  if('title' in input&&(typeof input.title!=='string'||!input.title.trim()||input.title.trim().length>300))return {error:'Provide a task title of 1–300 characters.'};
+  if('description' in input&&(typeof input.description!=='string'||input.description.length>10000))return {error:'Provide details of at most 10,000 characters.'};
+  if('deadline' in input&&input.deadline!==null&&(typeof input.deadline!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(input.deadline)||!Number.isFinite(Date.parse(input.deadline))||new Date(input.deadline).toISOString().slice(0,10)!==input.deadline))return {error:'Provide a real deadline as YYYY-MM-DD, or null.'};
+  if('user_importance_level' in input&&!['very_low','low','medium','high','very_high',null].includes(input.user_importance_level))return {error:'Choose one of the five importance levels, or null.'};
+  if('handoff' in input&&input.handoff!==null){
+   const h=input.handoff;
+   if(validate(h,['handler','reason','requirements','done_when'])||!['muse','user'].includes(h.handler)||typeof h.reason!=='string'||!h.reason.trim()||h.reason.length>1000||typeof h.done_when!=='string'||!h.done_when.trim()||h.done_when.length>2000||!Array.isArray(h.requirements)||h.requirements.length>10||h.requirements.some(r=>typeof r!=='string'||!r.trim()||r.length>500))return {error:'Provide a complete handoff assessment with handler, reason, requirements, and done_when, or null.'};
+  }
+ }
+ function publicTask({id,parent_task_id,title,description,deadline,user_importance_level,status,version,handoff,handoff_source}){return {id,parent_task_id,title,description,deadline,user_importance_level,status,version,handoff,handoff_source};}
+ function savedTask(task){if(!isUUID(task?.id)||!Number.isInteger(task.version)||typeof task.title!=='string')throw Error('Invalid saved task response');return {status:'saved',task:publicTask(task)};}
+ function publicProposal(proposal){return proposal?{reply:proposal.reply,tasks:proposal.tasks.map(({task_id,title,description,deadline,handoff,subtasks})=>({task_id,title,description,deadline,handoff,subtasks:subtasks.map(({title,description,handoff})=>({title,description,handoff}))}))}:null;}
+ function publicRun(run){if(!isUUID(run?.id)||typeof run.status!=='string')throw Error('Invalid run response');return {id:run.id,request_id:run.request_id,status:run.status,reply:run.proposal?.reply||null,error:run.error||null};}
+ async function mutate(path,method,body,signal,project){
+  const blocked=uiBlocked();if(blocked)return blocked;
+  if(samplePreview)return {error:'Leave the sample preview before changing saved tasks.'};
+  signal?.throwIfAborted();
+  setBusy(true);$('#error').hidden=true;$('#notice').textContent='Agent request in progress…';
+  let result;
+  try{
+   const response=await fetch(path,{method,credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal});
+   const data=await response.json();
+   if(!response.ok){
+    result={error:data.error?.message||'Request failed.',status:response.status,outcome:'rejected',next_step:response.status===409?'Call get_dashboard and use the current version before trying again.':response.status===401?'Connect using the demo access form.':'Correct the request or retry when the service is available.'};
+   }else{
+    result=project(data);
+    // A refresh failure does not change the authoritative mutation result.
+    try{await refresh();}catch{result.ui_warning='The server replied, but the dashboard could not refresh. Call get_dashboard to verify saved state.';}
+   }
+  }catch(e){
+   result={error:'The request was interrupted or its response was unreadable. It may have reached the server.',outcome:'unknown',...(body.request_id?{request_id:body.request_id}:{}),next_step:'Call get_dashboard before retrying (pass request_id for a Muse message). Retry a Muse message with the same request_id and message in this page visit. After reload, inspect its run status first. Do not blindly retry task creation.'};
+  }finally{setBusy(false);}
+  $('#notice').textContent=result.error?result.error:result.status==='running'?'Muse is still processing this request. Check get_dashboard.':'Agent request finished. Saved state is available through get_dashboard.';
+  return result;
  }
  const tools=[
   {
    name:'get_dashboard',
-   description:'Read the current saved tasks and proposal statuses from this browser workspace. Use to understand the user’s plans before offering a next step.',
-   inputSchema:emptySchema,annotations:{readOnlyHint:true},
+   description:'Read saved tasks, handoff assessments, pending proposals, and current-chat run statuses from this browser workspace. Pass request_id to look up a specific Muse request even after reloading. Returns real saved state for verifying writes; sample data and unsaved edits are excluded. Machine execution is unavailable.',
+   inputSchema:{type:'object',properties:{request_id:{...uuid,description:'Optional Muse request UUID to check after an interrupted response or page reload.'}},additionalProperties:false},annotations:{readOnlyHint:true,untrustedContentHint:true},
    async execute(input,{signal}={}){
-    const invalid=validate(input);if(invalid)return invalid;
+    const invalid=validate(input,['request_id']);if(invalid)return invalid;
+    if('request_id' in input&&!isUUID(input.request_id))return {error:'Provide a request_id UUID, or omit it.'};
     try{
      const response=await fetch('/api/dashboard',{credentials:'same-origin',signal});
      if(!response.ok)return {error:response.status===401?'Connect using the visible demo access form first.':'Could not load saved state. Retry when the server is available.',status:response.status};
      const data=await response.json();signal?.throwIfAborted();
-     return {tasks:data.tasks.map(({id,parent_task_id,title,description,deadline,user_importance_level,status,version})=>({id,parent_task_id,title,description,deadline,user_importance_level,status,version})),reviews:data.runs.filter(run=>run.task_id===null&&run.status==='awaiting_review').map(run=>({id:run.id,status:run.status})),source:'Saved server state; unsaved interface edits are not included.'};
+     return {tasks:data.tasks.map(publicTask),reviews:data.runs.filter(run=>run.task_id===null&&run.status==='awaiting_review').map(run=>({id:run.id,status:run.status,proposal:publicProposal(run.proposal)})),runs:data.runs.filter(run=>input.request_id?run.request_id===input.request_id:run.input_payload?.conversation_id===conversationId).map(publicRun),execution:{connected:false,status:'unavailable',reason:'No computer connected. Hand off does not start execution.'},source:'Saved server state; unsaved interface edits and sample fixtures are not included.'};
     }catch(e){if(signal?.aborted)throw e;return {error:'Could not read saved state. Retry when the server is available.'};}
+   }
+  },
+  {
+   name:'create_task',
+   description:'Save a task or subtask directly in this workspace. Supply parent_task_id for a subtask. Returns the saved task ID and version. Creates real records; use only for work the user requested. On uncertain results, read the dashboard before retrying to avoid duplicates.',
+   inputSchema:{type:'object',properties:{...taskFields,parent_task_id:{...uuid,type:['string','null']}},required:['title'],additionalProperties:false},
+   annotations:{readOnlyHint:false,untrustedContentHint:true},
+   async execute(input,{signal}={}){
+    const invalid=validate(input,[...Object.keys(taskFields),'parent_task_id']);if(invalid)return invalid;
+    if(!('title' in input))return {error:'Provide a task title.'};
+    const invalidTask=taskError(input);if(invalidTask)return invalidTask;
+    if(input.parent_task_id!==undefined&&input.parent_task_id!==null&&!isUUID(input.parent_task_id))return {error:'Provide a saved parent task UUID, or null.'};
+    return mutate('/api/tasks','POST',input,signal,savedTask);
+   }
+  },
+  {
+   name:'update_task',
+   description:'Save changes to a task or subtask by ID: rename, details, deadline, importance, handoff assessment, or status. Set status=completed only when the work is actually done; pending reopens it. Use expected_version from get_dashboard. Only supplied fields change. Returns the saved task and new version; a 409 requires a fresh read.',
+   inputSchema:{type:'object',properties:{task_id:uuid,expected_version:{type:'integer',minimum:1},...taskFields,status:{type:'string',enum:['pending','in_progress','completed']}},required:['task_id','expected_version'],additionalProperties:false},
+   annotations:{readOnlyHint:false,untrustedContentHint:true},
+   async execute(input,{signal}={}){
+    const invalid=validate(input,['task_id','expected_version',...Object.keys(taskFields),'status']);if(invalid)return invalid;
+    if(!isUUID(input.task_id)||!Number.isInteger(input.expected_version)||input.expected_version<1)return {error:'Provide a saved task UUID and positive integer expected_version from get_dashboard.'};
+    if(Object.keys(input).length<3)return {error:'Provide at least one task field to change.'};
+    const invalidTask=taskError(input);if(invalidTask)return invalidTask;
+    if('status' in input&&!['pending','in_progress','completed'].includes(input.status))return {error:'Choose pending, in_progress, or completed.'};
+    const {task_id,...body}=input;
+    return mutate('/api/tasks/'+task_id,'PATCH',body,signal,savedTask);
+   }
+  },
+  {
+   name:'send_muse_message',
+   description:'Send a message to Muse now; validated task updates save directly and the reply appears in chat. This invokes the configured model. Provide a new request_id UUID for new work; reuse the exact request_id and message after an uncertain response in this page visit. Returns actual run status and reply. failed or stale means task updates were not applied; a revised request needs a new UUID. running means processing, not success; check get_dashboard. Matching composer text can be sent; different unsent text is preserved.',
+   inputSchema:{type:'object',properties:{request_id:uuid,message:{type:'string',minLength:1,maxLength:10000}},required:['request_id','message'],additionalProperties:false},
+   annotations:{readOnlyHint:false,untrustedContentHint:true},
+   async execute(input,{signal}={}){
+    const invalid=validate(input,['request_id','message']);if(invalid)return invalid;
+    if(!isUUID(input.request_id)||typeof input.message!=='string'||!input.message.trim()||input.message.length>10000)return {error:'Provide a request_id UUID and a nonempty message of at most 10,000 characters.'};
+    const draft=$('#message').value;
+    if(draft&&draft.trim()!==input.message.trim())return {error:'The composer contains different unsent text. It has been preserved; send that exact message or let the user finish it first.'};
+    if(pending&&(pending.request_id!==input.request_id||pending.message!==input.message))return {error:'Another message has an uncertain pending request. Preserve it and check its request_id before sending new work.'};
+    const result=await mutate('/api/conversation','POST',{request_id:input.request_id,message:input.message,conversation_id:conversationId,apply_immediately:true},signal,run=>({...publicRun(run),...(['failed','stale'].includes(run.status)?{error:run.error||'Task updates were not applied.'}:{})}));
+    if(['applied','answered'].includes(result.status)){
+     if($('#message').value===draft)$('#message').value='';
+     if(pending?.request_id===input.request_id)pending=null;
+    }
+    return result;
+   }
+  },
+  {
+   name:'resolve_pending_review',
+   description:'Apply or dismiss an earlier unsaved conversation plan by run ID. Read its proposal in get_dashboard first. New chat messages already save directly. Server revision checks reject stale plans. Applying persists the plan; dismissing preserves existing tasks.',
+   inputSchema:{type:'object',properties:{run_id:uuid,decision:{type:'string',enum:['apply','dismiss']}},required:['run_id','decision'],additionalProperties:false},
+   annotations:{readOnlyHint:false,untrustedContentHint:true},
+   async execute(input,{signal}={}){
+    const invalid=validate(input,['run_id','decision']);if(invalid)return invalid;
+    if(!isUUID(input.run_id)||!['apply','dismiss'].includes(input.decision))return {error:'Provide a run UUID and decision apply or dismiss.'};
+    const path=input.decision==='apply'?'/api/conversation/'+input.run_id+'/approve':'/api/runs/'+input.run_id+'/reject';
+    return mutate(path,'POST',{},signal,publicRun);
    }
   },
   {

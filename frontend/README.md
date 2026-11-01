@@ -190,52 +190,74 @@ Meta transcription disclosure expands below the input.
 
 ## WebMCP browser tools
 
-The workspace registers four tools through `document.modelContext.registerTool()`:
+The workspace registers eight tools through `document.modelContext.registerTool()`.
+An agent can read, create, rename, complete/reopen, and verify saved tasks, send
+Muse messages, and resolve legacy plans without clicking browser controls.
+The browser must already be connected to its workspace through the demo access gate.
 
 | Tool | Behavior |
 | --- | --- |
-| `get_dashboard` | Fetch saved tasks and pending proposal IDs using this browser's authenticated workspace. |
-| `draft_muse_message` | Open Muse and stage text for the user to review and send. Preserve existing unsent text. |
-| `open_task_editor` | Open a loaded task for the user to edit and save. |
-| `show_pending_reviews` | Scroll to and focus pending proposal reviews. |
+| `get_dashboard` | Read saved tasks, versions, handoff assessments, pending plan contents, current-chat run statuses, and execution availability. Optional `request_id` looks up a specific Muse run across page reloads. |
+| `create_task` | Persist a task; optional `parent_task_id` creates a subtask. Return its ID and version. |
+| `update_task` | Persist supplied fields using `task_id` and `expected_version`: title, description, deadline, importance, status, or handoff assessment. |
+| `send_muse_message` | Send a message with a caller-provided `request_id` UUID, invoke the configured Muse adapter, and save validated task updates directly. Return actual run status and reply. |
+| `resolve_pending_review` | Apply or dismiss an earlier unsaved conversation plan using `run_id` and `decision` (`apply` or `dismiss`). |
+| `draft_muse_message` | Optionally stage visible text without sending. `send_muse_message` can send matching composer text. |
+| `open_task_editor` | Optionally open the visible editor. Agents can save changes directly with `update_task`. |
+| `show_pending_reviews` | Optionally bring earlier unsaved plans into view. Agents can resolve them directly with `resolve_pending_review`. |
 
-These tools support the existing journey: inspect saved homework, stage a planning
-request, then inspect the saved tasks. show_pending_reviews supports only earlier unsaved plans. Sending, editing, approval,
-and persistence still use the existing visible controls and backend contracts.
-The tools do not invoke Muse or save changes themselves. UI actions refuse to
-interrupt requests, voice capture, or an open editor. Saved-state reads go to the
-server each time and return an error rather than cached data if access expires
-or the request fails. Results exclude conversation history, owner IDs, and internal
-importance scores; `user_importance_level` is the user's choice and can be unset.
+Mutations use the existing same-origin, authenticated backend endpoints and server
+ownership, validation, revision, and audit rules. No new backend contract or
+provider is introduced. Results omit owner IDs and internal importance scores.
+`user_importance_level` is the explicit user choice and can be unset.
+
+Tools preserve unsaved inline names, open editors, and differing composer text.
+Mutations refuse sample preview, concurrent requests, or voice capture. A model
+failure or stale run returns its actual status. A transport failure after sending
+returns `outcome: "unknown"`, because the server may have saved the request.
+Read the dashboard before retrying task creation to avoid duplicates. A task
+update conflict returns HTTP status 409: read the current version before revising.
+
+For uncertain Muse requests, call `get_dashboard` with that `request_id` to check
+its saved run. Retrying the same UUID and message in the same page visit reuses the
+backend run. After a reload, inspect that run before sending new work; the fresh
+visit has a different conversation ID. Terminal `failed` or `stale` requests need
+a new UUID for a revised request. A failed UI refresh after a successful mutation
+returns the saved result plus `ui_warning`; it does not turn a saved write into a
+claimed failure. The tools do not implement machine execution: dashboard reads
+explicitly report `execution.connected: false`.
 
 For local setup:
 
 1. Start the app using the commands above and open `http://localhost:8000/`.
 2. In a compatible Chrome build, enable `chrome://flags/#enable-webmcp-testing`
    and relaunch, following [Chrome's WebMCP instructions](https://developer.chrome.com/docs/ai/webmcp).
-3. Reopen the workspace and connect using the normal demo access form if prompted.
+3. Connect using the normal demo access form if prompted.
 4. Check `typeof document.modelContext?.registerTool` in DevTools; expect
-   `"function"`. Use a WebMCP-capable browser agent or the tool inspector linked
-   in Chrome's instructions to discover the four tools.
-5. Call `get_dashboard`, then `draft_muse_message` with
-   `{"message":"Help me plan my homework due next Sunday."}`. Check that the text
-   appears in Muse without being sent. Send it manually, inspect the saved tasks,
-   correct one, and reload to check persistence using the normal app flow.
+   `"function"`. Use a WebMCP-capable agent or Chrome's tool inspector to discover
+   the eight tools.
+5. Ask the agent to call `get_dashboard`, create a task and subtask, rename the
+   task with `update_task`, and mark the subtask complete using its saved version.
+   Call `get_dashboard` again, reload, and read once more to verify persistence.
+6. Call `send_muse_message` with a fresh UUID and a planning request. Inspect its
+   returned status/reply and use `get_dashboard` to verify actual saved updates.
+   New messages save directly; no review click is required.
 
-Registration requires a secure context (HTTPS or localhost) and the current
-`document.modelContext` API. Browsers exposing only the older
-`navigator.modelContext` API are not supported by this integration. Unsupported
-browsers retain the normal UI. No polyfill, third-party script, new dependency,
-remote MCP server, or cross-origin tool exposure is added. Tools unregister on
-page exit and register again on back/forward restoration. This adds website-side
-tools; it does not configure an agent client or enroll the deployed origin in
-Chrome's origin trial.
+Registration requires HTTPS or localhost and the `document.modelContext` API.
+Browsers exposing only the older `navigator.modelContext` API are unsupported.
+Tools unregister on page exit and register again on back/forward restoration.
+No polyfill, remote MCP server, or cross-origin tool exposure is added. This does
+not configure the agent client or enroll the deployed origin in Chrome's trial.
 
-Verification: automated Node tests execute the shipped tool code with simulated
-browser and network interfaces. They cover discovery/registration, unsupported
-browsers, input validation, authenticated read options, access/network errors,
-cancellation, preservation of drafts and edits, and navigation cleanup. They do
-not verify native WebMCP discovery in Chrome or a deployed browser-agent journey.
+Verification: `test_webmcp.py` simulates browser registration, reads, validation,
+unsupported browsers, cancellation, and lifecycle cleanup. `test_webmcp_actions.py`
+executes the shipped tools through a fetch bridge against FastAPI and SQLite with
+real cookie authentication. It verifies task/subtask creation, rename, completion
+and reopening, ownership isolation, stale versions, legacy plan apply/dismiss,
+model-run retries, model failure, reload persistence, draft protection, concurrent
+request blocking, uncertain write responses, and refresh failures. Browser APIs
+and Muse responses are simulated. Native Chrome discovery and a deployed agent
+journey remain unverified.
 
 ## Three-panel dashboard draft (October 30, 2026)
 
