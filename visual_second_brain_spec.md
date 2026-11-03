@@ -1,8 +1,8 @@
 # Visual Second Brain — Product Spec
 
 **Status:** MVP product scope defined; technical integration and implementation details open  
-**Version:** 0.19
-**Date:** October 30, 2026\
+**Version:** 0.26
+**Date:** November 3, 2026\
 **Format:** Hosted web application  
 **Working name:** Visual Second Brain
 
@@ -40,11 +40,83 @@ Conversation builds the initial workspace. Once saved work exists, the canvas pr
 
 The workspace cookie lasts one year, renewed on use. Clearing cookies, private browsing, another browser, or a different app origin starts a separate workspace. Account recovery and cross-device linking require future sign-in. Existing shared-demo records remain untouched and are not automatically assigned to a browser.
 
-**Chat lifecycle (October 30):** Each page load or demo login starts a fresh chat.
-Messages and run history from earlier chats are excluded from the visible chat
-and Muse's conversational context. Saved tasks and structured user context still
-carry forward. Prior records remain available in `/dev`, and pending proposals
-remain reviewable on the canvas; chat reset does not delete workspace data.
+**Chat lifecycle (November 3):** General and task-specific conversations persist
+in the browser workspace's server-side records. Each task and subtask has its own
+conversation scope. Task chats include their original creation/correction messages
+when audit records link that run to the task. Reloading or signing in again does
+not discard history. The last selected task is remembered locally per workspace;
+unsent drafts remain in memory and are kept separate while switching chats.
+The optional visit-scoped API mode remains available for older clients.
+
+**Dashboard refinement (November 3):** Keep short-term focus left, long-term focus
+right, and task bubbles below. The date is the main heading; the app name stays
+in the top bar without a logo. Each overview task has one closed-by-default
+disclosure containing every leaf subtask in saved order, including struck-through
+completed steps; bubble details show their subtasks or description directly with
+no nested dropdown. Show explicit task
+counts and each task/subtask's own saved deadline. The long-term summary and
+Muse header icon are removed. Nested text surfaces allow scroll chaining.
+Progress counts only the displayed subtasks, never the parent. Selecting or
+switching bubbles reveals details below without scrolling the page or moving
+focus into the panel. Keyboard focus stays on the selected bubble. All short-term
+index badges use the same neutral styling; the first item has no special status. Ctrl+Enter sends chat;
+Cmd+Enter also works. Saving/planning still does not execute the underlying work.
+
+**Task creation correction (November 3):** A request to create a task does not
+request a breakdown. Muse must default to `subtasks=[]`, creating steps only when
+the current message explicitly requests a breakdown/checklist/subtasks or supplies
+the steps to save. Missing details belong in chat or a short description. Do not
+automatically expand or repair saved steps during unrelated corrections. This
+supersedes earlier automatic work-scaffold guidance. Current changes update the
+provider instructions; live model verification waits for API credits.
+
+**Separate focus views (November 3):** A saved `time_horizon` selection pins a root
+task to short-term or long-term focus. Unselected legacy/model-created tasks keep
+the previous inference: dated tasks or tasks with saved leaf steps go on the left;
+remaining undated tasks without steps go on the right. Short-term tasks sort by
+earliest deadline, with undated plans last and importance breaking ties. Long-term descriptions open through a dedicated right-hand chevron; all entries share one scrollable list. No task appears
+in both focus panels. The bubble map still contains all active root tasks.
+Deadline badges range from red (overdue or due within one day), orange (two to
+three days), yellow (four to seven days), to green (more than a week). The optional focus field is now implemented for manual creation and editing.
+
+**Past tasks and chat entry (November 3):** A separate Past tasks section retains
+completed roots and pending roots whose leaf steps are all completed. Rows show
+a read-only name, completion label, and **Reopen task** only. Past tasks are grouped
+under **Short-term** and **Long-term** headings using the same saved focus choice
+and fallback inference as active tasks. There are no child controls, chat buttons or editors in this
+section and no separate top navigation link. “All subtasks completed” does not
+silently mark the parent complete. Reopening preserves completed children; a
+fully checked plan returns as `in_progress` so it stays active until completed
+again. Other reopened tasks return as `pending`. Saved chats remain attached and
+become accessible from the active task again. “Ask Muse” opens the existing persistent chat
+for the exact saved task or subtask; it creates no new conversation, sends no
+message, and starts no execution. Sample tasks have no saved task chat. Complete
+task stays last at the right of each action group. Live API and computer/worker
+integration are deferred while credits are unavailable.
+
+**Header refinement (November 3):** Show the sample-workspace status in the top
+bar. Workspace and the voice-transcription disclosure use centered chevrons that
+turn on expansion, replacing the misaligned text glyphs. The header shows the
+app name without the former “Your day, at a glance.” tagline.
+
+**Manual tasks and inline content (November 3):** Both focus headers have **+ Add
+task** directly before the task count. Short-term creation takes a task name and
+numbered subtask rows, with **Add subtask** and removal controls; at least one step
+must be entered. It has no description field. Long-term creation takes a name
+and optional description, without subtask rows. Both forms offer optional deadline
+and importance fields and preserve the selected focus section. The authenticated
+API saves the short-term root, entered children and audit events in one transaction.
+It makes no Muse call and invents no steps. Existing task notes remain preserved.
+
+Names, descriptions, subtask content and deadlines remain editable in place;
+button labels, section headings and derived counts are interface text. Names save
+on Enter/blur, descriptions on blur or Ctrl/Cmd+Enter; Escape cancels the active
+edit. A long-term name only edits that name. A separate chevron button on the right
+opens/closes its description, with keyboard support and an expanded-state label.
+Sample edits and additions remain local to the preview and reset on reload.
+Migration `c42b193d7e61` adds nullable `time_horizon`; this refinement needs no
+additional migration. Tests and isolated browser checks use fixtures; live Muse
+verification remains deferred pending credits.
 
 ### Voice-first onboarding
 
@@ -251,7 +323,7 @@ Decided stack: Vercel-hosted frontend, Python backend on Vercel serverless (owne
 | Storage and context schema | Neon (Postgres-compatible) decided. Supporting record structures for the task model and user context still need definition. |
 | Muse input and chat | How are voice input, transcription, and text chat integrated with Muse? What audio or transcripts are retained? |
 | Importance levels | Confirmed: Very low 0–19, Low 20–39, Medium 40–59, High 60–79, Very high 80–100. |
-| Priority and time horizons | How do importance, deadlines, and work state determine priority, and what counts as short-term or long-term? |
+| Priority and time horizons | Current view rule: dated tasks or saved plans on the left, remaining undated tasks without steps on the right; earliest deadline first. An optional saved time_horizon overrides this inference for manual task creation/editing. |
 | Dashboard layout | Confirmed starting point: a mostly blank canvas with prominent chat; render structured tasks and plans as editable cards. Detailed visual design remains iterative. |
 | Planning updates | Confirmed: validated chat updates save directly; users correct actual tasks afterward. Legacy proposals remain recoverable. |
 | Task relationships | How are subtasks ordered, when is a parent complete, and do deadline or importance values propagate? |

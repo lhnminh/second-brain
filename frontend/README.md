@@ -1,5 +1,64 @@
 # Conversation canvas and development workspace
 
+## Follow-up polish (November 3)
+
+Section counts include **task/tasks**. Bubble details open their subtask list
+immediately, while overview task lists remain collapsed by default. Each saved
+deadline appears with its own task/subtask; the parent deadline is not copied to
+undated children. Dated bubbles also show their deadline. The long-term workspace
+summary and the icon beside **Muse** are removed. Chat, history, description
+panels, and textareas allow scroll chaining instead of trapping the wheel at an
+inner scroll boundary.
+
+Targeted frontend/chat/voice checks passed. Browser checks verified counts,
+auto-opened bubble steps, the removed elements, and wheel scrolling over the chat
+composer through the chat panel into the page. No live model call was made.
+
+## Task conversations and simpler task lists (November 3, 2026)
+
+This supersedes the earlier visit-reset chat behavior and next-action display.
+**Task chat** opens a task's persistent conversation; the conversation selector
+also includes subtasks and **All tasks**. Histories are server-stored in the
+current browser workspace and survive reload/sign-out. The selected scope is
+remembered per workspace, and unsent drafts/retry IDs stay separate while
+switching scopes in the current page. Unsent drafts do not survive reload.
+**Ctrl+Enter** or **Cmd+Enter** sends; Enter alone keeps multiline input.
+
+Each task has one **Subtasks** disclosure, initially closed. It contains the
+complete ordered leaf-step list with completed steps struck through. The progress
+fraction counts that exact list, excluding the parent. Open lists survive in-page
+refresh/completion. Bubble details scroll into view on selection, switching, and
+expansion; the panel scrolls internally when taller than the viewport. The date
+is the main heading. The logo, decorative arrows, duplicated deadline/sample
+labels, separate completed-step disclosure, and importance-size caption are removed.
+
+Verification: 152 tests pass using
+`uv run python backend/tests/run_windows_checks.py backend/tests -q`. This
+Windows-safe launcher uses Node script files and short audio-fixture parameter IDs. Tests cover persistent scoped history,
+ownership, retry scope, bulk-write rollback/order and SQL-call count, Ctrl+Enter,
+exact displayed step counts, and existing voice/browser tools. Browser checks verified ordered lists, bubble switching/expansion visibility,
+Ctrl+Enter submission, separate task conversations, and history/selected-scope
+persistence after reload. Chat checks used a separate disposable database with
+explicitly labeled fixture replies; they do not verify live Muse response latency.
+
+## Quiet workspace refresh (November 3, 2026)
+
+The dashboard retains focus on the left, undated long-term tasks on the right,
+and task bubbles below. The refresh uses a light neutral palette, larger system
+type, fewer labels, a single next step per task, and a **View plan** disclosure.
+Long-term rows open the same details as bubbles. **Ask Muse** retains the existing
+disconnected-computer message; it does not start work. The header's **Workspace**
+menu groups refresh, diagnostics, and sign-out. A labeled **Talk to Muse** button
+opens the existing chat and voice controls. See [DESIGN.md](DESIGN.md) for tokens
+and interaction rules. No API, storage, model configuration, or dependencies change.
+
+Verification: 17 targeted existing tests pass. On Windows, three Node harnesses
+exceed the command-line length limit when passed with `node -e`; running their
+unchanged scripts from temporary files lets the same checks run successfully.
+Browser checks covered sample completion, plan disclosures, long-term details,
+the empty workspace, chat, and a 390px mobile viewport without horizontal overflow.
+No live model or microphone calls were made for this visual refresh.
+
 ### Visual direction (October 31)
 
 The dashboard uses a warm paper background, dark ink, a lime workspace summary,
@@ -44,8 +103,7 @@ backend reload, use `uv run uvicorn backend.app:app --reload --port 8000`.
    identified task can already appear with unknown details left unset.
 4. Edit a saved task or step, adjust importance or handoff suitability, or send a
    follow-up correction. Follow-ups target saved task IDs rather than new drafts.
-5. Mark work complete and return later to the saved state. Each page load or
-   login still starts a fresh chat; saved tasks and user context carry forward.
+5. Mark work complete and return later to saved state and persistent task chats.
 
 New chat requests use `apply_immediately: true`. There is no proposal editor or
 **Save reviewed plan** step. Validated changes and their audit events commit
@@ -259,54 +317,76 @@ request blocking, uncertain write responses, and refresh failures. Browser APIs
 and Muse responses are simulated. Native Chrome discovery and a deployed agent
 journey remain unverified.
 
-## Three-panel dashboard draft (October 30, 2026)
+## Current dashboard (November 3, 2026)
 
-The workspace uses the available desktop width and shows:
+- **Short-term focus:** roots explicitly selected as short-term. Unselected tasks
+  with a deadline or saved leaf subtasks also appear here.
+  Sort by earliest deadline, then importance; undated plans come last. Each task
+  has one closed disclosure with all saved leaf steps, in order, including completed
+  steps with a strike-through. Creating a task alone must not generate steps.
+- **Long-term focus:** roots explicitly selected as long-term, plus remaining
+  unselected active undated roots without subtasks. Compact
+  descriptions open via a separate chevron on the right; names only edit. All entries share one scrollable list,
+  without a separate “Show more” disclosure. The two focus sections do not overlap.
+- **Everything on your mind:** draggable importance bubbles for all active roots.
+  Selecting or switching bubbles keeps the current page position and bubble focus. Subtasks or the description are
+  immediately visible and cannot be collapsed inside the detail panel.
+- **Past tasks:** a separate section below the bubble map retains completed work.
+  Rows are grouped into **Short-term** and **Long-term**, retaining their saved
+  section choice (or legacy inference). Every row has a read-only name/status
+  and only **Reopen task**. Roots with all
+  leaf steps finished are labeled accordingly, without silently completing the
+  parent. Reopening preserves done steps; fully checked plans return as in-progress
+  until explicitly completed again. Saved chats become accessible from active work.
 
-- **Current priorities:** up to three next actions, one unfinished leaf step per
-  eligible plan, ordered by the existing importance score. The plan name provides
-  context. Expand for remaining steps, notes, and plan editing/completion controls.
-- **Long-term focus:** eligible saved tasks without a deadline, using the same
-  task model as the rest of the dashboard. Shows three initially, with further
-  items behind a disclosure. Select a task to open its bubble details. A task can
-  also appear among current priorities when its importance ranks highly.
-- **Everything to do:** a responsive bubble map of every eligible top-level task/plan,
-  including work beyond the three current priorities. Larger bubbles represent greater importance. Each bubble shows a short task
-  name and importance label; selecting one opens its steps and editing controls
-  beneath the map. Selecting it again or closing details collapses that view. This replaces the earlier completion-calendar draft.
+Each task/subtask displays its own deadline when saved. Date badges use red for overdue or due within one day, orange for two to
+three days, yellow for four to seven days, and green for more than a week.
+The sample label sits in the header; Workspace and the voice note use aligned
+chevrons that turn on expansion. **Complete task** remains
+last at the right of each action group, including when **Ask Muse** is available.
+Chat close and microphone controls use the current neutral/blue palette.
 
-Importance appears through bubble size, color, and the existing five labels.
-Bubbles use existing user-selected levels or backend score ranges;
-internal scores are never displayed. Unassessed tasks have an explicit label and
-a neutral bubble. Ordering uses backend importance scores in live mode.
+**Ask Muse** opens the existing persistent chat for the exact saved task or subtask.
+It sends no message, creates no run, and starts no machine execution. History stays
+saved across visits and unsent drafts stay separate while switching scopes.
+Sample tasks cannot open saved task chats. API credits and computer integration
+are deferred; no real model calls were used to verify this refinement.
 
-Completed plans and plans with all leaf steps complete leave both active views.
-The **Completed work** disclosure retains access to these saved plans. This is a
-visibility rule: it does not delete records or automatically complete parents.
-Reopening a step makes an incomplete parent eligible again.
+Open `http://127.0.0.1:8000/?draft=1` for a visibly labeled sample day. Samples never
+replace saved workspace state or enter model context; their completions reset on
+reload. All dashboard surfaces retain keyboard focus, reduced motion, and scroll
+chaining through textboxes. Ctrl+Enter/Cmd+Enter sends chat; Enter adds a line.
 
-Completing a visible action checks it off and fades it upward, followed by the
-next action sliding into place. Live motion waits for the write and refreshed
-dashboard to confirm completion. Failed requests do not play success motion;
-canceled animations still allow updated state to render. Reduced-motion
-preferences skip animations. Sample steps use the same motion without saving.
+**+ Add task** sits before each section count. Short-term creation asks for a task
+name and numbered subtasks, with **+ Add subtask** and removal controls; at least
+one entered step is required. It has no description field. Long-term creation
+keeps an optional description and has no subtask rows. Both offer optional date
+and importance. The short-term root and all entered steps save atomically in one
+request; invalid or failed writes leave no partial plan. No Muse call or generated
+steps are involved. Existing saved notes are preserved.
 
-Choose **Preview sample day**, or open `http://localhost:8000/?draft=1`, to see
-populated fixtures, including living-room, garden, and photo projects. A visible
-**Design draft · sample data** label marks this mode. Sample completions stay in
-memory and reset on reload. **Back to my workspace** returns to live tasks.
-Fixtures never enter API state, proposal review, or Muse context. Chat still uses
-the real workspace and existing backend; sample mode does not simulate Muse.
-No backend/API changes or frontend dependencies were added.
+A saved `time_horizon` keeps the task in its chosen section. Edit task → Focus
+section can change this or select Automatic for legacy inference. Apply migration
+`c42b193d7e61` on a new checkout; no additional migration is required for these
+form, toggle and archive refinements.
 
-Verification: all 8 existing frontend, voice, chat lifecycle, and WebMCP checks
-pass. Temporary Node harnesses with simulated DOM/animation interfaces checked
-three default focus actions, nested step ordering/advancement, completed-plan
-removal, preservation of parent status, isolated sample changes, the full backlog,
-house-project steps, five-level/unassessed importance, escaped titles, animation
-cancellation, reduced motion, and failure behavior. Visual review is left to the
-user at their request. No live model calls were made for this draft.
+Task/subtask names and descriptions are inline fields; date badges open editable
+dates. Enter/blur saves names, Ctrl/Cmd+Enter or blur saves descriptions, and Escape
+cancels the edit. Names do not toggle long-term descriptions; use the dedicated
+chevron, which announces its expanded state. Counts and interface labels remain
+derived/static. Sample edits and added tasks reset on reload. The header tagline
+has been removed.
 
+Verification: 164 checks passed, including exact entered-step persistence/order,
+invalid-list rejection and rollback of parents/children after an audit failure.
+Browser checks with disposable SQLite verified adding/removing rows, saving and
+reloading short-term plans, description-only long-term creation, independent title
+editing and chevron toggling, and classified past tasks with only Reopen controls.
+No real Muse calls were made.
+
+The following notes record earlier implementation iterations; the behavior above
+supersedes earlier descriptions of overlapping focus panels, automatic scaffolds,
+“Show more,” collapsible bubble subtasks, and the disconnected handoff notice.
 
 The bubble refinement removes the rectangular backlog cards and five-bar marks.
 Bubbles begin in deterministic scattered positions, with smaller sizes on narrow
@@ -354,7 +434,7 @@ verified deadline filtering, detail targets, empty/overflow states, and escaping
 
 Expanding/collapsing task details, notes, completed work, and the long-term
 "more" disclosure now uses a short height transition. Selecting a bubble reveals
-its detail panel with height and fade motion. Repeated clicks can reverse a
+its detail panel with opacity-only motion, without scrolling or moving focus. Repeated clicks can reverse a
 running disclosure transition; reduced motion skips these effects. Existing
 native disclosure/keyboard controls remain in use. All 8 existing checks pass;
 a temporary animation harness verified expand/collapse, rapid reversal, style

@@ -42,6 +42,7 @@ tasks = Table(
     Column("title", String(300), nullable=False),
     Column("description", String(10000), nullable=False),
     Column("deadline", String(10)),
+    Column("time_horizon", String(20)),
     Column("importance_score", Integer),
     Column("user_importance_level", String(20)),
     Column("status", String(20), nullable=False),
@@ -62,6 +63,10 @@ tasks = Table(
     ),
     CheckConstraint(
         "status IN ('pending', 'in_progress', 'completed')", name="task_status"
+    ),
+    CheckConstraint(
+        "time_horizon IS NULL OR time_horizon IN ('short_term', 'long_term')",
+        name="task_time_horizon",
     ),
     CheckConstraint(
         "user_importance_level IS NULL OR user_importance_level IN ('very_low','low','medium','high','very_high')",

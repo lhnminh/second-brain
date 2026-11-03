@@ -1,4 +1,4 @@
-"""The disconnected handoff must never manufacture execution or send requests."""
+"""Ask Muse reuses a saved task scope without starting execution or sending a message."""
 
 import json
 import runpy
@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 
-def test_handoff_placeholder_leaves_work_and_chat_unchanged():
+def test_ask_muse_opens_existing_task_scope_without_sending_or_executing():
     node = shutil.which("node")
     if not node:
         pytest.skip("Node is required for the handoff UI harness")
@@ -28,7 +28,8 @@ let busy=false,samplePreview=false;
 const assessment={handler:'muse',reason:'Computer work',requirements:['Notes'],done_when:'An outline is ready'};
 const state={tasks:[{id:'live',title:'Prepare <proposal>',status:'pending',handoff:assessment},{id:'human',title:'Choose a color',status:'pending',handoff:{...assessment,handler:'user'}},{id:'unknown',title:'Old task',status:'pending'}],runs:[],messages:[]};
 const samplePlans=[{id:'sample',title:'Sample task',completed:false,handoff:assessment}],sampleSteps=[];
-const original=structuredClone(state);
+const original=structuredClone(state),opened=[];
+function openTaskChat(id){opened.push(id);}
 const elements=new Map();
 const $=selector=>{if(!elements.has(selector))elements.set(selector,{textContent:'',value:'',focus(){this.focused=true;},scrollIntoView(){this.scrolled=true;}});return elements.get(selector);};
 $('#message').value='Unsent message';
@@ -37,7 +38,7 @@ function motionAllowed(){return false;}
 function api(){throw Error('Handoff must not call the API');}
 function fetch(){throw Error('Handoff must not make network requests');}
 CONTROLLER
-assert.match(agentActions(state.tasks[0]),/Hand off to Muse/);
+assert.match(agentActions(state.tasks[0]),/Ask Muse about Prepare/);
 assert.doesNotMatch(agentActions(state.tasks[1]),/data-handoff=/);
 assert.equal(agentActions(state.tasks[1]),'');
 assert.doesNotMatch(agentActions(state.tasks[2]),/data-handoff=/);
@@ -47,11 +48,10 @@ assert.doesNotMatch(agentActions(state.tasks[0]),/Rename/);
 assert.equal(agentActions({id:'done',title:'Done',status:'completed'}),'');
 samplePreview=true;assert.equal(agentActions({id:'done-sample',completed:true}),'');samplePreview=false;
 handoffToMuse('live');
-assert.match($('#notice').textContent,/No computer connected/);
-assert.match($('#notice').textContent,/Nothing has been started/);
-assert.equal($('#notice').focused,true);assert.equal($('#notice').scrolled,true);
+assert.deepEqual(opened,['live']);handoffToMuse('live');assert.deepEqual(opened,['live','live']);
+assert.equal($('#notice').textContent,'');
 assert.deepEqual(state,original);assert.equal($('#message').value,'Unsent message');
-samplePreview=true;handoffToMuse('sample');assert.match($('#notice').textContent,/Sample task/);
+samplePreview=true;handoffToMuse('sample');assert.match($('#notice').textContent,/Sample tasks have no saved chat/);
 const previous=$('#notice').textContent;handoffToMuse('missing');assert.equal($('#notice').textContent,previous);
 samplePreview=false;handoffToMuse('human');handoffToMuse('unknown');assert.equal($('#notice').textContent,previous);
 $('#edit-handoff-handler').value='muse';$('#edit-handoff-reason').value='Computer work';
@@ -63,7 +63,7 @@ assert.match(handoffFields({handoff:{...assessment,reason:'<script>'}},'test'),/
 $('#edit-handoff-handler').value='user';assert.equal(readEditorHandoff().handler,'user');
 $('#edit-handoff-handler').value='';assert.equal(readEditorHandoff(),null);
 busy=true;samplePreview=false;handoffToMuse('live');assert.equal($('#notice').textContent,previous);
-assert.deepEqual(state,original);
+assert.deepEqual(state,original);assert.deepEqual(opened,['live','live']);
 """.replace("CONTROLLER", controller).replace("FULL_JS", json.dumps(full_js))
     result = subprocess.run(
         [node, "-e", script], capture_output=True, text=True, check=False, timeout=15

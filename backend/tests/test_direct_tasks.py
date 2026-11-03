@@ -207,7 +207,7 @@ def test_older_overlapping_reply_cannot_create_duplicate_work(setup):
 def test_database_failure_rolls_back_all_task_changes(setup, monkeypatch):
     clients, muse, _ = setup
     client = clients()
-    fixture(muse)
+    fixture(muse, [deepcopy(TASK), deepcopy(TASK)])
     original = Service._insert_conversation_task
     calls = 0
 

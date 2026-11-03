@@ -335,11 +335,12 @@ and [official file-transcription client](https://github.com/meta-models/meta-mod
 
 ## Hand off to Muse (October 30)
 
-Pending tasks and steps classified for Muse expose one **Hand off to Muse** action. This is the entry
-point for future work on a connected computer. No computer or worker is connected
-yet. Clicking the button displays “No computer connected” and leaves task state
-unchanged. It does not make an API/model request, queue work, or create a run.
-The sample day exposes the same button and the same disconnected state.
+Pending tasks and steps classified for Muse expose **Ask Muse**. As of November 3,
+this opens the existing persistent chat for the exact saved task/subtask ID via
+`chat_task_id`. Opening it sends no request, creates no run, and does not change
+task status. Repeated opens retain that scope's saved history and in-memory draft.
+Sample tasks have no saved chat and show a preview-only notice. A future computer
+handoff remains unimplemented; the browser reports execution as unavailable.
 
 The earlier task-drafting interface and draft-generation/save endpoints have
 been removed following the user's correction. General chat continues to handle
@@ -490,11 +491,13 @@ new work belongs to a separate active task. No migration is needed.
 ### Preserve the outcome while clarifying details
 
 Task titles name the user's intended outcome. Missing inputs are requested in
-`reply`; they must not become the entire work breakdown. Unknown assessment
-requirements can support a broad requirements/work/check scaffold, with exact
-implementation details and ambiguous deadlines left unset. An existing active
-clarification-only plan should be refined using its parent/step IDs and only
-missing work appended. Existing unassessed task records may keep null handoff
+`reply`; they must not become invented work. The provider instructions default
+to `subtasks=[]`. Generate children only when the current user explicitly requests
+steps/a checklist/a breakdown or supplies steps to save. A task creation request,
+complexity, or deadline alone is insufficient. Do not repair or expand existing
+steps during unrelated edits. This supersedes the former automatic scaffold rule.
+Explicitly requested corrections retain exact parent/step IDs; unknown details
+and ambiguous deadlines remain unset. Existing unassessed task records may keep null handoff
 data during an update; all newly created tasks and subtasks still require valid
 classifications. User-cleared assessments remain protected.
 
@@ -513,7 +516,7 @@ The dashboard exposes the existing authenticated contracts through same-origin
 | `get_dashboard` | `GET /api/dashboard`; project saved tasks, handoff assessments, pending conversation proposals, and current-chat run summaries. Optional `request_id` selects a run across visits. Omit owner IDs and internal scores. |
 | `create_task` | `POST /api/tasks`; optional `parent_task_id` creates a subtask. |
 | `update_task` | `PATCH /api/tasks/{task_id}`; require `expected_version` and at least one editable field. |
-| `send_muse_message` | `POST /api/conversation`; require message and caller request UUID, set this visit's `conversation_id` and `apply_immediately: true`. |
+| `send_muse_message` | `POST /api/conversation`; require message and caller request UUID, use `conversation_id: null`, the selected `chat_task_id`, and `apply_immediately: true`. |
 | `resolve_pending_review` | `POST /api/conversation/{run_id}/approve` or `POST /api/runs/{run_id}/reject`. |
 
 The three existing UI helpers (`draft_muse_message`, `open_task_editor`, and
@@ -526,3 +529,65 @@ a successful write returns `ui_warning` alongside the saved result. Creation has
 no automatic idempotency: inspect saved state before retrying. Muse request UUIDs
 retain the existing idempotency behavior for the same message and conversation.
 No tool connects a machine or claims execution has started.
+
+## Persistent task conversations (November 3)
+
+`POST /api/conversation` accepts optional `chat_task_id` (owned task UUID or null).
+It is a conversation scope, independent of the legacy planning run's `task_id`.
+Ownership is checked before creating a run, saving a message, or calling Muse.
+The request scope is part of retry identity: changing tasks with the same
+`request_id` returns 409. Omitted fields in old stored requests normalize to null.
+
+The dashboard sends `conversation_id: null` so general history persists rather
+than starting a new visit. A non-null `chat_task_id` selects that task's messages
+and model context across visits. Initial creation/correction runs from general
+chat are linked by existing task audit records. Other task-specific threads are
+excluded. General chat excludes messages sent within a task-specific thread.
+Legacy non-null `conversation_id` still scopes a general API conversation to a
+visit. No database migration or authentication change is needed.
+
+`GET /api/dashboard` adds `related_task_ids` to each run, derived from this
+workspace's `task.created` / `task.edited` audit events. No title matching or
+inferred associations are used. Full messages remain stored; only the latest
+20 scoped messages enter a model request. The UI displays the full scoped history.
+
+Accepted run proposals and redundant input payloads are excluded from recent-run
+model context; saved tasks remain authoritative. New subtask records and their
+individual audit events are bulk-inserted in the existing transaction, preserving
+order, ownership, and rollback. Tests confirm the same SQL call count for one
+and eight subtasks. Live provider/network latency has not been measured.
+
+
+## Manual task creation and focus selection (November 3)
+
+`POST /api/tasks` and `PATCH /api/tasks/{task_id}` accept optional
+`time_horizon: "short_term" | "long_term" | null`. An explicit value pins a root
+task to that focus section independently of deadlines or saved subtasks. Null
+keeps the previous inference (dated tasks or saved plans on the left, remaining
+undated tasks on the right). Existing records remain null; no tasks are moved
+by the migration. Direct task creation saves only user-supplied task objects and makes no model call.
+
+Apply migration `c42b193d7e61` before using the updated backend. Ownership, version
+checks and audit records cover this field. Muse corrections preserve an existing
+user selection; its proposal schema does not override this field.
+
+
+**Reopening completed plans:** The dashboard uses a normal version-checked task
+PATCH. Reopen sets `status="pending"` unless all leaf subtasks are completed;
+then it sets `status="in_progress"`. It never unchecks children. Both dashboard
+grouping and model-context projection keep such in-progress roots active even
+when all saved steps are finished. Explicitly completed roots remain historical.
+Past-task rows expose only this action, without changing stored chats or steps.
+
+
+## Short-term manual plans (November 3)
+
+`POST /api/tasks` also accepts optional `subtasks: [{"title": "..."}]` (maximum
+20; each title 1–300 non-whitespace characters). This applies to root tasks only
+and is rejected for an explicit `long_term` root. The root, children, and audit
+records save in one transaction, with no model call or generated content.
+When supplied, the response remains a saved root object and additionally includes
+`subtasks`, containing the saved child records in entered order. Without children
+the response is unchanged. Child deadlines/classifications are not invented.
+The short-term form requires at least one entered step; other API clients can
+still create a short-term root without children. No new database migration.

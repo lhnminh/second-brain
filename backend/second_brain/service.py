@@ -93,6 +93,7 @@ def task_values(user_id, data, position=0, score=None, handoff_source=None):
         "title": data["title"],
         "description": data.get("description", ""),
         "deadline": data.get("deadline"),
+        "time_horizon": data.get("time_horizon"),
         "importance_score": score,
         "user_importance_level": data.get("user_importance_level"),
         "status": "pending",
@@ -134,7 +135,11 @@ def planning_tasks(saved_tasks):
         )
         for task in saved_tasks
         if task["status"] == "completed"
-        or (children.get(task["id"]) and leaves_completed(task["id"]))
+        or (
+            task["status"] != "in_progress"
+            and children.get(task["id"])
+            and leaves_completed(task["id"])
+        )
     }
     active, history = [], []
     for task in saved_tasks:
@@ -189,10 +194,17 @@ class Service:
                         r["id"],
                     ),
                 )
+            linked = {}
+            for event in data["events"]:
+                run_id = event["details"].get("run_id")
+                if run_id and event["kind"] in {"task.created", "task.edited"}:
+                    linked.setdefault(run_id, set()).add(event["entity_id"])
+            for run in data["runs"]:
+                run["related_task_ids"] = sorted(linked.get(run["id"], set()))
             return data
 
     def create_task(self, body):
-        data = body.model_dump(mode="json")
+        data = body.model_dump(mode="json", exclude={"subtasks"})
         with self.engine.begin() as c:
             lock_account(c, self.user_id)
             if data["parent_task_id"]:
@@ -207,9 +219,33 @@ class Service:
             )
             record = task_values(self.user_id, data, position)
             c.execute(insert(tasks).values(**record))
+            children = [
+                task_values(
+                    self.user_id,
+                    {"title": step.title, "parent_task_id": record["id"]},
+                    position=index,
+                )
+                for index, step in enumerate(body.subtasks)
+            ]
+            if children:
+                c.execute(insert(tasks), children)
+                c.execute(
+                    insert(events),
+                    [
+                        {
+                            "id": uid(),
+                            "user_id": self.user_id,
+                            "kind": "task.created",
+                            "entity_id": child["id"],
+                            "details": child,
+                            "created_at": now(),
+                        }
+                        for child in children
+                    ],
+                )
             bump(c, self.user_id)
             audit(c, self.user_id, "task.created", record["id"], record)
-            return record
+            return {**record, "subtasks": children} if children else record
 
     def edit_task(self, task_id, body):
         with self.engine.begin() as c:
@@ -312,6 +348,12 @@ class Service:
         with self.engine.begin() as c:
             revision = lock_account(c, self.user_id)
             task = owned(c, tasks, task_id, self.user_id) if task_id else None
+            chat_task_id = getattr(body, "chat_task_id", None)
+            chat_task = (
+                owned(c, tasks, str(chat_task_id), self.user_id)
+                if chat_task_id
+                else None
+            )
             previous = (
                 c.execute(
                     select(runs).where(
@@ -325,7 +367,11 @@ class Service:
             if previous:
                 previous_input = previous["input_payload"]
                 if task_id is None and previous_input is not None:
-                    previous_input = {"apply_immediately": False, **previous_input}
+                    previous_input = {
+                        "apply_immediately": False,
+                        "chat_task_id": None,
+                        **previous_input,
+                    }
                 if (
                     previous["task_id"] != task_id
                     or previous["message"] != body.message
@@ -349,7 +395,33 @@ class Service:
                 ]
                 run_ids = {run["id"] for run in recent_runs}
                 recent_messages = [m for m in recent_messages if m["run_id"] in run_ids]
-            if task_id is None and body.conversation_id is not None:
+                # A task's original creation/corrections belong to its history too.
+                linked_runs = set()
+                if chat_task_id:
+                    linked_runs = {
+                        event["details"].get("run_id")
+                        for event in rows(c, events, self.user_id)
+                        if event["entity_id"] == str(chat_task_id)
+                        and event["kind"] in {"task.created", "task.edited"}
+                    }
+                recent_runs = [
+                    run
+                    for run in recent_runs
+                    if (run["input_payload"] or {}).get("chat_task_id")
+                    == (str(chat_task_id) if chat_task_id else None)
+                    or (
+                        chat_task_id
+                        and run["id"] in linked_runs
+                        and not (run["input_payload"] or {}).get("chat_task_id")
+                    )
+                ]
+                run_ids = {run["id"] for run in recent_runs}
+                recent_messages = [m for m in recent_messages if m["run_id"] in run_ids]
+            if (
+                task_id is None
+                and not chat_task_id
+                and body.conversation_id is not None
+            ):
                 # Saved tasks/context carry forward; chat belongs to this visit.
                 recent_runs = [
                     run
@@ -369,8 +441,18 @@ class Service:
                 "apply_immediately": task_id is None
                 and getattr(body, "apply_immediately", False),
                 "reference_date_utc": datetime.now(UTC).date().isoformat(),
-                "recent_runs": sorted(recent_runs, key=lambda r: r["created_at"])[-10:],
-                "task": task,
+                # Saved task state is authoritative; avoid repeating full accepted
+                # proposals and request payloads in every model call.
+                "recent_runs": [
+                    {
+                        key: run[key]
+                        for key in ("id", "status", "message", "proposal")
+                        if key != "proposal" or run["status"] == "awaiting_review"
+                    }
+                    for run in sorted(recent_runs, key=lambda r: r["created_at"])[-10:]
+                ],
+                "task": task or chat_task,
+                "chat_task_id": str(chat_task_id) if chat_task_id else None,
                 "tasks": active_tasks,
                 "completed_tasks": completed_tasks,
                 "context": rows(c, context, self.user_id),
@@ -661,17 +743,45 @@ class Service:
                 task = self._insert_conversation_task(
                     c, data, run_id, item.importance_score, source
                 )
-            for child_index, child in enumerate(item.subtasks):
-                self._insert_conversation_task(
-                    c,
-                    {**child.model_dump(mode="json"), "parent_task_id": task["id"]},
-                    run_id,
-                    child.importance_score,
-                    "model"
-                    if baseline
-                    and child_index < len(baseline.subtasks)
-                    and child.handoff == baseline.subtasks[child_index].handoff
-                    else "user",
+            if item.subtasks:
+                position = c.scalar(
+                    select(func.count())
+                    .select_from(tasks)
+                    .where(
+                        tasks.c.user_id == self.user_id,
+                        tasks.c.parent_task_id == task["id"],
+                    )
+                )
+                children = [
+                    task_values(
+                        self.user_id,
+                        {**child.model_dump(mode="json"), "parent_task_id": task["id"]},
+                        position + child_index,
+                        child.importance_score,
+                        "model"
+                        if baseline
+                        and child_index < len(baseline.subtasks)
+                        and child.handoff == baseline.subtasks[child_index].handoff
+                        else "user",
+                    )
+                    for child_index, child in enumerate(item.subtasks)
+                ]
+                # Keep ordering and per-task audit evidence, with three database
+                # calls per group instead of three calls for each subtask.
+                c.execute(insert(tasks), children)
+                c.execute(
+                    insert(events),
+                    [
+                        {
+                            "id": uid(),
+                            "user_id": self.user_id,
+                            "kind": "task.created",
+                            "entity_id": child["id"],
+                            "details": {"run_id": run_id, "task": child},
+                            "created_at": now(),
+                        }
+                        for child in children
+                    ],
                 )
 
     def _insert_conversation_task(self, c, data, run_id, score, handoff_source="model"):

@@ -16,16 +16,14 @@ def test_webmcp_tools_and_lifecycle():
     page = runpy.run_path(
         str(Path(__file__).resolve().parents[2] / "frontend" / "dashboard.py")
     )["PAGE"]
-    script = "// WebMCP:" + page.split("// WebMCP:", 1)[1].split(
-        "// End WebMCP.", 1
-    )[0]
+    script = "// WebMCP:" + page.split("// WebMCP:", 1)[1].split("// End WebMCP.", 1)[0]
     harness = r"""
 const assert=require('node:assert/strict'),vm=require('node:vm');
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 function browser({supported=true,secure=true,registrationFailure=false}={}){
  const elements=new Map(),events={},tools=new Map(),calls=[],editors=[],opens=[];
  const $=selector=>{if(!elements.has(selector))elements.set(selector,{hidden:true,value:'',open:false,focus(){this.focused=true;},scrollIntoView(){this.scrolled=true;}});return elements.get(selector);};
- const state={tasks:[{id:'task-1',title:'Homework',version:2,description:'Saved',user_id:'private-owner',importance_score:75}],runs:[{id:'run-1',task_id:null,status:'awaiting_review'}]};
+ const state={tasks:[{id:'task-1',title:'Homework',version:2,description:'Saved',user_id:'private-owner',importance_score:75}],runs:[{id:'00000000-0000-4000-8000-000000000001',task_id:null,status:'awaiting_review'}]};
  let response={ok:true,json:async()=>structuredClone(state)};
  const document=supported?{querySelectorAll:()=>[],modelContext:{async registerTool(tool,{signal}){
   if(registrationFailure&&tools.size===1)throw Error('unsupported');
@@ -33,7 +31,7 @@ function browser({supported=true,secure=true,registrationFailure=false}={}){
   signal.addEventListener('abort',()=>tools.delete(tool.name),{once:true});
  }}}:{};
  const context=vm.createContext({document,window:{isSecureContext:secure,addEventListener:(name,fn)=>events[name]=fn},
-  $,state,busy:false,voiceSession:null,samplePreview:false,pending:null,conversationId:'visit',AbortController,console:{warn(){}},
+  $,state,busy:false,voiceSession:null,samplePreview:false,pending:null,conversationId:null,chatTaskId:null,AbortController,console:{warn(){}},
   setMuseOpen:(...args)=>opens.push(args),openEditor:id=>{editors.push(id);$('#edit-dialog').open=true;},
   fetch:async(path,options)=>{calls.push({path,...options});options.signal?.throwIfAborted();return response;}});
  vm.runInContext(SCRIPT,context);
@@ -47,7 +45,7 @@ function browser({supported=true,secure=true,registrationFailure=false}={}){
  let b=browser();await flush();assert.equal(b.tools.size,8);
  const result=await b.call('get_dashboard');assert.equal(result.tasks[0].title,'Homework');
  assert.equal(result.tasks[0].user_id,undefined);assert.equal(result.tasks[0].importance_score,undefined);
- assert.equal(result.reviews[0].id,'run-1');assert.equal(b.calls[0].credentials,'same-origin');
+ assert.equal(result.reviews[0].id,'00000000-0000-4000-8000-000000000001');assert.equal(b.calls[0].credentials,'same-origin');
  assert.equal(b.tools.get('get_dashboard').annotations.readOnlyHint,true);
  // Read from the server each time, and never return cached records on failure.
  b.respond({ok:false,status:401});assert.match((await b.call('get_dashboard')).error,/Connect/);

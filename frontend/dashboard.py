@@ -88,7 +88,7 @@ progress::-moz-progress-bar{background:var(--green);border-radius:4px}
 .task-status{font-size:10px;letter-spacing:.5px;text-transform:uppercase}
 
 /* Muse is a companion panel; greeting text is guidance, not a model reply. */
-.chat{position:fixed;z-index:20;right:28px;bottom:104px;width:400px;max-width:calc(100vw - 56px);max-height:calc(100dvh - 132px);overflow-y:auto;overscroll-behavior:contain;min-width:0;background:linear-gradient(160deg,#fffefa,#f0f3e9);border:1px solid #d7decf;border-radius:24px;padding:22px;box-shadow:0 24px 80px #233c3226,0 4px 16px #233c3210;transform-origin:calc(100% - 24px) bottom;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(16px) scale(.94);transition:opacity .2s ease,transform .24s cubic-bezier(.2,.8,.2,1),visibility .24s}
+.chat{position:fixed;z-index:20;right:28px;bottom:104px;width:400px;max-width:calc(100vw - 56px);max-height:calc(100dvh - 132px);overflow-y:auto;overscroll-behavior:auto;min-width:0;background:linear-gradient(160deg,#fffefa,#f0f3e9);border:1px solid #d7decf;border-radius:24px;padding:22px;box-shadow:0 24px 80px #233c3226,0 4px 16px #233c3210;transform-origin:calc(100% - 24px) bottom;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(16px) scale(.94);transition:opacity .2s ease,transform .24s cubic-bezier(.2,.8,.2,1),visibility .24s}
 .chat.is-open{visibility:visible;opacity:1;pointer-events:auto;transform:translateY(0) scale(1);transition-delay:0s}
 .muse-launcher{position:fixed;z-index:21;right:28px;bottom:24px;bottom:max(24px,env(safe-area-inset-bottom));display:grid;place-items:center;width:64px;height:64px;padding:0;border-radius:50%;color:#e9f3ce;background:radial-gradient(circle at 30% 20%,#5d8062,#315b43 65%,#244432);border:1px solid #456d4e;box-shadow:0 7px 24px #233c3230,inset 0 1px 1px #ffffff40;transition:transform .2s,box-shadow .2s}
 .muse-launcher:hover{color:#f3f9e5;background:radial-gradient(circle at 30% 20%,#6c8c6a,#315b43 65%);transform:translateY(-3px);box-shadow:0 12px 28px #233c3238}
@@ -96,7 +96,7 @@ progress::-moz-progress-bar{background:var(--green);border-radius:4px}
 .muse-launcher svg{width:32px;height:32px;filter:drop-shadow(0 2px 3px #173d2733)}
 .launcher-caption{position:absolute;right:76px;white-space:nowrap;background:var(--panel);color:var(--green);border:1px solid var(--line);border-radius:8px;padding:7px 11px;font-size:11px;box-shadow:0 3px 12px #233c3208;pointer-events:none}
 .muse-launcher[aria-expanded="true"] .launcher-caption{display:none}
-.chat-head-copy{flex:1}.chat-close{width:32px;height:32px;padding:0;border:0;border-radius:50%;background:#e8eddf;font-size:19px;font-weight:400}
+.chat-head-copy{flex:1}.chat-close{width:32px;height:32px;padding:0;border:0;border-radius:50%;background:var(--paper);color:var(--muted);font-size:19px;font-weight:400}
 .chat-entry{display:inline-block;margin-top:16px;color:var(--green);font-size:12px;background:transparent;border:0;padding:0;text-decoration:underline;text-underline-offset:4px}
 .chat-head{margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid #d9ded1}
 .muse-mark{display:grid;place-items:center;width:36px;height:36px;background:var(--panel);border:1px solid var(--line);border-radius:50%;font-size:23px;color:var(--green)}
@@ -105,7 +105,7 @@ progress::-moz-progress-bar{background:var(--green);border-radius:4px}
 .chat-welcome{padding:8px 2px 22px}
 .chat-welcome h3{font-size:20px;font-weight:500;letter-spacing:-.5px;line-height:1.4}
 .chat-welcome p{font-size:13px;color:var(--muted);margin-top:10px}
-.history{max-height:28vh;overflow:auto;overscroll-behavior:contain}
+.history{max-height:28vh;overflow:auto;overscroll-behavior:auto}
 .chat-message{font-size:13px;line-height:1.7;padding:14px 2px;margin-bottom:14px;white-space:pre-wrap;overflow-wrap:anywhere}
 .chat-message.user{background:#fffefa;border:1px solid var(--line);padding:13px 15px;border-radius:12px}
 .chat-message small{display:block;color:var(--muted);font-size:9px;letter-spacing:1px;font-weight:650;margin-bottom:7px}
@@ -118,14 +118,14 @@ progress::-moz-progress-bar{background:var(--green);border-radius:4px}
 .composer>.row{margin-top:10px;padding-top:9px;border-top:1px solid #eef0e9;align-items:center;flex-wrap:wrap;gap:8px}
 .composer #send{display:grid;place-items:center;flex:none;width:34px;height:34px;margin-left:auto;padding:0;border-radius:50%;font-size:21px;line-height:1;font-weight:400;box-shadow:0 2px 5px #315b4315}
 .composer button{font-size:11px;padding:7px 10px;border-radius:20px}
-.composer #voice{display:grid;place-items:center;flex:none;width:34px;height:34px;padding:0;border-radius:50%;background:#f2f5ed;border-color:transparent;color:#536b56}.composer #voice svg{width:18px;height:18px}.composer #voice[data-phase="requesting"] svg,.composer #voice[data-phase="transcribing"] svg{animation:mic-spin 1s linear infinite}@keyframes mic-spin{to{transform:rotate(360deg)}}
-.composer #voice:hover{background:#e7eedf}
-.composer #voice[aria-pressed="true"]{background:#e0ead5;border-color:#8ba687;color:var(--green)}
+.composer #voice{display:grid;place-items:center;flex:none;width:34px;height:34px;padding:0;border-radius:50%;background:var(--soft);border-color:transparent;color:var(--green)}.composer #voice svg{width:18px;height:18px}.composer #voice[data-phase="requesting"] svg,.composer #voice[data-phase="transcribing"] svg{animation:mic-spin 1s linear infinite}@keyframes mic-spin{to{transform:rotate(360deg)}}
+.composer #voice:hover{background:#dfe5fa}
+.composer #voice[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#fff}
 .voice-note{margin:10px 3px 0;color:var(--muted);font-size:10px;line-height:1.6}
 .voice-note summary{cursor:pointer;list-style:none;color:#758071}
 .voice-note summary::-webkit-details-marker{display:none}
-.voice-note summary::after{content:' ⌄';padding-left:3px}
-.voice-note[open] summary::after{content:' ⌃'}
+.disclosure-chevron{display:block;width:14px;height:14px;flex:none}
+.workspace-menu[open]>summary .disclosure-chevron,.voice-note[open]>summary .disclosure-chevron{transform:rotate(180deg)}
 .voice-note .voice-status{margin-top:6px}
 .voice-status:empty{display:none}
 .status{font-size:12px;color:var(--muted);margin:10px 0;line-height:1.6}
@@ -133,7 +133,7 @@ progress::-moz-progress-bar{background:var(--green);border-radius:4px}
 .save-hint{font-size:10px;color:var(--muted);margin-top:13px;text-align:center}
 .voice-preview{font-size:12px;color:var(--green);margin-top:10px}
 .voice-status{font-size:10px;line-height:1.6;margin-top:10px;color:var(--muted);overflow-wrap:anywhere}
-#voice[aria-pressed="true"]{background:var(--soft);border-color:var(--green)}
+#voice[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#fff}
 #review-link{display:block;padding:11px 13px;margin-bottom:16px;border:1px solid #c5d2b0;border-radius:9px;background:#e3ebd6;font-size:12px;text-decoration:none}
 
 /* Old unsaved plans remain recoverable; new chat requests save actual tasks. */
@@ -206,107 +206,139 @@ h1{font-size:36px}
 .step-line.is-saving .step-title:disabled,.step-line.is-finishing .step-title:disabled{opacity:1}
 .is-finishing .step-title{text-decoration:line-through;color:var(--green)}
 
-/* A paper workspace: expressive task titles, quiet supporting controls. */
-body{background-image:radial-gradient(#666b601c .65px,transparent .65px);background-size:7px 7px}
-.topbar{height:76px;padding-inline:clamp(20px,4vw,64px);border-color:var(--ink);background:var(--paper)}
-.brand-mark{width:38px;height:38px;border-radius:50%;background:var(--ink);color:var(--accent);font-size:29px;transform:rotate(-12deg)}
-.brand{font-size:16px;letter-spacing:-.7px}.topbar nav{gap:14px}
-main{padding:42px clamp(20px,4vw,64px) 120px;max-width:1640px}
-.intro{margin:0 0 34px;align-items:flex-end}
-.intro h1.eyebrow{font-family:Georgia,"Times New Roman",serif;font-size:clamp(42px,5.5vw,76px);font-weight:400;letter-spacing:-3px;text-transform:none;color:var(--ink);line-height:1.05;margin:0 0 12px}
-.workspace-date{font-size:12px}.overview-toolbar button{border-radius:24px;padding:10px 16px}
-.draft-label{color:#624014;background:#f3dfad}.overview-grid{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:24px}
-.overview-panel{padding:28px;border:1px solid var(--line);border-radius:8px;background:var(--panel);box-shadow:0 4px 0 #252b2506}
-.panel-top{margin-bottom:24px}.panel-top h2{font-size:13px;font-weight:650;letter-spacing:1.5px;text-transform:uppercase}
-.panel-icon{width:34px;height:34px;font-size:25px;border-radius:50%;background:transparent;color:inherit}
-.focus-list{gap:0}.focus-item,.focus-item:first-child{background:transparent;border:0;border-top:1px solid var(--line);border-radius:0;padding:22px 0}
-.focus-item:first-child{padding-top:0;border-top:0}.focus-item:last-child{padding-bottom:0}
-.focus-context{align-items:flex-start;gap:12px;margin-bottom:16px}.focus-rank{font-family:Georgia,"Times New Roman",serif;font-size:16px;padding-top:5px;color:var(--muted)}
-.focus-plan{font-size:clamp(25px,2.35vw,34px);font-weight:600;letter-spacing:-1.1px;line-height:1.18}
-.focus-fraction{padding-top:7px}.focus-context progress{width:34px;margin-top:12px}
-.next-action-label{font-size:9px;letter-spacing:1.5px;margin-bottom:7px}
-.focus-item.is-single .step-title{font-size:clamp(25px,2.35vw,34px);line-height:1.18;letter-spacing:-1.1px;font-weight:600}
-.focus-item:not(.is-single)>.next-steps .step-title{font-size:15px;line-height:1.45;font-weight:400}
-.step-line .check{width:20px;height:20px;margin-top:2px}.focus-item.is-single .check{margin-top:5px}
-.sample-check{font-size:22px;width:20px;line-height:24px}.focus-details{margin-top:14px;border:0;padding:0}
-.focus-details>summary{font-size:11px;display:inline-block}.focus-details>summary::after{float:none;margin-left:12px}
-.focus-details .step-title,.backlog-details .step-title{font-size:15px}
-.direction-panel{background:#e4edb8;border-color:#c8d29d;position:relative;overflow:hidden}
-.direction-panel::after{content:'✳';position:absolute;right:-34px;bottom:-70px;font-size:260px;line-height:1;color:#304b360a;pointer-events:none;transform:rotate(15deg)}
-.workspace-summary{position:relative;z-index:1;display:grid;gap:24px;padding-top:10px}
-.summary-lead{font-family:Georgia,"Times New Roman",serif;font-size:clamp(32px,3.4vw,48px);line-height:1.12;letter-spacing:-1.3px;max-width:14ch}
-.summary-context{font-size:17px;line-height:1.6;max-width:36ch;overflow-wrap:anywhere}
-.summary-context button{font:inherit;font-weight:600;padding:0;border:0;border-radius:0;background:transparent;text-align:left;text-decoration:underline;text-underline-offset:4px}
-.summary-progress{border-top:1px solid #304b3629;padding-top:18px;font-size:12px;color:var(--green);line-height:1.7}
-.direction-panel .panel-top,.goal-item,.direction-more,.direction-panel .quiet-empty{position:relative;z-index:1}
-.goal-item{padding:22px 0;gap:16px;border-color:#304b3629}.goal-item:hover{background:#304b3608}
-.goal-symbol{width:34px;height:34px;font-size:28px;background:transparent;border-radius:0;color:var(--green)}
-.goal-item:nth-child(n) .goal-symbol{background:transparent;color:var(--green)}
-.goal-title{font-family:Georgia,"Times New Roman",serif;font-size:clamp(25px,2.5vw,36px);font-weight:400;letter-spacing:-.8px;line-height:1.2}
-.backlog-panel{background:transparent;box-shadow:none;border:0;border-top:1px solid var(--ink);border-radius:0;padding:28px 0 0}
-.bubble-field{background:none}.bubble-hint{font-size:11px}
-.task-bubble{border:1px solid #252b2520;box-shadow:inset 0 -8px 0 #252b2505,0 5px 0 #252b2505;padding:18px}
-.task-bubble.very_high{--bubble-size:238px;--bubble-fill:#efab87;--bubble-ink:#492e24}
-.task-bubble.high{--bubble-size:208px;--bubble-fill:#e8d477;--bubble-ink:#493e20}
-.task-bubble.medium{--bubble-size:180px;--bubble-fill:#cddcaa;--bubble-ink:#30452e}
-.task-bubble.low{--bubble-size:158px;--bubble-fill:#bcd6d3;--bubble-ink:#294b48}
-.task-bubble.very_low{--bubble-size:140px;--bubble-fill:#d5cfdf;--bubble-ink:#484054}
-.task-bubble.unassessed{--bubble-size:158px;--bubble-fill:#e6e3d8;--bubble-ink:#50564c}
-.bubble-title{font-size:21px;font-weight:600;letter-spacing:-.65px;line-height:1.2}
-.task-bubble.very_high .bubble-title{font-size:29px}.task-bubble.high .bubble-title{font-size:25px}.task-bubble.very_low .bubble-title{font-size:18px}
-.task-bubble:hover{border-color:var(--bubble-ink);box-shadow:inset 0 -8px 0 #252b2505,0 8px 18px #252b2512}
-.bubble-detail{background:var(--panel);border-radius:8px}.bubble-detail h3{font-size:26px;line-height:1.2;letter-spacing:-.8px}
-.agent-actions{gap:8px;margin-top:9px}.agent-actions .pill{font-size:10px;background:transparent;padding:0;color:var(--muted)}
-.agent-actions button{font-size:10px;border:0;background:var(--soft);padding:5px 9px}.handoff-details{font-size:10px}
-.quiet-empty{min-height:210px}.quiet-empty strong{font-family:Georgia,"Times New Roman",serif;font-size:30px;letter-spacing:-.8px}.quiet-empty p{font-size:13px}
-.chat{background:var(--panel);border-color:var(--ink);border-radius:14px;box-shadow:8px 8px 0 #252b2514}.chat-welcome h3{font-family:Georgia,"Times New Roman",serif;font-size:30px;line-height:1.15}
-.muse-launcher{background:var(--ink);color:var(--accent);border-color:var(--ink);box-shadow:3px 4px 0 #252b2520}
-.muse-launcher:hover{background:var(--green)}.launcher-caption{border-radius:20px;font-size:12px}
-dialog{border-radius:12px;border-color:var(--ink)}
-input.task-name{font:inherit;color:inherit;letter-spacing:inherit;line-height:inherit;width:100%;min-width:0;border:1px solid transparent;border-radius:4px;background:transparent;padding:2px 3px;margin:-3px -4px;box-shadow:none}
-input.task-name:hover{border-color:var(--line);text-decoration:none;background:transparent}
-input.task-name:focus{border-color:var(--green);outline:2px solid var(--line);background:var(--paper,#fff)}
-.focus-context .focus-plan,.bubble-detail h3{min-width:0;flex:1}
+/* Quiet workspace: readable tasks, one action per row, details on demand. */
+:root{--paper:#f7f8fa;--panel:#ffffff;--ink:#242b3b;--muted:#626b7d;--line:#e3e6ed;--green:#435ac6;--soft:#edf0fa;--accent:#e4e9fc;--red:#a83d3d;font-family:"Segoe UI",ui-sans-serif,system-ui,-apple-system,sans-serif}
+body{background:var(--paper);font-size:15px;-webkit-font-smoothing:antialiased}
+button{font-size:14px;font-weight:500;min-height:40px;border-radius:9px;padding:9px 14px}
+button:hover{border-color:#b9c3e0;background:#f0f3fb}.primary:hover{background:#354ab0}
+.small{font-size:14px;padding:8px 12px}.muted{font-size:14px}label{font-size:14px}
+.topbar{height:76px;padding:0 max(24px,calc((100vw - 1280px)/2));background:var(--panel);border-bottom:1px solid var(--line)}
+.brand-mark{width:32px;height:32px;border-radius:10px;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:22px;transform:none}
+.brand{font-size:16px;letter-spacing:-.5px}.topbar nav{gap:12px}.topbar a{font-size:14px}
+.workspace-menu{position:relative;font-size:14px}.workspace-menu>summary{cursor:pointer;list-style:none;padding:10px 12px;border-radius:8px}.workspace-menu>summary::-webkit-details-marker{display:none}.workspace-menu>summary:hover{background:var(--paper)}
+.workspace-menu-items{position:absolute;right:0;top:44px;z-index:25;width:180px;padding:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 32px #242b3b14;display:grid;gap:4px}.workspace-menu-items>*{text-align:left;margin:0;text-decoration:none;padding:10px 12px;border:0;border-radius:6px}.workspace-menu-items a:hover{background:var(--soft)}
+main{max-width:1360px;padding:42px 40px 110px;margin:auto}.intro{margin-bottom:32px;align-items:center;gap:20px}
+.intro h1.eyebrow{font:500 clamp(30px,3vw,40px)/1.15 "Segoe UI",sans-serif;letter-spacing:-1.4px;text-transform:none;color:var(--ink);margin:0 0 10px}
+.workspace-date{font-size:14px;color:var(--muted)}.overview-toolbar{gap:12px}.overview-toolbar button{font-size:14px}.draft-label{font-size:13px;background:#fff1d6;color:#775725;border-radius:6px;padding:7px 10px}
+.overview-grid{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:24px;align-items:start}
+.overview-panel{border-radius:16px;border:1px solid var(--line);padding:26px 28px;background:var(--panel);box-shadow:none;min-width:0}
+.panel-top{margin-bottom:24px;gap:16px}.panel-top h2{font-size:19px;font-weight:600;letter-spacing:-.5px;text-transform:none;line-height:1.3}
+.section-count{min-width:26px;height:26px;padding:2px 7px;display:grid;place-items:center;background:#f0f2f6;color:var(--muted);border-radius:7px;font-size:13px}
+.focus-list{gap:0}.focus-item,.focus-item:first-child{background:none;border:0;border-top:1px solid var(--line);border-radius:0;padding:22px 0;min-width:0}.focus-item:first-child{padding-top:0;border-top:0}.focus-item:last-child{padding-bottom:0}
+.focus-context{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;min-width:0;flex-wrap:nowrap}
+.focus-rank{font-size:13px;line-height:26px;flex:none;width:26px;text-align:center;background:#f0f2f6;color:var(--muted);border-radius:50%;padding:0}
+.focus-plan{flex:1;min-width:0;font-size:21px;font-weight:600;letter-spacing:-.5px;line-height:1.3;margin:0}
+.task-deadline{display:block;font-size:13px;font-weight:400;letter-spacing:0;line-height:1.5;color:var(--muted);margin-top:5px}.focus-fraction{font-size:13px;color:var(--muted);white-space:nowrap;line-height:26px;padding:0}
+.next-steps{margin-left:38px;gap:12px}.step-line{display:flex;align-items:flex-start;gap:12px;min-width:0;flex-wrap:wrap}
+.step-title,.focus-item:not(.is-single)>.next-steps .step-title,.focus-details .step-title,.backlog-details .step-title{flex:1;min-width:0;font-size:15px;font-weight:400;line-height:1.5;letter-spacing:0;overflow-wrap:anywhere}
+.focus-item.is-single .next-steps{margin-left:0}.focus-item.is-single .focus-context{display:none}.focus-item.is-single .step-title{font-size:21px;font-weight:600;letter-spacing:-.5px;line-height:1.3}
+.step-line>.agent-actions{margin:0 0 0 auto;flex:none;align-self:flex-start}.agent-actions{gap:8px;margin-top:12px}.agent-actions button{font-size:13px;min-height:34px;padding:6px 10px;border:1px solid #dce2f3;background:#f5f7fd;color:#3e50a4;white-space:nowrap;border-radius:7px}.agent-actions button:hover{background:var(--soft);border-color:#aebae4}
+.focus-context>.agent-actions,.bubble-detail .row>.agent-actions{margin:0 0 0 auto;flex:none}
+.check,.step-line .check{width:20px;height:20px;flex:none;margin:2px 0 0}.sample-check{width:20px;min-height:24px;padding:0;line-height:24px;flex:none;font-size:23px;background:none;border:0;color:var(--muted)}
+input.check{appearance:none;-webkit-appearance:none;display:grid;place-content:center;border:1.5px solid #9aa3b4;border-radius:6px;background:transparent;padding:0;position:relative;cursor:pointer}
+input.check:checked{color:var(--green);border-color:var(--green);background:var(--soft)}input.check:checked::after{content:'✓';font-size:14px;font-weight:600;line-height:1}input.check:focus-visible{outline:2px solid var(--green);outline-offset:3px}input.check:disabled{cursor:wait}
+.focus-details{margin:12px 0 0 38px;padding:0;border:0}.focus-details>summary{display:flex;align-items:center;justify-content:space-between;min-height:36px;padding:6px 0;font-size:14px;color:var(--muted);cursor:pointer;list-style:none}.focus-details>summary::after{display:none}.focus-details[open]>summary{color:var(--green)}
+.focus-item.is-single .focus-details{margin-left:32px}.focus-meta{font-size:13px;gap:12px}.pill{font-size:13px;padding:4px 8px}.plan-info{margin-top:12px}.plan-info p,.step-notes,.step-children{font-size:14px}.remaining-steps{gap:14px;margin-top:16px}.completed-steps>summary{font-size:14px;min-height:36px;padding-block:8px}.completed-steps .step-line{margin-top:12px}.card-actions{gap:10px}.steps-finished,.step-state{font-size:14px}
+.direction-panel{background:#f0f2fa;border-color:#e0e4f2;overflow:visible}.direction-panel::after{display:none}.goal-list{display:grid}.goal-item,.goal-item:last-of-type{display:flex;align-items:center;gap:14px;width:100%;border:0;border-bottom:1px solid #dce1ef;border-radius:0;padding:21px 0;background:none;text-align:left;min-height:78px}.goal-item:last-of-type{border-bottom:0}.goal-item:hover{background:#e8ecf8}.goal-symbol,.goal-item:nth-child(n) .goal-symbol{width:36px;height:36px;font-size:20px;border:1px solid #d9dff0;background:#e5e9f6;border-radius:11px;color:#465ba4;flex:none}.goal-title{font:500 19px/1.4 "Segoe UI",sans-serif;letter-spacing:-.35px;overflow-wrap:anywhere}.goal-arrow{margin-left:auto;color:#7380a0;font-size:20px}.direction-more{margin-top:12px}.direction-more>summary,.workspace-overview>summary{font-size:14px;color:#526085;cursor:pointer;min-height:40px;padding-block:10px}.workspace-overview{margin-top:20px;border-top:1px solid #dce1ef;padding-top:8px}.workspace-summary{display:grid;gap:12px;padding:12px 0 0}.summary-lead{font-size:22px;line-height:1.3;letter-spacing:-.5px}.summary-context{font-size:15px;line-height:1.6}.summary-context button{font:inherit;min-height:0;padding:0;border:0;background:none;text-decoration:underline;text-align:left}.summary-progress{font-size:14px;color:var(--muted);line-height:1.6;border:0;padding:0}.direction-empty{font-size:15px;color:var(--muted);padding:16px 0;line-height:1.7}
+.backlog-panel{grid-column:1/-1;border:0;border-top:1px solid var(--line);border-radius:0;padding:28px 0 0;background:transparent;box-shadow:none;margin-top:8px}.backlog-panel .panel-top{margin-bottom:10px}.bubble-hint{font-size:14px;color:var(--muted)}.bubble-field{background:none;min-height:250px}
+.task-bubble{border:1px solid #242b3b0d;box-shadow:none;padding:20px}.task-bubble.very_high{--bubble-size:210px;--bubble-fill:#f0d5c6;--bubble-ink:#624333}.task-bubble.high{--bubble-size:186px;--bubble-fill:#eae3bf;--bubble-ink:#5f532e}.task-bubble.medium{--bubble-size:166px;--bubble-fill:#dce5d6;--bubble-ink:#40573e}.task-bubble.low{--bubble-size:148px;--bubble-fill:#d8e5ec;--bubble-ink:#3c596a}.task-bubble.very_low{--bubble-size:132px;--bubble-fill:#e3dfed;--bubble-ink:#574b6e}.task-bubble.unassessed{--bubble-size:148px;--bubble-fill:#e7e9ef;--bubble-ink:#535e74}
+.bubble-title{font-size:18px;font-weight:500;letter-spacing:-.35px;line-height:1.35}.task-bubble.very_high .bubble-title{font-size:23px}.task-bubble.high .bubble-title{font-size:20px}.task-bubble.very_low .bubble-title{font-size:16px}.task-bubble:hover{border-color:var(--bubble-ink);box-shadow:0 5px 18px #242b3b0d}.task-bubble.is-dragging{box-shadow:0 8px 24px #242b3b16}
+.bubble-detail{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px;margin-top:24px}.bubble-detail h3{font-size:23px;letter-spacing:-.5px}.bubble-detail .next-label{font-size:14px;text-transform:none;letter-spacing:0}.bubble-close{width:36px;min-height:36px;font-size:21px;border-radius:8px}.all-plans>summary{font-size:14px;padding-block:12px}
+input.task-name{font:inherit;color:inherit;letter-spacing:inherit;line-height:inherit;width:100%;min-width:0;border:1px solid transparent;border-radius:5px;background:transparent;padding:2px 3px;margin:-3px -4px;box-shadow:none}input.task-name:hover{border-color:var(--line);background:var(--paper);text-decoration:none}input.task-name:focus{border-color:var(--green);outline:2px solid var(--accent);background:var(--panel)}input.task-name.step-title{width:0;flex:1}
+.quiet-empty{min-height:180px;gap:12px}.quiet-empty strong{font-size:24px;font-weight:500;letter-spacing:-.5px}.chat-entry{font-size:15px;min-height:40px}.quiet-empty .chat-entry{margin:0}
+.chat{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 16px 60px #242b3b24;bottom:100px}.chat h2{font-size:18px}.chat-head p{font-size:14px}.chat-welcome h3{font-size:25px;line-height:1.3;letter-spacing:-.6px}.chat-message{font-size:15px}.chat-message small{font-size:12px;letter-spacing:.3px}.chat-close{min-height:36px;width:36px}.composer textarea{font-size:15px}.composer #voice,.composer #send{width:40px;height:40px}.voice-note,.voice-note .voice-status,.voice-status{font-size:13px;line-height:1.6}.voice-note summary{min-height:36px;padding-top:8px}.muse-mark{font-size:22px;color:var(--green);background:var(--soft);border:0}
+.muse-launcher{display:flex;gap:10px;width:auto;height:50px;min-height:50px;border-radius:14px;padding:0 20px;background:var(--ink);color:#fff;border:0;box-shadow:0 4px 16px #242b3b20;right:28px;bottom:24px}.muse-launcher svg{width:22px;height:22px;filter:none}.muse-launcher:hover{background:#39445d;color:#fff;transform:translateY(-2px)}.muse-launcher[aria-expanded="true"]{box-shadow:0 0 0 4px var(--accent)}.launcher-caption,.muse-launcher[aria-expanded="true"] .launcher-caption{display:inline;position:static;background:none;color:inherit;border:0;border-radius:0;padding:0;box-shadow:none;font-size:15px}
+dialog{border:1px solid var(--line);border-radius:16px;padding:28px}.handoff-fields,.handoff-details{font-size:14px}.handoff-fields textarea{font-size:14px}.error{font-size:14px}.notice{font-size:14px}.notice:empty{display:none}
+@media(max-width:1050px){.overview-grid{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px}.overview-panel{padding:22px}.focus-context{flex-wrap:wrap}.focus-plan{flex-basis:calc(100% - 42px)}.focus-fraction{margin-left:38px;line-height:18px}.goal-title{font-size:18px}}
+@media(max-width:700px){.topbar{height:66px;padding-inline:20px}.brand{font-size:14px}.topbar .row{gap:10px}main{padding:30px 20px 110px}.intro{align-items:flex-start;gap:16px}.intro h1.eyebrow{font-size:32px}.overview-toolbar{flex-wrap:wrap;gap:8px}.overview-grid{grid-template-columns:1fr}.overview-panel{padding:22px}.backlog-panel{padding:24px 0 0}.focus-context{flex-wrap:nowrap}.focus-plan{font-size:20px;flex-basis:auto}.focus-fraction{margin-left:0;line-height:26px}.goal-title{font-size:19px}.bubble-hint{font-size:13px;max-width:130px;text-align:right}.backlog-panel h2{max-width:190px}.task-bubble{padding:14px}.bubble-title{font-size:16px}.task-bubble.very_high .bubble-title{font-size:20px}.task-bubble.high .bubble-title{font-size:18px}.task-bubble.very_low .bubble-title{font-size:14px}.chat{right:16px;max-width:calc(100vw - 32px)}.muse-launcher{right:20px}.step-line>.agent-actions{margin-left:32px}.focus-details{margin-left:38px}.direction-panel{min-height:0}}
+@media(max-width:420px){.intro{display:block}.overview-toolbar{margin-top:18px}.focus-plan{font-size:18px}.focus-fraction{font-size:12px}.focus-rank{width:23px;line-height:23px}.next-steps,.focus-details{margin-left:0}.focus-context{gap:9px}.step-line>.agent-actions{margin-left:32px}.panel-top h2{font-size:18px}.brand{font-size:13px}}
 
-@media(max-width:900px){.overview-panel{padding:22px}.overview-grid{gap:18px}.focus-context{flex-wrap:wrap}.focus-plan{flex-basis:calc(100% - 42px)}.focus-fraction{padding:0;margin-left:30px}.focus-context progress{margin-top:4px}.backlog-panel{padding-inline:0}}
-@media(max-width:650px){.topbar{height:66px;padding-inline:18px}.brand{font-size:13px}.topbar nav{gap:6px}.topbar nav button,.topbar a{font-size:11px}.brand-mark{width:30px;height:30px;font-size:23px}main{padding:28px 18px 110px}.intro{gap:18px;margin-bottom:24px}.intro h1.eyebrow{font-size:48px;letter-spacing:-2px}.overview-grid{grid-template-columns:1fr}.overview-toolbar{width:100%}.focus-plan,.focus-item.is-single .step-title{font-size:28px}.goal-title{font-size:29px}.task-bubble{padding:14px}.bubble-title{font-size:18px}.task-bubble.very_high .bubble-title{font-size:24px}.task-bubble.high .bubble-title{font-size:21px}.task-bubble.very_low .bubble-title{font-size:16px}.bubble-hint{font-size:10px}.chat{right:16px;max-width:calc(100vw - 32px)}.muse-launcher{right:18px}.bubble-detail h3{font-size:24px}}
-/* Keep each handoff beside its task and preserve native checkbox behavior. */
-.step-line>.agent-actions,.focus-context>.agent-actions,.bubble-detail .row>.agent-actions{margin:0 0 0 auto;flex:none;flex-wrap:nowrap;align-self:center}
-.agent-actions button{white-space:nowrap}
-input.task-name.step-title{width:0;flex:1}
-input.check{appearance:none;-webkit-appearance:none;display:grid;place-content:center;border:1.5px solid currentColor;border-radius:50%;background:transparent;color:var(--muted);padding:0;position:relative}
-input.check:checked{color:var(--green)}
-input.check:checked::after{content:'✓';font-size:14px;font-weight:600;line-height:1}
-input.check:focus-visible{outline:2px solid var(--green);outline-offset:3px}
-input.check:disabled{cursor:wait}
-@media(max-width:650px){.step-line{gap:8px}.step-line>.agent-actions button{padding:5px 7px}.focus-context{flex-wrap:wrap}.focus-context .focus-plan{flex-basis:60%}}
+/* Task conversations and a single ordered subtask disclosure. */
+.intro h1.eyebrow .workspace-date{font:inherit;color:var(--ink)}
+.focus-context{align-items:flex-start}.focus-fraction{white-space:normal;text-align:right;max-width:120px;line-height:1.4}
+.focus-details,.focus-item.is-single .focus-details{margin:14px 0 0 38px}.focus-details>summary{justify-content:flex-start;gap:10px;color:var(--ink)}
+.focus-details>summary::before{content:'+';display:grid;place-items:center;width:22px;height:22px;border:1px solid var(--line);border-radius:5px;font-size:16px;color:var(--muted)}
+.focus-details[open]>summary::before{content:'−'}.plan-subtasks{display:grid;gap:0;margin-top:12px}.plan-subtasks .step-line{padding:12px 0;border-bottom:1px solid var(--line)}.plan-subtasks .step-line:last-child{border-bottom:0}.step-title.done{text-decoration:line-through;color:var(--muted)}.plan-description{font-size:14px;line-height:1.6;color:var(--muted);margin-top:14px;white-space:pre-wrap}
+.focus-item>button[data-task-chat]{margin:12px 0 0 38px}.goal-item{padding:22px 0}.goal-title{flex:1}.bubble-detail{max-height:calc(100dvh - 48px);overflow:auto;overscroll-behavior:auto;scroll-margin-top:24px;overflow-anchor:none}.bubble-detail .focus-details{margin-left:0}.bubble-detail>button[data-task-chat]{margin-top:16px}.detail-progress{font-size:14px;color:var(--muted);margin-top:12px}
+#chat-scope{margin-top:8px;font-size:14px;padding:8px;background:var(--paper);border-color:var(--line)}.chat-head-copy{min-width:0}.chat-head{align-items:flex-start}.chat-close{flex:none}.history{max-height:34vh}.composer #send{width:auto;min-width:64px;font-size:14px;border-radius:9px}
+@media(max-width:700px){.focus-context{flex-wrap:wrap}.focus-plan{flex-basis:calc(100% - 40px)}.focus-fraction{margin-left:38px;text-align:left;max-width:none}.bubble-detail{padding:20px}.bubble-detail .focus-details{margin-left:0}}
+@media(max-width:420px){.focus-details,.focus-item.is-single .focus-details{margin-left:0}.focus-item>button[data-task-chat]{margin-left:0}}
+
+/* Let wheel/touch scrolling continue through nested text surfaces at their edges. */
+.chat,.history,.bubble-detail,textarea{overscroll-behavior:auto}
+.section-count{white-space:nowrap;min-width:64px}
+.step-label{display:flex;flex-direction:column;flex:1;min-width:0;gap:5px}
+.step-label input.task-name.step-title{width:100%;flex:none}
+.step-label .task-deadline{margin:0;font-size:13px}.task-bubble .task-deadline{color:inherit;font-size:13px;font-weight:400;letter-spacing:0;margin:0}
+.bubble-detail .plan-description{overflow-wrap:anywhere}
+/* Compact direction, visible deadlines, and consistent task actions. */
+.direction-panel{align-self:start;padding-block:22px}
+.goal-list{max-height:400px;overflow:auto;overscroll-behavior:auto}
+.goal-item,.goal-item:last-of-type{display:block;min-height:0;padding:0;border-bottom:1px solid #dce1ef}
+.goal-item:last-child{border-bottom:0}.goal-item:hover{background:none}
+.goal-item>summary{list-style:none;cursor:pointer;padding:13px 4px;min-height:48px;font-size:17px;line-height:1.35}
+.goal-item>summary::-webkit-details-marker,.past-task>summary::-webkit-details-marker{display:none}
+.goal-item>summary:hover{color:var(--green);background:#e8ecf8;border-radius:6px}
+.goal-item[open]>summary{color:var(--green)}.goal-description{padding:0 4px 14px}.goal-description .plan-description{margin:0 0 12px;line-height:1.6;font-size:14px}
+.goal-description .card-actions{flex-wrap:wrap;margin-top:12px;padding-top:12px}
+.card-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px}.card-actions .agent-actions{margin:0 auto 0 0}
+.task-deadline,.step-label .task-deadline,.task-bubble .task-deadline{display:table;width:fit-content;padding:4px 8px;border-radius:6px;background:#e5f3e9;color:#27613b;font-size:13px;font-weight:600;line-height:1.4;margin-top:8px}
+.task-deadline[data-urgency="approaching"]{background:#fbf2cd;color:#766013}
+.task-deadline[data-urgency="soon"]{background:#ffead8;color:#93470d}
+.task-deadline[data-urgency="urgent"]{background:#fce6e5;color:#a32c2c}
+.task-deadline[data-urgency="overdue"]{background:#f9d9d9;color:#922525}
+.task-bubble .task-deadline{font-size:12px;font-weight:600;letter-spacing:0;margin:0;padding:3px 7px}
+.bubble-detail>.plan-subtasks{margin-top:18px}.bubble-detail>.plan-description{margin-top:16px}.bubble-detail>.small{margin-top:14px}
+.past-panel{grid-column:1/-1;padding:24px 0 0;border:0;border-top:1px solid var(--line);background:none;scroll-margin-top:24px}
+.past-task{padding:16px 0;border-top:1px solid var(--line)}.past-task>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:16px}.past-state{font-size:13px;color:var(--muted);white-space:nowrap}.past-task .plan-subtasks{margin-top:18px}.past-task>.plan-description{margin-top:14px}.past-task>.small{margin-top:14px}
+.workspace-menu>summary,.voice-note>summary{display:flex;align-items:center;gap:8px}
+.voice-note>summary{padding-block:8px;color:var(--muted)}
+.topbar>nav{gap:12px}.topbar .draft-label{font-size:12px;white-space:nowrap}
+.chat-close{display:grid;place-items:center;border-radius:9px;background:var(--paper);color:var(--muted)}.chat-close:hover{background:var(--soft);color:var(--green)}
+@media(max-width:700px){.topbar{height:auto;min-height:66px;flex-wrap:wrap;gap:8px;padding-block:12px}.topbar>nav{margin-left:auto;gap:8px}.direction-panel{padding:22px}.goal-item>summary{font-size:17px}.past-task>summary{align-items:flex-start}.past-state{font-size:12px;white-space:normal;max-width:115px;text-align:right}}
+/* Direct task creation and inline task content. */
+.section-actions{display:flex;align-items:center;gap:10px;flex:none}.section-actions .add-task{font-size:13px;white-space:nowrap}.section-actions .section-count{min-width:0}.panel-top{gap:12px}
+.inline-description{display:block;box-sizing:border-box;width:100%;min-height:58px;max-height:220px;field-sizing:content;font:inherit;font-size:14px;line-height:1.6;color:var(--muted);padding:8px;border:1px solid transparent;border-radius:6px;background:transparent;resize:vertical;margin-top:10px}.inline-description:hover{border-color:var(--line)}.inline-description:focus{border-color:var(--green);background:var(--panel);outline:2px solid var(--soft)}
+.goal-title input.task-name{font:inherit;font-size:17px;width:100%;margin:0}.goal-description .inline-description{margin:0 0 10px}.goal-description>.small{margin-left:8px}.goal-description .inline-date{margin-bottom:8px}
+.inline-date{position:relative;display:table;width:fit-content;cursor:pointer;margin-top:8px;font-size:13px;font-weight:400}.inline-date .task-deadline{margin:0}.inline-date input{position:absolute;inset:0;opacity:0;width:100%;height:100%;padding:0;cursor:pointer}.inline-date:focus-within input{position:static;opacity:1;width:154px;height:32px;padding:4px 6px;border:1px solid var(--green);border-radius:6px;background:var(--panel)}.inline-date:focus-within .task-deadline{display:none}.task-deadline.is-empty{background:transparent;color:var(--muted);font-weight:400;border:1px dashed var(--line)}
+.step-label .inline-description{font-size:13px;margin-top:0;min-height:44px}.step-label .inline-description:placeholder-shown,.step-label .inline-date:has(.is-empty){display:none}.step-label:focus-within .inline-description,.step-label:focus-within .inline-date{display:block}.step-label .inline-date{margin-top:0}
+.past-task-heading{display:flex;align-items:center;gap:16px}.past-task-heading h3{font-size:16px;font-weight:500;margin:0;flex:1;overflow-wrap:anywhere}.past-task-heading>button{flex:none}.past-task-heading .past-state{margin-left:auto}
+#add-dialog{width:min(500px,calc(100vw - 32px))}.bubble-detail>.inline-description{margin-top:14px}
+@media(max-width:700px){.panel-top{flex-wrap:wrap}.section-actions{margin-left:auto;gap:6px}.past-task-heading{flex-wrap:wrap;gap:10px}.past-task-heading h3{flex-basis:55%}.past-task-heading .past-state{margin:0}.past-task-heading>button{margin-left:auto}}
+/* A separate description control keeps title editing predictable. */
+.goal-heading{display:flex;align-items:center;gap:12px;padding:10px 4px;min-height:52px}.goal-heading>input.task-name{font:500 17px/1.4 "Segoe UI",sans-serif;flex:1;min-width:0;width:100%;margin:0}.description-toggle{display:grid;place-items:center;width:36px;height:36px;padding:0;border:0;border-radius:8px;flex:none;background:transparent;color:var(--muted)}.description-toggle:hover{background:#e2e7f7;color:var(--green)}.description-toggle[aria-expanded="true"] .disclosure-chevron{transform:rotate(180deg)}
+.manual-subtasks{display:grid;gap:8px;margin:10px 0}.manual-subtask{display:flex;align-items:center;gap:8px}.manual-subtask input{min-width:0;flex:1}.manual-step-number{color:var(--muted);font-size:13px;width:20px;text-align:center;flex:none}.manual-subtask>button{width:32px;height:32px;padding:0;flex:none}
+.past-groups{display:grid;grid-template-columns:1fr 1fr;gap:28px}.past-group-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px}.past-group-heading h3{font-size:16px;font-weight:600}.past-task-heading h4{font-size:15px;font-weight:500;margin:0;flex:1;overflow-wrap:anywhere}.past-group .past-state{font-size:12px}.past-group>.muted{font-size:14px;padding:12px 0}
+@media(max-width:850px){.past-groups{grid-template-columns:1fr}.past-task-heading{flex-wrap:wrap}}
 </style></head><body>
-<header class="topbar row between"><div class="row"><span class="brand-mark" aria-hidden="true">✳</span><span class="brand">Visual Second Brain</span></div><nav class="row"><button id="refresh" class="small ghost">Refresh</button><a href="/dev">Dev ↗</a><button id="signout" class="small ghost" hidden>Sign out</button></nav></header>
+<header class="topbar row between"><div class="row"><span class="brand">Visual Second Brain</span></div><nav class="row" aria-label="Workspace"><span id="draft-label" class="draft-label" hidden>Sample workspace</span><details class="workspace-menu"><summary>Workspace<svg class="disclosure-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></summary><div class="workspace-menu-items"><button id="refresh" class="small ghost">Refresh</button><a href="/dev">Developer console</a><button id="signout" class="small ghost" hidden>Sign out</button></div></details></nav></header>
 <main><div id="error" class="error" role="alert" hidden></div><div id="notice" class="notice" role="status" aria-live="polite" tabindex="-1"></div>
 <section id="access" class="panel" hidden style="margin-bottom:24px"><form id="access-form" class="panel-body"><h2>Demo access</h2><p class="muted">Enter the app’s demo access token. Access lasts eight hours. Your workspace belongs to this browser; clearing cookies starts a new one.</p><div class="row" style="margin-top:12px"><input id="token" type="password" aria-label="Demo access token" autocomplete="off" maxlength="4096" required><button class="primary">Connect</button></div></form></section>
-<div id="layout" class="canvas-layout"><section class="canvas" aria-label="Your saved tasks"><div class="intro row between wrap"><div><h1 class="eyebrow">A little headspace.</h1><time id="workspace-date" class="workspace-date"></time></div><div class="overview-toolbar"><span id="draft-label" class="draft-label" hidden>Design draft · sample data</span><button id="preview-toggle" class="small ghost" type="button">Sample day ↗</button></div></div><div id="reviews" tabindex="-1"></div><div id="canvas" aria-live="polite"><div class="canvas-state"><p>Loading your workspace…</p></div></div></section>
-<aside id="muse-chat" class="chat" aria-labelledby="muse-title" aria-hidden="true" inert><div class="chat-head row"><span class="muse-mark" aria-hidden="true">✳</span><div class="chat-head-copy"><h2 id="muse-title">Muse</h2><p>Your thinking partner.</p></div><button id="close-muse" class="chat-close" type="button" data-chat-control aria-label="Close Muse chat">×</button></div><a id="review-link" href="#reviews" hidden>Review proposed changes ↗</a><div id="chat-welcome" class="chat-welcome" hidden><h3>What’s on your mind?</h3></div><div id="conversation" class="history" aria-live="polite"></div><div id="status" class="status" role="status" aria-live="polite"></div>
-<form id="chat-form" class="composer"><label for="message">What’s on your mind?</label><textarea id="message" maxlength="10000" required placeholder="Message Muse…"></textarea><div class="row between"><div class="row wrap" style="margin:0"><button id="voice" class="small" type="button" aria-pressed="false" aria-label="Record voice message" title="Record voice message" aria-describedby="voice-status voice-privacy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11v1a7 7 0 0 0 14 0v-1M12 19v3M9 22h6"/></svg></button><button id="voice-retry" class="small ghost" type="button" hidden>Retry transcription</button><button id="voice-cancel" class="small ghost" type="button" hidden>Cancel</button></div><button id="send" class="primary" type="submit" aria-label="Send message" title="Send message">↑</button></div></form><p id="voice-status" class="voice-status" role="status" aria-live="polite"></p><p id="voice-preview" class="voice-preview" hidden></p><details class="voice-note"><summary>Voice uses Meta transcription</summary><p id="voice-privacy" class="voice-status">Record up to one minute. Stop &amp; transcribe sends audio to Meta for transcription. Review the text before sending. This app does not save audio.</p></details></aside></div></main>
-<button id="muse-launcher" class="muse-launcher" type="button" data-chat-control aria-label="Open Muse chat" aria-expanded="false" aria-controls="muse-chat"><svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M20 3C22 14 26 18 37 20C26 22 22 26 20 37C18 26 14 22 3 20C14 18 18 14 20 3Z" fill="currentColor"/><circle cx="31" cy="8" r="2.5" fill="currentColor" opacity=".65"/></svg><span class="launcher-caption" aria-hidden="true">Talk to Muse</span></button>
-<dialog id="edit-dialog"><form id="edit-form"><div class="row between" style="margin-bottom:20px"><h2 style="margin:0">Edit task</h2><button type="button" id="close-edit" class="small" aria-label="Close editor">✕</button></div><input id="edit-id" type="hidden"><div class="field"><label for="edit-title">Task name</label><input id="edit-title" required maxlength="300"></div><div class="field"><label for="edit-description">Details</label><textarea id="edit-description" maxlength="10000"></textarea></div><div class="grid2"><div class="field"><label for="edit-deadline">Due date</label><input id="edit-deadline" type="date"></div><div class="field"><label for="edit-importance">Importance</label><select id="edit-importance" data-level-select></select></div></div><div class="field"><label for="edit-status">Status</label><select id="edit-status"><option value="pending">Pending</option><option value="in_progress">In progress</option><option value="completed">Completed</option></select></div><div id="edit-handoff-fields"></div><p id="edit-handoff-error" class="error" role="alert" hidden></p><button class="primary" type="submit">Save changes</button></form></dialog>
+<div id="layout" class="canvas-layout"><section class="canvas" aria-label="Your saved tasks"><div class="intro row between wrap"><div><h1 class="eyebrow"><time id="workspace-date" class="workspace-date"></time></h1></div><div class="overview-toolbar"><button id="preview-toggle" class="small ghost" type="button">Sample day</button></div></div><div id="reviews" tabindex="-1"></div><div id="canvas" aria-live="polite"><div class="canvas-state"><p>Loading your workspace…</p></div></div></section>
+<aside id="muse-chat" class="chat" aria-labelledby="muse-title" aria-hidden="true" inert><div class="chat-head row"><div class="chat-head-copy"><h2 id="muse-title">Muse</h2><label class="sr-only" for="chat-scope">Conversation</label><select id="chat-scope"><option value="">All tasks</option></select></div><button id="close-muse" class="chat-close" type="button" data-chat-control aria-label="Close Muse chat"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><a id="review-link" href="#reviews" hidden>Review proposed changes</a><div id="chat-welcome" class="chat-welcome" hidden><h3>What’s on your mind?</h3></div><div id="conversation" class="history" aria-live="polite"></div><div id="status" class="status" role="status" aria-live="polite"></div>
+<form id="chat-form" class="composer"><label for="message">What’s on your mind?</label><textarea id="message" maxlength="10000" required placeholder="Message Muse…"></textarea><div class="row between"><div class="row wrap" style="margin:0"><button id="voice" class="small" type="button" aria-pressed="false" aria-label="Record voice message" title="Record voice message" aria-describedby="voice-status voice-privacy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11v1a7 7 0 0 0 14 0v-1M12 19v3M9 22h6"/></svg></button><button id="voice-retry" class="small ghost" type="button" hidden>Retry transcription</button><button id="voice-cancel" class="small ghost" type="button" hidden>Cancel</button></div><button id="send" class="primary" type="submit" aria-label="Send message" title="Send message (Ctrl+Enter)">Send</button></div></form><p id="voice-status" class="voice-status" role="status" aria-live="polite"></p><p id="voice-preview" class="voice-preview" hidden></p><details class="voice-note"><summary>Voice uses Meta transcription<svg class="disclosure-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></summary><p id="voice-privacy" class="voice-status">Record up to one minute. Stop &amp; transcribe sends audio to Meta for transcription. Review the text before sending. This app does not save audio.</p></details></aside></div></main>
+<button id="muse-launcher" class="muse-launcher" type="button" data-chat-control aria-label="Open Muse chat" aria-expanded="false" aria-controls="muse-chat"><svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M9 8h22a4 4 0 0 1 4 4v13a4 4 0 0 1-4 4H18l-9 6v-6a4 4 0 0 1-4-4V12a4 4 0 0 1 4-4Z" stroke="currentColor" stroke-width="2.2"/><path d="M13 17h14M13 23h9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span class="launcher-caption" aria-hidden="true">Talk to Muse</span></button>
+<dialog id="add-dialog" aria-labelledby="add-title"><form id="add-form"><div class="row between" style="margin-bottom:20px"><h2 id="add-title">Add task</h2><button type="button" id="close-add" class="small" aria-label="Close new task">×</button></div><input id="add-horizon" type="hidden"><div class="field"><label for="add-name">Task name</label><input id="add-name" required maxlength="300" autocomplete="off"></div><div id="add-description-field" class="field"><label for="add-description">Description</label><textarea id="add-description" maxlength="10000" placeholder="Optional context"></textarea></div><div id="add-steps-field" class="field" hidden><label id="add-steps-label">Subtasks</label><div id="add-subtasks" class="manual-subtasks" role="group" aria-labelledby="add-steps-label"></div><button type="button" id="add-subtask" class="small ghost">+ Add subtask</button></div><div class="grid2"><div class="field"><label for="add-deadline">Deadline</label><input id="add-deadline" type="date"></div><div class="field"><label for="add-importance">Importance</label><select id="add-importance" data-level-select></select></div></div><p id="add-error" class="error" role="alert" hidden></p><div class="row between"><button type="button" id="cancel-add" class="small ghost">Cancel</button><button class="primary" type="submit">Add task</button></div></form></dialog>
+<dialog id="edit-dialog"><form id="edit-form"><div class="row between" style="margin-bottom:20px"><h2 style="margin:0">Edit task</h2><button type="button" id="close-edit" class="small" aria-label="Close editor">✕</button></div><input id="edit-id" type="hidden"><div class="field"><label for="edit-title">Task name</label><input id="edit-title" required maxlength="300"></div><div class="field"><label for="edit-description">Details</label><textarea id="edit-description" maxlength="10000"></textarea></div><div class="field"><label for="edit-horizon">Focus section</label><select id="edit-horizon"><option value="">Automatic</option><option value="short_term">Short-term</option><option value="long_term">Long-term</option></select></div><div class="grid2"><div class="field"><label for="edit-deadline">Due date</label><input id="edit-deadline" type="date"></div><div class="field"><label for="edit-importance">Importance</label><select id="edit-importance" data-level-select></select></div></div><div class="field"><label for="edit-status">Status</label><select id="edit-status"><option value="pending">Pending</option><option value="in_progress">In progress</option><option value="completed">Completed</option></select></div><div id="edit-handoff-fields"></div><p id="edit-handoff-error" class="error" role="alert" hidden></p><button class="primary" type="submit">Save changes</button></form></dialog>
 <script>
 'use strict';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const labels={very_low:'Very low',low:'Low',medium:'Medium',high:'High',very_high:'Very high'};
 let state={tasks:[],messages:[],runs:[]},ranges={},busy=false,pending=null,editVersion=null;
 let completionAnimating=false,editHandoff=null;
-// A visit owns its chat in memory; saved dashboard records stay in the workspace.
-let conversationId=crypto.randomUUID();
-function newChat(){conversationId=crypto.randomUUID();pending=null;$('#chat-form').reset();}
-function chatRuns(){return state.runs.filter(r=>r.input_payload?.conversation_id===conversationId&&r.input_payload?.operation!=='draft');}
+// Chat messages live on the server; only unsent drafts stay in this page.
+let conversationId=null,chatTaskId=null;
+const chatDrafts=new Map(),chatRequests=new Map();
+function newChat(){conversationId=null;chatTaskId=null;chatDrafts.clear();chatRequests.clear();pending=null;$('#chat-form').reset();}
+function chatRuns(){return state.runs.filter(r=>r.task_id===null&&r.input_payload?.operation!=='draft'&&(chatTaskId?(r.input_payload?.chat_task_id===chatTaskId||(!r.input_payload?.chat_task_id&&r.related_task_ids?.includes(chatTaskId))):!r.input_payload?.chat_task_id));}
 const today=new Date();$('#workspace-date').dateTime=[today.getFullYear(),String(today.getMonth()+1).padStart(2,'0'),String(today.getDate()).padStart(2,'0')].join('-');$('#workspace-date').textContent=today.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric'});
-document.querySelectorAll('[data-level-select]').forEach(el=>el.innerHTML='<option value="">Let Muse assess</option>'+Object.entries(labels).map(([k,v])=>`<option value="${k}">${v}</option>`).join(''));
+document.querySelectorAll('[data-level-select]').forEach(el=>el.innerHTML=`<option value="">${el.id==='add-importance'?'Not assessed':'Let Muse assess'}</option>`+Object.entries(labels).map(([k,v])=>`<option value="${k}">${v}</option>`).join(''));
 function level(t){return t.user_importance_level||Object.keys(ranges).find(k=>t.importance_score!==null&&t.importance_score>=ranges[k].min&&t.importance_score<=ranges[k].max)||'';}
 function badge(t){return `<span class="pill ${esc(level(t))}">${esc(labels[level(t)]||'Unassessed')}</span>`;}
 function error(e){$('#error').textContent=e.message||'Something went wrong. Your draft is still here.';$('#error').hidden=false;}
 async function api(path,method='GET',body){let r;try{r=await fetch(path,{method,credentials:'same-origin',headers:{'Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})});}catch{throw Error('Could not reach the server. Your draft is preserved; try again.');}let data;try{data=await r.json();}catch{throw Error('The server returned an unreadable response. Your draft is preserved.');}if(!r.ok){if(r.status===401){endVoice({discard:true});$('#access').hidden=false;$('#signout').hidden=true;newChat();state={tasks:[],messages:[],runs:[]};render();}throw Error((data.error?.message||'Request failed')+(r.status===409?' Refresh to see the latest state.':''));}return data;}
-function setBusy(value){if(value)endVoice({discard:true});busy=value;document.querySelectorAll('button:not([data-chat-control]),input,textarea,select').forEach(el=>el.disabled=value);$('#send').textContent=value?'…':'↑';syncVoice();}
-async function refresh(){const [data,levels,health]=await Promise.all([api('/api/dashboard'),api('/api/importance-levels'),api('/health')]);state=data;const runIds=new Set(chatRuns().map(r=>r.id));state.messages=state.messages.filter(m=>runIds.has(m.run_id));ranges=levels;$('#access').hidden=true;$('#signout').hidden=!health.demo_access_required;render();}
+function setBusy(value){if(value)endVoice({discard:true});busy=value;document.querySelectorAll('button:not([data-chat-control]),input,textarea,select').forEach(el=>el.disabled=value);$('#send').textContent=value?'…':'Send';syncVoice();}
+async function refresh(){const [data,levels,health]=await Promise.all([api('/api/dashboard'),api('/api/importance-levels'),api('/health')]);if(state.user_id!==data.user_id){try{chatTaskId=localStorage.getItem('second-brain-chat:'+data.user_id)||null;}catch{chatTaskId=null;}}state=data;if(chatTaskId&&!state.tasks.some(t=>t.id===chatTaskId))chatTaskId=null;ranges=levels;$('#access').hidden=true;$('#signout').hidden=!health.demo_access_required;render();}
 async function action(work,success){if(busy)return;setBusy(true);$('#error').hidden=true;$('#notice').textContent='';try{await work();await refresh();if(success)$('#notice').textContent=success;}catch(e){$('#status').textContent='';error(e);}finally{setBusy(false);}}
 function stepProgress(task){const steps=state.tasks.filter(t=>t.parent_task_id===task.id);if(!steps.length)return '';const done=steps.filter(t=>t.status==='completed').length;return `<div class="task-progress"><progress value="${done}" max="${steps.length}" aria-label="Completed steps for ${esc(task.title)}"></progress><span>${done} of ${steps.length} steps complete</span></div>`;}
 function taskRow(t){
@@ -316,36 +348,55 @@ function taskRow(t){
 // Sample mode is an isolated visual draft. It never replaces API state or writes records.
 let samplePreview=new URLSearchParams(window.location.search).get('draft')==='1';
 let selectedBubble=null,lastRevealedBubble=null;
+const openPlans=new Set();
 const sampleSunday=new Date();sampleSunday.setDate(sampleSunday.getDate()+((7-sampleSunday.getDay())%7||7));
 const sampleDue=[sampleSunday.getFullYear(),String(sampleSunday.getMonth()+1).padStart(2,'0'),String(sampleSunday.getDate()).padStart(2,'0')].join('-');
+const sampleNow=new Date(),sampleToday=[sampleNow.getFullYear(),String(sampleNow.getMonth()+1).padStart(2,'0'),String(sampleNow.getDate()).padStart(2,'0')].join('-');
 const sampleFocus=[
  {user_importance_level:'very_high',id:'sample-1',deadline:sampleDue,title:'Finish the homework outline',note:'Due Sunday',done:2,total:4},
- {user_importance_level:'high',id:'sample-2',title:'Polish the dashboard',note:'In progress',done:1,total:3},
- {user_importance_level:'medium',id:'sample-3',title:'Make time for a walk',note:'A little space for yourself',done:0,total:1}
+ {user_importance_level:'high',id:'sample-2',deadline:sampleToday,title:'Polish the dashboard',note:'In progress',done:1,total:3},
+ {user_importance_level:'medium',id:'sample-3',deadline:sampleToday,title:'Make time for a walk',note:'A little space for yourself',done:0,total:1}
 ];
 
 const sampleBacklog=[
- {id:'sample-house',title:'Refresh the living room',user_importance_level:'medium',done:0,total:3},
- {id:'sample-garden',title:'Start a balcony garden',user_importance_level:'low',done:0,total:2},
- {id:'sample-photos',title:'Organize old photos',user_importance_level:'very_low',done:0,total:2}
+ {id:'sample-house',description:'Make the living room calmer and more comfortable. Explore colors and a reading corner when there is time.',title:'Refresh the living room',user_importance_level:'medium',done:0,total:3},
+ {id:'sample-garden',description:'Create a small green space with easy-care plants suited to the balcony light.',title:'Start a balcony garden',user_importance_level:'low',done:0,total:2},
+ {id:'sample-photos',description:'Keep favorite memories easy to find and share, while preserving the original photos.',title:'Organize old photos',user_importance_level:'very_low',done:0,total:2}
 ];
 const samplePlans=[...sampleFocus,...sampleBacklog];
 function orderedChildren(id,tasks=state.tasks){return tasks.filter(t=>t.parent_task_id===id).sort((a,b)=>(a.position??0)-(b.position??0));}
 function leafSteps(id,tasks=state.tasks){return orderedChildren(id,tasks).flatMap(t=>orderedChildren(t.id,tasks).length?leafSteps(t.id,tasks):[t]);}
 function taskNameInput(task,classes=''){
- return `<input class="task-name ${classes}" data-task-name="${esc(task.id)}" data-version="${task.version}" value="${esc(task.title)}" aria-label="Task name" required maxlength="300">`;
+ return `<input class="task-name ${classes}" data-task-name="${esc(task.id)}" data-version="${task.version}" value="${esc(task.title)}" aria-label="Task name" title="${esc(task.title)}" required maxlength="300">`;
+}
+function taskDescription(t){
+ return `<textarea class="inline-description" data-task-field="description" data-task-id="${esc(t.id)}" data-version="${t.version||1}" aria-label="Description for ${esc(t.title)}" maxlength="10000" rows="2" placeholder="Add a description…">${esc(t.description||'')}</textarea>`;
+}
+function editableDeadline(t){
+ return `<label class="inline-date">${taskDeadline(t)||'<span class="task-deadline is-empty">Add deadline</span>'}<input type="date" data-task-field="deadline" data-task-id="${esc(t.id)}" data-version="${t.version||1}" value="${esc(t.deadline||'')}" aria-label="Deadline for ${esc(t.title)}"></label>`;
 }
 function focusStep(t,sample=false){
  const done=t.status==='completed';
- return `<div class="step-line ${done?'is-done':''}" data-step-id="${esc(t.id)}">${sample?`<button class="sample-check" data-sample-step="${esc(t.id)}" aria-label="${done?'Reopen':'Complete'} sample step ${esc(t.title)}">${done?'✓':'○'}</button>`:`<input class="check" type="checkbox" data-complete="${esc(t.id)}" aria-label="Mark ${esc(t.title)} ${done?'pending':'complete'}" ${done?'checked':''}>`}${sample?`<span class="step-title ${done?'done':''}">${esc(t.title)}</span>`:taskNameInput(t,`step-title ${done?'done':''}`)}${agentActions(t)}</div>`;
+ return `<div class="step-line ${done?'is-done':''}" data-step-id="${esc(t.id)}">${sample?`<button class="sample-check" data-sample-step="${esc(t.id)}" aria-label="${done?'Reopen':'Complete'} sample step ${esc(t.title)}">${done?'✓':'○'}</button>`:`<input class="check" type="checkbox" data-complete="${esc(t.id)}" aria-label="Mark ${esc(t.title)} ${done?'pending':'complete'}" ${done?'checked':''}>`}<div class="step-label">${taskNameInput(t,`step-title ${done?'done':''}`)}${taskDescription(t)}${editableDeadline(t)}</div>${agentActions(t)}</div>`;
+}
+function taskDeadline(t){
+ if(!t.deadline)return '';
+ const today=new Date(),days=Math.round((Date.parse(t.deadline)-Date.UTC(today.getFullYear(),today.getMonth(),today.getDate()))/86400000);
+ const urgency=days<0?'overdue':days<=1?'urgent':days<=3?'soon':days<=7?'approaching':'later',date=new Date(t.deadline+'T12:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'});
+ const label=days<0?'Overdue':days===0?'Due today':days===1?'Due tomorrow':'Due';
+ return `<span class="task-deadline" data-urgency="${urgency}">${label} · ${esc(date)}</span>`;
+}
+function taskChatButton(t,sample=false){return sample?'':`<button class="small ghost" type="button" data-task-chat="${esc(t.id)}">Task chat</button>`;}
+function taskActions(t,sample=false){
+ const completed=t.status==='completed'||t.completed;
+ return `<div class="card-actions">${agentActions(t)}${sample?'':`<button class="small ghost" data-edit="${esc(t.id)}">Edit task</button>`}<button class="small ghost" ${sample?'data-sample-complete':'data-toggle'}="${esc(t.id)}">${completed?'Reopen task':'Complete task'}</button></div>`;
 }
 function overviewFocus(t,i,tasks=state.tasks,sample=false){
- const steps=leafSteps(t.id,tasks),unfinished=steps.filter(c=>c.status!=='completed'),visible=unfinished.slice(0,1),done=steps.filter(c=>c.status==='completed').length;
- const actions=steps.length?visible:[t],completeSteps=steps.filter(c=>c.status==='completed');
- return `<article class="focus-item ${steps.length?'':'is-single'}" data-plan-id="${esc(t.id)}" data-focus-rank="${i}"><div class="focus-context"><span class="focus-rank">0${i+1}</span>${steps.length?`<h3 class="focus-plan">${sample?esc(t.title):taskNameInput(t)}</h3>`:''}${steps.length?agentActions(t):''}${steps.length?`<span class="focus-fraction">${done}/${steps.length}</span><progress value="${done}" max="${steps.length}" aria-label="Completed steps for ${esc(t.title)}"></progress>`:''}</div>${steps.length?'<p class="next-action-label">Next action</p>':''}<div class="next-steps">${actions.map(c=>focusStep(c,sample)).join('')||'<span class="steps-finished">Steps done. Ready to finish?</span>'}</div><details class="focus-details"><summary>${unfinished.length>1?`All ${steps.length} steps`:'Plan details'}</summary><div class="plan-info"><div class="focus-meta">${sample?'<span>Sample plan</span>':badge(t)}${t.deadline?`<span>Due ${esc(t.deadline)}</span>`:''}${t.status==='in_progress'?'<span>In progress</span>':''}</div>${t.description?`<details class="step-notes plan-notes"><summary>Notes</summary><p>${esc(t.description)}</p></details>`:''}</div>${unfinished.length>1?`<div class="remaining-steps">${unfinished.slice(1).map(c=>focusStep(c,sample)).join('')}</div>`:''}${completeSteps.length?`<details class="completed-steps"><summary>Completed · ${completeSteps.length}</summary>${completeSteps.map(c=>focusStep(c,sample)).join('')}</details>`:''}<div class="card-actions">${sample?`<button class="small ghost" data-sample-complete="${esc(t.id)}">${t.completed?'Reopen plan':'Complete plan'}</button>`:`<button class="small ghost" data-edit="${esc(t.id)}">Edit plan</button><button class="small ghost" data-toggle="${esc(t.id)}">Complete plan</button>`}</div></details></article>`;
+ const steps=leafSteps(t.id,tasks),done=steps.filter(c=>c.status==='completed').length;
+ return `<article class="focus-item" data-plan-id="${esc(t.id)}" data-focus-rank="${i}"><div class="focus-context"><span class="focus-rank" aria-hidden="true">${i+1}</span><h3 class="focus-plan">${taskNameInput(t)}${editableDeadline(t)}</h3>${steps.length?`<span class="focus-fraction">${done} / ${steps.length} completed</span>`:''}</div><details class="focus-details" data-plan-disclosure="${esc(t.id)}"><summary>${steps.length?'Subtasks':'Task details'}</summary>${steps.length?`<div class="plan-subtasks">${steps.map(c=>focusStep(c,sample)).join('')}</div>`:''}${t.description?taskDescription(t):''}${taskActions(t,sample)}</details>${taskChatButton(t,sample)}</article>`;
 }
 const sampleStepNames=[['Read the assignment brief','Collect references','Write the outline','Review the outline'],['Sketch the layout','Refine the priority cards','Check the mobile layout'],['Walk around the neighborhood'],['Choose a corner to refresh','Measure the space','Pick a paint color'],['Check the balcony light','Choose a few plants'],['Gather photos into one folder','Choose favorites']];
-const sampleSteps=samplePlans.flatMap((t,i)=>sampleStepNames[i].map((title,j)=>({id:`${t.id}-step-${j}`,parent_task_id:t.id,title,position:j,status:j<t.done?'completed':'pending'})));
+const sampleSteps=sampleFocus.flatMap((t,i)=>sampleStepNames[i].map((title,j)=>({id:`${t.id}-step-${j}`,parent_task_id:t.id,title,position:j,status:j<t.done?'completed':'pending'})));
 const sampleHandoffs=[
  [['muse','Assignment brief','A summary of the assignment requirements.'],['muse','Browser access and assignment topic','References with source links.'],['muse','Assignment requirements and references','An outline ready for your review.'],['user','','Your reviewed outline reflects your intended argument.']],
  [['muse','Browser or design editor','A layout sketch ready for review.'],['muse','Access to the dashboard code','Updated priority cards ready for review.'],['muse','Browser with viewport controls','Mobile layout issues documented.']],
@@ -357,22 +408,56 @@ const sampleHandoffs=[
 samplePlans.forEach((plan,i)=>{
  const steps=sampleSteps.filter(t=>t.parent_task_id===plan.id);
  steps.forEach((step,j)=>{const [handler,requirement,done_when]=sampleHandoffs[i][j];step.handoff={handler,reason:handler==='muse'?'Computer-based work that can produce a reviewable result.':'Requires your personal choice or a physical action.',requirements:requirement?[requirement]:[],done_when};});
- const handler=steps.every(t=>t.handoff.handler==='muse')?'muse':'user';
+ const handler=steps.length&&steps.every(t=>t.handoff.handler==='muse')?'muse':'user';
  plan.handoff={handler,reason:handler==='muse'?'All planned steps can be performed on a computer.':'This plan includes steps that need you; individual steps may be handed off.',requirements:handler==='muse'?['Computer access and the task materials']:[],done_when:handler==='muse'?'The updated dashboard and layout checks are ready for review.':'All planned steps have been completed and reviewed by you.'};
 });
-function hasNextAction(task,tasks=state.tasks){if(task.status==='completed'||task.completed)return false;const steps=leafSteps(task.id,tasks);return !steps.length||steps.some(t=>t.status!=='completed');}
+function hasNextAction(task,tasks=state.tasks){if(task.status==='completed'||task.completed)return false;if(task.status==='in_progress')return true;const steps=leafSteps(task.id,tasks);return !steps.length||steps.some(t=>t.status!=='completed');}
+function taskHorizon(t,tasks=state.tasks){return t.time_horizon||((t.deadline||leafSteps(t.id,tasks).length)?'short_term':'long_term');}
+function dashboardGroups(plans,tasks){
+ const active=plans.filter(t=>hasNextAction(t,tasks));
+ const isShort=t=>taskHorizon(t,tasks)==='short_term';
+ const byImportance=(a,b)=>(b.importance_score??-1)-(a.importance_score??-1)||String(a.id).localeCompare(String(b.id));
+ return {
+  active,
+  short:active.filter(isShort).sort((a,b)=>(a.deadline||'9999-12-31').localeCompare(b.deadline||'9999-12-31')||byImportance(a,b)),
+  long:active.filter(t=>!isShort(t)).sort(byImportance),
+  past:plans.filter(t=>!hasNextAction(t,tasks)).sort((a,b)=>String(b.updated_at||'').localeCompare(String(a.updated_at||'')))
+ };
+}
+function longTermEntry(t,sample=false){
+ const open=openPlans.has(t.id);
+ return `<article class="goal-item" data-plan-id="${esc(t.id)}"><div class="goal-heading">${taskNameInput(t)}<button type="button" class="description-toggle" data-toggle-description="${esc(t.id)}" aria-expanded="${open}" aria-controls="goal-description-${esc(t.id)}" aria-label="${open?'Hide':'Show'} description for ${esc(t.title)}"><svg class="disclosure-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button></div><div id="goal-description-${esc(t.id)}" class="goal-description" ${open?'':'hidden'}>${taskDescription(t)}${editableDeadline(t)}${taskChatButton(t,sample)}${taskActions(t,sample)}</div></article>`;
+}
+function toggleTaskDescription(button){
+ const id=button.dataset.toggleDescription,open=button.getAttribute('aria-expanded')!=='true',panel=document.getElementById('goal-description-'+id);
+ if(!panel)return;
+ if(open)openPlans.add(id);else openPlans.delete(id);
+ panel.hidden=!open;button.setAttribute('aria-expanded',String(open));
+ const task=(samplePreview?samplePlans:state.tasks).find(t=>t.id===id);
+ button.setAttribute('aria-label',`${open?'Hide':'Show'} description for ${task?.title||'task'}`);
+}
+function pastTask(t,tasks,sample=false){
+ const completed=t.status==='completed'||t.completed;
+ return `<article class="past-task" data-plan-id="${esc(t.id)}"><div class="past-task-heading"><h4>${esc(t.title)}</h4><span class="past-state">${completed?'Completed':'All subtasks completed'}</span><button class="small ghost" type="button" data-reopen="${esc(t.id)}">Reopen task</button></div></article>`;
+}
+function renderPastGroups(plans,tasks,sample=false){
+ return ['short_term','long_term'].map(horizon=>{
+  const entries=plans.filter(t=>taskHorizon(t,tasks)===horizon),name=horizon==='short_term'?'Short-term':'Long-term';
+  return `<section class="past-group" aria-label="Past ${name.toLowerCase()} tasks"><div class="past-group-heading"><h3>${name}</h3><span class="section-count">${entries.length} ${entries.length===1?'task':'tasks'}</span></div>${entries.map(t=>pastTask(t,tasks,sample)).join('')||'<p class="muted">No past tasks.</p>'}</section>`;
+ }).join('');
+}
+function sectionTaskControls(horizon,count){
+ return `<div class="section-actions"><button type="button" class="small ghost add-task" data-add-task="${horizon}" aria-label="Add ${horizon==='short_term'?'short-term':'long-term'} task">+ Add task</button><span class="section-count">${count} ${count===1?'task':'tasks'}</span></div>`;
+}
 function renderOverview(){
  stopBubbleWorld();
- $('#draft-label').hidden=!samplePreview;$('#preview-toggle').textContent=samplePreview?'My workspace ↗':'Sample day ↗';$('#preview-toggle').setAttribute('aria-pressed',String(samplePreview));
- const roots=state.tasks.filter(t=>!t.parent_task_id),active=roots.filter(t=>hasNextAction(t)).sort((a,b)=>(b.importance_score??-1)-(a.importance_score??-1));
- const sampleActive=samplePlans.filter(t=>hasNextAction(t,sampleSteps)).sort((a,b)=>Object.keys(labels).indexOf(level(b))-Object.keys(labels).indexOf(level(a)));
- const focus=samplePreview?sampleActive.slice(0,3).map((t,i)=>overviewFocus({...t,status:t.completed?'completed':'pending'},i,sampleSteps,true)).join(''):active.slice(0,3).map((t,i)=>overviewFocus(t,i)).join('');
- const boardPlans=samplePreview?sampleActive:active;
+ $('#draft-label').hidden=!samplePreview;$('#preview-toggle').textContent=samplePreview?'My workspace':'Try a sample day';$('#preview-toggle').setAttribute('aria-pressed',String(samplePreview));
+ const roots=samplePreview?samplePlans:state.tasks.filter(t=>!t.parent_task_id),tasks=samplePreview?sampleSteps:state.tasks;
+ const groups=dashboardGroups(roots,tasks),boardPlans=groups.active;
+ const focus=groups.short.map((t,i)=>overviewFocus(t,i,tasks,samplePreview)).join('');
  if(!boardPlans.some(t=>t.id===selectedBubble))selectedBubble=null;
- const archive=!samplePreview&&roots.some(t=>!hasNextAction(t))?`<details class="all-plans"><summary>Completed work</summary>${roots.filter(t=>!hasNextAction(t)).map(taskRow).join('')}</details>`:'';
-
- const summary=renderWorkspaceSummary(samplePreview?samplePlans:roots,samplePreview?sampleSteps:state.tasks,samplePreview);
- $('#canvas').innerHTML=`<div class="overview-grid"><section class="overview-panel" aria-labelledby="focus-title"><div class="panel-top"><div><h2 id="focus-title">First things first</h2></div><span class="panel-icon" aria-hidden="true">◎</span></div><div class="focus-list">${focus||`<div class="quiet-empty"><strong>${roots.length?'A little breathing room.':'One thing at a time.'}</strong><button class="chat-entry" type="button" data-open-muse>Talk to Muse ↗</button></div>`}</div></section><section class="overview-panel direction-panel" aria-labelledby="direction-title"><div class="panel-top"><div><h2 id="direction-title">The big picture</h2></div><span class="panel-icon" aria-hidden="true">↗</span></div>${summary}</section><section class="overview-panel backlog-panel" aria-labelledby="backlog-title"><div class="panel-top"><div><h2 id="backlog-title">Your orbit</h2></div><span class="bubble-hint" title="Drag to move. Larger bubbles mean higher importance.">Sized by importance ↗</span></div><span id="bubble-move-help" class="sr-only">Drag to move, or use arrow keys when focused. Press Enter to open task details.</span><div class="bubble-field" role="group" aria-label="Tasks by importance">${boardPlans.map(backlogBubble).join('')||'<p class="muted">Room for what’s next.</p>'}</div>${renderBubbleDetails(boardPlans,samplePreview?sampleSteps:state.tasks,samplePreview)}${archive}</section></div>`;
+ $('#canvas').innerHTML=`<div class="overview-grid"><section class="overview-panel" aria-labelledby="focus-title"><div class="panel-top"><h2 id="focus-title">Short-term focus</h2>${sectionTaskControls('short_term',groups.short.length)}</div><div class="focus-list">${focus||`<div class="quiet-empty"><strong>Add your next task.</strong><button class="chat-entry" type="button" data-open-muse>Plan with Muse</button></div>`}</div></section><section class="overview-panel direction-panel" aria-labelledby="direction-title"><div class="panel-top"><h2 id="direction-title">Long-term focus</h2>${sectionTaskControls('long_term',groups.long.length)}</div><div class="goal-list">${groups.long.map(t=>longTermEntry(t,samplePreview)).join('')||'<p class="direction-empty">Add a goal you want to work toward.</p>'}</div></section><section class="overview-panel backlog-panel" aria-labelledby="backlog-title"><div class="panel-top"><h2 id="backlog-title">Everything on your mind</h2></div><span id="bubble-move-help" class="sr-only">Drag to move, or use arrow keys when focused. Press Enter to open task details.</span><div class="bubble-field" role="group" aria-label="Tasks by importance">${boardPlans.map(backlogBubble).join('')||'<p class="muted">Your tasks will find a place here.</p>'}</div>${renderBubbleDetails(boardPlans,tasks,samplePreview)}</section><section id="past-tasks" class="overview-panel past-panel" aria-labelledby="past-title"><div class="panel-top"><h2 id="past-title" tabindex="-1">Past tasks</h2><span class="section-count">${groups.past.length} ${groups.past.length===1?'task':'tasks'}</span></div>${groups.past.length?`<div class="past-groups">${renderPastGroups(groups.past,tasks,samplePreview)}</div>`:'<p class="muted">Completed tasks will stay here. Reopen one to continue.</p>'}</section></div>`;
+ document.querySelectorAll('[data-plan-disclosure]').forEach(el=>{el.open=openPlans.has(el.dataset.planDisclosure);});
  layoutBubbles();
  if(selectedBubble&&selectedBubble!==lastRevealedBubble)revealBubbleDetails();
  lastRevealedBubble=selectedBubble;
@@ -507,35 +592,20 @@ function startBubbleWorld(field,layout,buttons){
  wakeBubbleWorld(world);
 }
 
-// A factual snapshot of saved work; no model-generated or inferred status.
-function renderWorkspaceSummary(plans,tasks=state.tasks,sample=false){
- const open=plans.filter(t=>t.status!=='completed'&&!t.completed);
- if(!plans.length)return '<div class="workspace-summary"><p class="summary-lead">A fresh page.</p><p class="summary-context">Tell Muse what’s on your mind. Your overview starts there.</p></div>';
- if(!open.length)return '<div class="workspace-summary"><p class="summary-lead">All wrapped up.</p><p class="summary-context">Your saved tasks are complete.</p></div>';
- const steps=open.flatMap(t=>leafSteps(t.id,tasks)),done=steps.filter(t=>t.status==='completed').length;
- const dated=[...open,...steps.filter(t=>t.status!=='completed')].filter(t=>t.deadline).sort((a,b)=>a.deadline.localeCompare(b.deadline));
- const next=dated[0],current=new Date(),dateKey=[current.getFullYear(),String(current.getMonth()+1).padStart(2,'0'),String(current.getDate()).padStart(2,'0')].join('-');
- const title=next?(sample?`<strong>${esc(next.title)}</strong>`:`<button type="button" data-edit="${esc(next.id)}">${esc(next.title)}</button>`):'';
- const date=next?new Date(next.deadline+'T12:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric'}):'';
- const context=next?`${title} ${next.deadline<dateKey?'is overdue':next.deadline===dateKey?'is due today':`is due ${esc(date)}`}.`:'No deadlines set. There’s room to choose your next focus.';
- const underway=open.filter(t=>t.status==='in_progress'||leafSteps(t.id,tasks).some(c=>c.status==='in_progress')).length;
- const ready=open.filter(t=>{const children=leafSteps(t.id,tasks);return children.length&&children.every(c=>c.status==='completed');}).length;
- const progress=[steps.length?`${done} of ${steps.length} steps done`:'',underway?`${underway} ${underway===1?'task':'tasks'} in progress`:'',ready?`${ready} ${ready===1?'plan':'plans'} ready to finish`:''].filter(Boolean);
- return `<div class="workspace-summary"><p class="summary-lead">${open.length} ${open.length===1?'thing':'things'} on your plate.</p><p class="summary-context">${context}</p>${progress.length?`<p class="summary-progress">${progress.join(' · ')}</p>`:''}</div>`;
-}
 function backlogBubble(task){
  const importance=level(task);
- return `<button type="button" class="task-bubble ${esc(importance||'unassessed')}" data-bubble="${esc(task.id)}" aria-expanded="${task.id===selectedBubble}" aria-controls="bubble-details" aria-describedby="bubble-move-help" aria-label="${esc(task.title)} · ${esc(labels[importance]||'Unassessed')} importance" title="${esc(task.title)}"><span class="bubble-title">${esc(task.title)}</span></button>`;
+ return `<button type="button" class="task-bubble ${esc(importance||'unassessed')}" data-bubble="${esc(task.id)}" aria-expanded="${task.id===selectedBubble}" aria-controls="bubble-details" aria-describedby="bubble-move-help" aria-label="${esc(task.title)} · ${esc(labels[importance]||'Unassessed')} importance" title="${esc(task.title)}"><span class="bubble-title">${esc(task.title)}</span>${taskDeadline(task)}</button>`;
 }
 function renderBubbleDetails(plans,tasks=state.tasks,sample=false){
  const task=plans.find(t=>t.id===selectedBubble);if(!task)return '<div id="bubble-details" hidden></div>';
- const steps=leafSteps(task.id,tasks),unfinished=steps.filter(t=>t.status!=='completed');
- return `<section id="bubble-details" class="bubble-detail" data-backlog-id="${esc(task.id)}" aria-labelledby="bubble-detail-title"><div class="row between"><h3 id="bubble-detail-title">${sample?esc(task.title):taskNameInput(task)}</h3>${agentActions(task)}<button class="bubble-close" data-close-bubble type="button" aria-label="Close task details">×</button></div><div class="focus-meta"><span>${esc(labels[level(task)]||'Unassessed')} importance</span>${steps.length?`<span>${steps.length-unfinished.length}/${steps.length} steps</span>`:''}${task.deadline?`<span>Due ${esc(task.deadline)}</span>`:''}</div><div class="backlog-details">${unfinished.length?'<p class="next-label">Next steps</p>':''}${unfinished.map(t=>focusStep(t,sample)).join('')}${task.description?`<details class="step-notes plan-notes"><summary>Notes</summary><p>${esc(task.description)}</p></details>`:''}<div class="card-actions">${sample?`<button class="small ghost" data-sample-complete="${esc(task.id)}">Complete plan</button>`:`<button class="small ghost" data-edit="${esc(task.id)}">Edit plan</button><button class="small ghost" data-toggle="${esc(task.id)}">Complete plan</button>`}</div></div></section>`;
+ const steps=leafSteps(task.id,tasks),done=steps.filter(t=>t.status==='completed').length;
+ return `<section id="bubble-details" class="bubble-detail" data-backlog-id="${esc(task.id)}" aria-labelledby="bubble-detail-title"><div class="row between"><h3 id="bubble-detail-title">${taskNameInput(task)}${editableDeadline(task)}</h3><button class="bubble-close" data-close-bubble type="button" aria-label="Close task details">×</button></div>${steps.length?`<p class="detail-progress">${done} / ${steps.length} completed</p><div class="plan-subtasks">${steps.map(t=>focusStep(t,sample)).join('')}</div>`:''}${task.description||!steps.length?taskDescription(task):''}${taskChatButton(task,sample)}${taskActions(task,sample)}</section>`;
 }
 // Animate native disclosures without replacing their keyboard or form behavior.
 const disclosureMotion=new WeakMap();
 function animateDisclosure(details){
  const previous=disclosureMotion.get(details),open=previous?!previous.open:!details.open,start=details.getBoundingClientRect().height;
+ if(details.dataset.planDisclosure){if(open)openPlans.add(details.dataset.planDisclosure);else openPlans.delete(details.dataset.planDisclosure);}
  const overflow=previous?.overflow??details.style.overflow;
  previous?.animation.cancel();
  if(!motionAllowed()||!details.animate){details.open=open;details.style.overflow=overflow;disclosureMotion.delete(details);return;}
@@ -547,15 +617,13 @@ function animateDisclosure(details){
  animation.finished.then(finish,finish);
 }
 function revealBubbleDetails(){
- const panel=$('#bubble-details');if(!panel||panel.hidden||!motionAllowed()||!panel.animate)return;
- const height=panel.getBoundingClientRect().height,overflow=panel.style.overflow;panel.style.overflow='hidden';
- const animation=panel.animate([{height:'0px',opacity:0,transform:'translateY(-6px)'},{height:height+'px',opacity:1,transform:'translateY(0)'}],{duration:260,easing:'cubic-bezier(.2,.8,.2,1)'});
- const finish=()=>{panel.style.overflow=overflow;};animation.finished.then(finish,finish);
+ const panel=$('#bubble-details');if(!panel||panel.hidden)return;
+ if(motionAllowed()&&panel.animate)panel.animate([{opacity:.5},{opacity:1}],{duration:180,easing:'ease-out'});
 }
 
 // Completion feedback starts on click; failed saves restore the previous task.
 function completionTarget(id){
- const canvas=$('#canvas'),rows=[...canvas.querySelectorAll('.next-steps [data-step-id],.backlog-details [data-step-id]')].filter(el=>el.dataset.stepId===id);
+ const canvas=$('#canvas'),rows=[...canvas.querySelectorAll('.plan-subtasks [data-step-id]')].filter(el=>el.dataset.stepId===id);
  const row=rows.find(el=>el.contains(document.activeElement))||rows[0],cards=[...canvas.querySelectorAll('[data-plan-id],[data-backlog-id]')];
  const card=row?.closest('[data-plan-id],[data-backlog-id]')||cards.find(el=>(el.dataset.planId||el.dataset.backlogId)===id&&el.contains(document.activeElement))||cards.find(el=>el.dataset.planId===id);
  const board=!!card?.dataset.backlogId;
@@ -575,7 +643,7 @@ function animateTaskEntry(transition){
  if(!transition)return;
  const cards=[...$('#canvas').querySelectorAll(transition.board?'[data-backlog-id]':'[data-plan-id]')],card=cards.find(el=>(el.dataset.planId||el.dataset.backlogId)===transition.planId)||(transition.board?cards[Number(transition.rank)]:cards.find(el=>el.dataset.focusRank===transition.rank))||cards.at(-1);
  if(transition.board&&card&&transition.open)card.open=true;
- const next=card?.querySelector(transition.board?'.backlog-details':'.next-steps');
+ const next=card?.querySelector('.plan-subtasks');
  if(next&&motionAllowed()&&next.animate)next.animate([{opacity:.7},{opacity:1}],{duration:160,easing:'ease-out'});
  if(transition.hadFocus){const control=next?.querySelector('input,button')||card?.querySelector('summary')||(transition.board?$('#canvas').querySelector('[data-bubble]'):null);if(control)control.focus({preventScroll:true});else{const heading=$('#focus-title');heading?.setAttribute('tabindex','-1');heading?.focus({preventScroll:true});}}
 }
@@ -599,20 +667,37 @@ function handleOverviewClick(e){
 }
 $('#preview-toggle').onclick=()=>{if(completionAnimating)return;samplePreview=!samplePreview;selectedBubble=null;renderOverview();};
 
+function renderChat(){
+ const ids=new Set(chatRuns().map(r=>r.id)),visible=state.messages.filter(m=>ids.has(m.run_id));
+ $('#chat-scope').innerHTML='<option value="">All tasks</option>'+state.tasks.map(t=>`<option value="${esc(t.id)}">${t.parent_task_id?'Step: ':''}${esc(t.title)}</option>`).join('');
+ $('#chat-scope').value=chatTaskId||'';
+ $('#chat-welcome').hidden=visible.length>0||!!pending;
+ $('#conversation').innerHTML=visible.map(m=>`<div class="chat-message ${m.role==='user'?'user':''}"><small>${m.role==='user'?'YOU':'MUSE'}</small>${esc(m.content)}</div>`).join('');
+ if(pending&&!visible.some(m=>m.role==='user'&&state.runs.some(r=>r.id===m.run_id&&r.request_id===pending.request_id)))$('#conversation').innerHTML+=`<div class="chat-message user"><small>YOU · SENDING</small>${esc(pending.message)}</div>`;
+ $('#conversation').scrollTop=$('#conversation').scrollHeight;
+ const latest=chatRuns().at(-1);
+ $('#status').textContent=latest?.status==='running'?'Muse is working on your message…':latest?.status==='failed'?'The last request failed. Your saved work is unchanged.':'';
+}
+function openTaskChat(id=null){
+ if(busy)return;
+ if(id&&!state.tasks.some(t=>t.id===id))return;
+ chatDrafts.set(chatTaskId||'', $('#message').value);chatRequests.set(chatTaskId||'',pending);
+ chatTaskId=id;try{localStorage.setItem('second-brain-chat:'+state.user_id,id||'');}catch{}pending=chatRequests.get(id||'')||null;
+ $('#message').value=chatDrafts.get(id||'')||'';
+ renderChat();setMuseOpen(true);
+}
+$('#chat-scope').onchange=()=>openTaskChat($('#chat-scope').value||null);
 function render(){
- $('#chat-welcome').hidden=state.messages.length>0;
- renderOverview();
- $('#conversation').innerHTML=state.messages.slice(-40).map(m=>{const run=state.runs.find(r=>r.id===m.run_id),status=run?.status;const label=m.role==='user'?'YOU':status==='applied'?'MUSE · TASKS SAVED':status==='awaiting_review'?'MUSE · EARLIER UNSAVED PLAN':status==='superseded'?'MUSE · EARLIER PROPOSAL':status==='stale'?'MUSE · OUTDATED RESPONSE':'MUSE';return `<div class="chat-message ${m.role==='user'?'user':''}"><small>${label}</small>${esc(m.content)}</div>`;}).join('');$('#conversation').scrollTop=$('#conversation').scrollHeight;
- const running=chatRuns().some(r=>r.status==='running'),latest=chatRuns().at(-1);$('#status').textContent=running?'Muse is organizing your tasks…':latest?.status==='failed'?'The last request failed. Your saved work is unchanged.':latest?.status==='applied'?'Task updates saved. You can edit them on the dashboard.':'';
+ renderOverview();renderChat();
  const reviews=state.runs.filter(r=>r.task_id===null&&r.status==='awaiting_review');
- $('#review-link').hidden=!reviews.length;$('#review-link').textContent='An earlier unsaved plan is available ↗';
+ $('#review-link').hidden=!reviews.length;$('#review-link').textContent='An earlier unsaved plan is available';
  $('#reviews').innerHTML=reviews.map(r=>`<section class="legacy-plan" data-run="${esc(r.id)}"><h3>Earlier unsaved plan</h3><p>These tasks were prepared before direct saving. Add them to your dashboard and edit them there.</p><ul>${r.proposal.tasks.map(t=>`<li>${esc(t.title)}${t.subtasks.length?` · ${t.subtasks.length} steps`:''}</li>`).join('')}</ul><div class="row"><button class="small primary" data-save="${esc(r.id)}">Add these tasks</button><button class="small ghost" data-reject="${esc(r.id)}">Dismiss</button></div></section>`).join('');
 }
-$('#chat-form').onsubmit=e=>{e.preventDefault();if(voiceSession||busy)return;const message=$('#message').value.trim();if(!message)return;if(message.length>10000){error(Error('Shorten your message to 10,000 characters before sending. Your transcript is preserved.'));return;}const input={message,apply_immediately:true};if(!pending||pending.message!==message||pending.apply_immediately!==true)pending={request_id:crypto.randomUUID(),conversation_id:conversationId,...input};const request=pending;action(async()=>{$('#status').textContent='Muse is organizing your tasks…';const run=await api('/api/conversation','POST',request);if(run.status==='running')throw Error('Muse is still processing this request. Refresh to check, or retry the same message.');pending=null;if(run.status==='failed'){await refresh();throw Error(run.error||'Muse could not update your tasks. Try again.');}if(run.status==='stale'){await refresh();throw Error('Your workspace changed while Muse was processing. Send again to use the latest task state.');}if(!['applied','answered'].includes(run.status)){await refresh();throw Error('This reply used the earlier planning flow. Restart the updated backend, then try again.');}$('#message').value='';},'');};
-$('#message').addEventListener('keydown',event=>{if(event.key!=='Enter'||!event.metaKey||event.isComposing)return;event.preventDefault();if(event.repeat||busy||voiceSession)return;$('#chat-form').requestSubmit();});
-$('#send').title='Send message (⌘ Enter)';$('#send').setAttribute('aria-keyshortcuts','Meta+Enter');
+$('#chat-form').onsubmit=e=>{e.preventDefault();if(voiceSession||busy)return;const message=$('#message').value.trim();if(!message)return;if(message.length>10000){error(Error('Shorten your message to 10,000 characters before sending. Your transcript is preserved.'));return;}const input={message,apply_immediately:true,chat_task_id:chatTaskId};if(!pending||pending.message!==message||pending.apply_immediately!==true)pending={request_id:crypto.randomUUID(),conversation_id:conversationId,...input};const request=pending;renderChat();action(async()=>{$('#status').textContent='Muse is organizing your tasks…';const run=await api('/api/conversation','POST',request);if(run.status==='running')throw Error('Muse is still processing this request. Refresh to check, or retry the same message.');pending=null;if(run.status==='failed'){await refresh();throw Error(run.error||'Muse could not update your tasks. Try again.');}if(run.status==='stale'){await refresh();throw Error('Your workspace changed while Muse was processing. Send again to use the latest task state.');}if(!['applied','answered'].includes(run.status)){await refresh();throw Error('This reply used the earlier planning flow. Restart the updated backend, then try again.');}$('#message').value='';},'');};
+$('#message').addEventListener('keydown',event=>{if(event.key!=='Enter'||!(event.ctrlKey||event.metaKey)||event.isComposing)return;event.preventDefault();if(event.repeat||busy||voiceSession)return;$('#chat-form').requestSubmit();});
+$('#send').title='Send message (Ctrl+Enter)';$('#send').setAttribute('aria-keyshortcuts','Control+Enter Meta+Enter');
 $('#reviews').onclick=e=>{if(busy)return;const section=e.target.closest('[data-run]');if(!section)return;const id=section.dataset.run;if(e.target.closest('[data-save]'))action(()=>api('/api/conversation/'+id+'/approve','POST',{}),'Tasks added. You can edit them on the dashboard.');else if(e.target.closest('[data-reject]'))action(()=>api('/api/runs/'+id+'/reject','POST'),'Earlier plan dismissed.');};
-function openEditor(id){const t=state.tasks.find(t=>t.id===id);editVersion=t.version;$('#edit-id').value=t.id;$('#edit-title').value=t.title;$('#edit-description').value=t.description;$('#edit-deadline').value=t.deadline||'';$('#edit-importance').value=t.user_importance_level||'';$('#edit-status').value=t.status;$('#edit-handoff-error').hidden=true;editHandoff=structuredClone(t.handoff||null);$('#edit-handoff-fields').innerHTML=handoffFields(t,'edit-handoff');$('#edit-dialog').showModal();$('#edit-title').focus();$('#edit-title').select();}
+function openEditor(id){const t=state.tasks.find(t=>t.id===id);editVersion=t.version;$('#edit-id').value=t.id;$('#edit-title').value=t.title;$('#edit-description').value=t.description;$('#edit-horizon').value=t.time_horizon||'';$('#edit-deadline').value=t.deadline||'';$('#edit-importance').value=t.user_importance_level||'';$('#edit-status').value=t.status;$('#edit-handoff-error').hidden=true;editHandoff=structuredClone(t.handoff||null);$('#edit-handoff-fields').innerHTML=handoffFields(t,'edit-handoff');$('#edit-dialog').showModal();$('#edit-title').focus();$('#edit-title').select();}
 async function complete(id,value){
  if(busy)return;
  const task=state.tasks.find(t=>t.id===id);if(!task)return;
@@ -649,33 +734,94 @@ async function complete(id,value){
   toggles.forEach((el,i)=>el.textContent=toggleLabels[i]);setBusy(false);
  }
 }
-$('#canvas').addEventListener('click',event=>{const summary=event.target.closest('summary');if(summary?.parentElement?.tagName!=='DETAILS')return;event.preventDefault();animateDisclosure(summary.parentElement);},true);
-$('#canvas').onclick=e=>{if(handleOverviewClick(e))return;if(busy)return;const handoff=e.target.closest('[data-handoff]');if(handoff){handoffToMuse(handoff.dataset.handoff);return;}if(samplePreview)return;const edit=e.target.closest('[data-edit]'),toggle=e.target.closest('[data-toggle]');if(edit)openEditor(edit.dataset.edit);if(toggle)complete(toggle.dataset.toggle,state.tasks.find(t=>t.id===toggle.dataset.toggle).status!=='completed');};
-async function saveTaskName(input){
- if(busy||samplePreview)return;
- const task=state.tasks.find(t=>t.id===input.dataset.taskName);if(!task)return;
- const title=input.value.trim();
- input.setCustomValidity(title?'':'Enter a task name.');
- if(!input.reportValidity()||title===task.title)return;
- setBusy(true);$('#error').hidden=true;$('#notice').textContent='Saving task name…';
+$('#canvas').addEventListener('click',event=>{if(event.target.closest('input,textarea,select,button'))return;const summary=event.target.closest('summary');if(summary?.parentElement?.tagName!=='DETAILS')return;event.preventDefault();animateDisclosure(summary.parentElement);},true);
+// Keep a description click intact while an inline field is awaiting blur-save.
+$('#canvas').addEventListener('pointerdown',event=>{if(!busy&&event.target.closest('[data-toggle-description]')&&document.activeElement?.matches('[data-task-name],[data-task-field]'))event.preventDefault();});
+$('#canvas').onclick=e=>{const description=e.target.closest('[data-toggle-description]');if(description){if(!busy){const field=document.activeElement;toggleTaskDescription(description);if(field?.matches('[data-task-name],[data-task-field]'))field.blur();}return;}const add=e.target.closest('[data-add-task]');if(add){openAddTask(add.dataset.addTask);return;}const reopen=e.target.closest('[data-reopen]');if(reopen){reopenTask(reopen.dataset.reopen);return;}const date=e.target.closest('[data-task-field="deadline"]');if(date){try{date.showPicker?.();}catch{}return;}const chat=e.target.closest('[data-task-chat]');if(chat){openTaskChat(chat.dataset.taskChat);return;}if(handleOverviewClick(e))return;if(busy)return;const handoff=e.target.closest('[data-handoff]');if(handoff){handoffToMuse(handoff.dataset.handoff);return;}if(samplePreview)return;const edit=e.target.closest('[data-edit]'),toggle=e.target.closest('[data-toggle]');if(edit)openEditor(edit.dataset.edit);if(toggle)complete(toggle.dataset.toggle,state.tasks.find(t=>t.id===toggle.dataset.toggle).status!=='completed');};
+// Manual tasks: one saved task, no model request or generated steps.
+function manualSubtaskValues(){return [...$('#add-subtasks').querySelectorAll('[data-manual-subtask]')].map(input=>input.value);}
+function renderManualSubtasks(values=['']){
+ $('#add-subtasks').innerHTML=values.map((value,index)=>`<div class="manual-subtask"><span class="manual-step-number" aria-hidden="true">${index+1}</span><input data-manual-subtask required maxlength="300" aria-label="Subtask ${index+1}" placeholder="What needs to be done?" value="${esc(value)}"><button type="button" class="small ghost" data-remove-manual-step="${index}" aria-label="Remove subtask ${index+1}" ${values.length===1?'disabled':''}>×</button></div>`).join('');
+ $('#add-subtask').disabled=values.length>=20;
+}
+function openAddTask(horizon){
+ if(busy)return;
+ $('#add-form').reset();$('#add-error').hidden=true;$('#add-horizon').value=horizon;
+ const short=horizon==='short_term';
+ $('#add-description-field').hidden=short;$('#add-description').disabled=short;$('#add-steps-field').hidden=!short;
+ renderManualSubtasks(short?['']:[]);
+ $('#add-title').textContent=`Add ${short?'short-term':'long-term'} task`;
+ $('#add-dialog').showModal();$('#add-name').focus();
+}
+$('#add-subtask').onclick=()=>{if(busy)return;const values=manualSubtaskValues();if(values.length>=20)return;renderManualSubtasks([...values,'']);$('#add-subtasks').querySelectorAll('[data-manual-subtask]').item(values.length)?.focus();};
+$('#add-subtasks').onclick=event=>{const button=event.target.closest('[data-remove-manual-step]');if(!button||busy)return;const values=manualSubtaskValues();if(values.length<=1)return;values.splice(Number(button.dataset.removeManualStep),1);renderManualSubtasks(values);};
+async function createManualTask(event){
+ event.preventDefault();if(busy)return;
+ const title=$('#add-name').value.trim();if(!title){$('#add-name').setCustomValidity('Enter a task name.');$('#add-name').reportValidity();return;}
+ const horizon=$('#add-horizon').value,steps=horizon==='short_term'?manualSubtaskValues().map(title=>({title:title.trim()})):[];
+ if(horizon==='short_term'&&(!steps.length||steps.some(step=>!step.title))){$('#add-error').textContent='Enter a name for each subtask.';$('#add-error').hidden=false;return;}
+ const body={title,description:horizon==='long_term'?$('#add-description').value.trim():'',deadline:$('#add-deadline').value||null,user_importance_level:$('#add-importance').value||null,time_horizon:horizon,...(steps.length?{subtasks:steps}:{})};
+ setBusy(true);$('#add-error').hidden=true;
  try{
-  const saved=await api('/api/tasks/'+task.id,'PATCH',{expected_version:Number(input.dataset.version),title});
-  if(saved?.id!==task.id||saved.title!==title)throw Error('Could not confirm the saved task name.');
+  const saved=samplePreview?{...body,id:'sample-manual-'+crypto.randomUUID(),status:'pending',version:1}:await api('/api/tasks','POST',body);
+  if(samplePreview&&steps.length)saved.subtasks=steps.map((step,index)=>({...step,id:'sample-step-'+crypto.randomUUID(),parent_task_id:saved.id,position:index,status:'pending',version:1}));
+  if(!saved?.id||saved.title!==body.title||saved.time_horizon!==body.time_horizon)throw Error('Could not confirm the saved task. Refresh your workspace before trying again.');
+  const {subtasks:children=[],...parent}=saved;
+  if(children.length!==steps.length||children.some((child,index)=>!child.id||child.parent_task_id!==parent.id||child.title!==steps[index].title||child.position!==index))throw Error('Could not confirm the saved subtasks. Refresh your workspace before trying again.');
+  if(samplePreview){samplePlans.push(parent);sampleSteps.push(...children);}else state.tasks.push(parent,...children);
+  openPlans.add(saved.id);$('#add-dialog').close();renderOverview();if(!samplePreview)renderChat();
+  $('#notice').textContent=samplePreview?'Sample task added for this preview.':'Task added.';
+ }catch(e){$('#add-error').textContent=e.message;$('#add-error').hidden=false;}
+ finally{setBusy(false);$('#add-description').disabled=$('#add-horizon').value==='short_term';const rows=manualSubtaskValues();$('#add-subtask').disabled=rows.length>=20;$('#add-subtasks').querySelectorAll('[data-remove-manual-step]').forEach(button=>button.disabled=rows.length===1);}
+}
+$('#add-form').onsubmit=createManualTask;
+$('#add-name').oninput=()=>$('#add-name').setCustomValidity('');
+$('#close-add').onclick=$('#cancel-add').onclick=()=>{if(!busy)$('#add-dialog').close();};
+async function reopenTask(id){
+ if(busy)return;
+ const task=(samplePreview?samplePlans:state.tasks).find(t=>t.id===id);if(!task)return;
+ const steps=leafSteps(id,samplePreview?sampleSteps:state.tasks),status=steps.length&&steps.every(t=>t.status==='completed')?'in_progress':'pending';
+ if(samplePreview){task.completed=false;task.status=status;renderOverview();return;}
+ await action(()=>api('/api/tasks/'+id,'PATCH',{expected_version:task.version,status}),'Task reopened.');
+}
+// End manual tasks.
+async function saveTaskName(input){return saveTaskField(input,'title',input.dataset.taskName);}
+async function saveTaskField(input,field,id){
+ if(busy)return;
+ const task=(samplePreview?[...samplePlans,...sampleSteps]:state.tasks).find(t=>t.id===id);if(!task)return;
+ const value=input.value.trim(),normalized=field==='deadline'?(value||null):value;
+ input.setCustomValidity(field==='title'&&!value?'Enter a task name.':'');
+ if(!input.reportValidity()||normalized===(task[field]??(field==='deadline'?null:'')))return;
+ if(samplePreview){task[field]=normalized;task.version=(task.version||1)+1;renderOverview();return;}
+ setBusy(true);$('#error').hidden=true;$('#notice').textContent=field==='title'?'Saving task name…':'Saving task…';
+ try{
+  const saved=await api('/api/tasks/'+task.id,'PATCH',{expected_version:Number(input.dataset.version),[field]:normalized});
+  if(saved?.id!==task.id||saved[field]!==normalized)throw Error('Could not confirm the saved task field.');
   state.tasks=state.tasks.map(t=>t.id===saved.id?saved:t);
-  renderOverview();$('#notice').textContent='Task name saved. Muse will use it next time.';
+  renderOverview();$('#notice').textContent=field==='title'?'Task name saved. Muse will use it next time.':'Task saved.';
  }catch(e){$('#notice').textContent='';error(e);}finally{setBusy(false);}
 }
-$('#canvas').addEventListener('focusout',event=>{const input=event.target.closest('[data-task-name]');if(input)saveTaskName(input);});
-$('#canvas').addEventListener('input',event=>{if(event.target.matches('[data-task-name]'))event.target.setCustomValidity('');});
-$('#canvas').addEventListener('keydown',event=>{
- const input=event.target.closest('[data-task-name]');if(!input||event.isComposing)return;
- if(event.key==='Enter'){event.preventDefault();input.blur();}
- if(event.key==='Escape'){event.preventDefault();input.value=state.tasks.find(t=>t.id===input.dataset.taskName)?.title||input.value;input.setCustomValidity('');input.blur();}
+$('#canvas').addEventListener('focusout',event=>{
+ const name=event.target.closest('[data-task-name]'),field=event.target.closest('[data-task-field]');
+ if(name)saveTaskName(name);else if(field)saveTaskField(field,field.dataset.taskField,field.dataset.taskId);
 });
-$('#canvas').onchange=e=>{if(samplePreview)return;const el=e.target.closest('[data-complete]');if(!el)return;const checked=el.checked;el.checked=!checked;complete(el.dataset.complete,checked);};
-$('#edit-form').onsubmit=e=>{e.preventDefault();const handoff=readEditorHandoff();if(!validHandoff(handoff)){$('#edit-handoff-error').textContent='Choose a handler and provide a reason and completion result. Use up to ten requirements of at most 500 characters each.';$('#edit-handoff-error').hidden=false;return;}$('#edit-handoff-error').hidden=true;action(async()=>{await api('/api/tasks/'+$('#edit-id').value,'PATCH',{expected_version:editVersion,title:$('#edit-title').value,description:$('#edit-description').value,deadline:$('#edit-deadline').value||null,user_importance_level:$('#edit-importance').value||null,status:$('#edit-status').value,...(JSON.stringify(handoff)!==JSON.stringify(editHandoff)?{handoff}:{})});$('#edit-dialog').close();},'Your correction is saved. Muse will use it next time.');};$('#close-edit').onclick=()=>$('#edit-dialog').close();
+$('#canvas').addEventListener('input',event=>{if(event.target.matches('[data-task-name],[data-task-field]'))event.target.setCustomValidity('');});
+$('#canvas').addEventListener('keydown',event=>{
+ const input=event.target.closest('[data-task-name],[data-task-field]');if(!input||event.isComposing)return;
+ if(event.key==='Enter'&&(input.tagName!=='TEXTAREA'||event.ctrlKey||event.metaKey)){event.preventDefault();input.blur();}
+ if(event.key==='Escape'){
+  event.preventDefault();const field=input.dataset.taskField||'title',id=input.dataset.taskId||input.dataset.taskName;
+  const task=(samplePreview?[...samplePlans,...sampleSteps]:state.tasks).find(t=>t.id===id);
+  input.value=task?.[field]??'';input.setCustomValidity('');input.blur();
+ }
+});
+$('#canvas').onchange=e=>{
+ const field=e.target.closest('[data-task-field="deadline"]');if(field){saveTaskField(field,'deadline',field.dataset.taskId);return;}
+ if(samplePreview)return;const el=e.target.closest('[data-complete]');if(!el)return;const checked=el.checked;el.checked=!checked;complete(el.dataset.complete,checked);
+};
+$('#edit-form').onsubmit=e=>{e.preventDefault();const handoff=readEditorHandoff();if(!validHandoff(handoff)){$('#edit-handoff-error').textContent='Choose a handler and provide a reason and completion result. Use up to ten requirements of at most 500 characters each.';$('#edit-handoff-error').hidden=false;return;}$('#edit-handoff-error').hidden=true;action(async()=>{await api('/api/tasks/'+$('#edit-id').value,'PATCH',{expected_version:editVersion,title:$('#edit-title').value,description:$('#edit-description').value,time_horizon:$('#edit-horizon').value||null,deadline:$('#edit-deadline').value||null,user_importance_level:$('#edit-importance').value||null,status:$('#edit-status').value,...(JSON.stringify(handoff)!==JSON.stringify(editHandoff)?{handoff}:{})});$('#edit-dialog').close();},'Your correction is saved. Muse will use it next time.');};$('#close-edit').onclick=()=>$('#edit-dialog').close();
 $('#refresh').onclick=()=>action(async()=>{},'Saved state refreshed.');$('#access-form').onsubmit=e=>{e.preventDefault();const token=$('#token').value;action(async()=>{await api('/api/session','POST',{token});newChat();$('#token').value='';},'Connected.');};
-$('#signout').onclick=async()=>{if(busy)return;endVoice({discard:true});setBusy(true);$('#error').hidden=true;try{await api('/api/session','DELETE');newChat();state={tasks:[],messages:[],runs:[]};pending=null;$('#chat-form').reset();$('#edit-form').reset();$('#edit-dialog').close();render();$('#access').hidden=false;$('#signout').hidden=true;$('#notice').textContent='Signed out.';}catch(e){error(e);}finally{setBusy(false);}};
+$('#signout').onclick=async()=>{if(busy)return;endVoice({discard:true});setBusy(true);$('#error').hidden=true;try{await api('/api/session','DELETE');newChat();state={tasks:[],messages:[],runs:[]};pending=null;$('#chat-form').reset();$('#edit-form').reset();$('#edit-dialog').close();$('#add-form').reset();$('#add-dialog').close();render();$('#access').hidden=false;$('#signout').hidden=true;$('#notice').textContent='Signed out.';}catch(e){error(e);}finally{setBusy(false);}};
 // Machine handoff: classifications are proposed with tasks; connection is separate.
 function handoffFields(item,scope){
  const h=item.handoff;
@@ -691,15 +837,14 @@ function agentActions(task){
  if(task.status==='completed'||task.completed)return '';
  const h=task.handoff;
  if(h?.handler==='user')return '';
- return `<div class="agent-actions">${h?.handler==='muse'?`<button type="button" data-handoff="${esc(task.id)}" aria-label="Hand off to Muse">Hand off ↗</button>`:`<span class="pill">Not assessed</span>`}</div>`;
+ return `<div class="agent-actions">${h?.handler==='muse'?`<button type="button" data-handoff="${esc(task.id)}" aria-label="Ask Muse about ${esc(task.title)}" title="Open this task’s chat">Ask Muse</button>`:`<span class="pill sr-only">Not assessed</span>`}</div>`;
 }
 function handoffToMuse(id){
  if(busy)return;
  const task=(samplePreview?[...samplePlans,...sampleSteps]:state.tasks).find(t=>t.id===id);
  if(!task||task.status==='completed'||task.completed||task.handoff?.handler!=='muse')return;
- $('#notice').textContent=`No computer connected. Connect a computer to let Muse work on “${task.title}”. Nothing has been started.`;
- $('#notice').scrollIntoView({block:'nearest',behavior:motionAllowed()?'smooth':'auto'});
- $('#notice').focus({preventScroll:true});
+ if(samplePreview){$('#notice').textContent='Sample tasks have no saved chat. Return to My workspace to ask Muse about a saved task.';return;}
+ openTaskChat(id);
 }
 // End machine handoff.
 // Muse disclosure: keep the existing DOM, conversation, and unsent draft mounted.
@@ -713,7 +858,7 @@ function setMuseOpen(open,{focus=true}={}){
 $('#muse-launcher').onclick=()=>setMuseOpen($('#muse-launcher').getAttribute('aria-expanded')!=='true');
 $('#close-muse').onclick=()=>setMuseOpen(false);
 document.addEventListener('click',event=>{if(event.target.closest('[data-open-muse]'))setMuseOpen(true);});
-document.addEventListener('keydown',event=>{if(event.key==='Escape'&&$('#muse-launcher').getAttribute('aria-expanded')==='true'&&!$('#edit-dialog').open){event.preventDefault();setMuseOpen(false);}});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&$('#muse-launcher').getAttribute('aria-expanded')==='true'&&!$('#edit-dialog').open&&!$('#add-dialog').open){event.preventDefault();setMuseOpen(false);}});
 $('#review-link').onclick=()=>{setMuseOpen(false,{focus:false});$('#reviews').focus({preventScroll:true});};
 // End Muse disclosure.
 // Voice input: local microphone capture, server-side Meta transcription, reviewed text.
@@ -853,14 +998,17 @@ async function registerWebMCP(){
  function uiBlocked(){
   if(!$('#access').hidden)return {error:'Connect using the visible demo access form first.'};
   if(busy||voiceSession)return {error:'Wait for the current request or stop voice capture before changing the interface.'};
+  if($('#add-dialog')?.open)return {error:'Save or close the new task form first; its unsaved changes are preserved.'};
   if($('#edit-dialog').open)return {error:'Save or close the open task editor first; its unsaved changes are preserved.'};
+  if([...document.querySelectorAll('[data-task-field]')].some(input=>(input.value||'')!==(state.tasks.find(task=>task.id===input.dataset.taskId)?.[input.dataset.taskField]||'')))return {error:'Save or cancel the inline task edit first; its unsaved text is preserved.'};
   if([...document.querySelectorAll('[data-task-name]')].some(input=>input.value!==state.tasks.find(task=>task.id===input.dataset.taskName)?.title))return {error:'Save or cancel the inline task-name edit first; its unsaved text is preserved.'};
  }
  const uuid={type:'string',format:'uuid',pattern:'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'};
  const isUUID=value=>typeof value==='string'&&new RegExp(uuid.pattern).test(value);
  const handoffSchema={type:['object','null'],properties:{handler:{type:'string',enum:['muse','user']},reason:{type:'string',minLength:1,maxLength:1000},requirements:{type:'array',maxItems:10,items:{type:'string',minLength:1,maxLength:500}},done_when:{type:'string',minLength:1,maxLength:2000}},required:['handler','reason','requirements','done_when'],additionalProperties:false};
- const taskFields={title:{type:'string',minLength:1,maxLength:300},description:{type:'string',maxLength:10000},deadline:{type:['string','null'],format:'date',description:'YYYY-MM-DD, or null to clear. Never invent a deadline.'},user_importance_level:{type:['string','null'],enum:['very_low','low','medium','high','very_high',null]},handoff:handoffSchema};
+ const taskFields={time_horizon:{type:['string','null'],enum:['short_term','long_term',null]},title:{type:'string',minLength:1,maxLength:300},description:{type:'string',maxLength:10000},deadline:{type:['string','null'],format:'date',description:'YYYY-MM-DD, or null to clear. Never invent a deadline.'},user_importance_level:{type:['string','null'],enum:['very_low','low','medium','high','very_high',null]},handoff:handoffSchema};
  function taskError(input){
+  if('time_horizon' in input&&input.time_horizon!==null&&!['short_term','long_term'].includes(input.time_horizon))return {error:'Choose short_term, long_term, or null for automatic grouping.'};
   if('title' in input&&(typeof input.title!=='string'||!input.title.trim()||input.title.trim().length>300))return {error:'Provide a task title of 1–300 characters.'};
   if('description' in input&&(typeof input.description!=='string'||input.description.length>10000))return {error:'Provide details of at most 10,000 characters.'};
   if('deadline' in input&&input.deadline!==null&&(typeof input.deadline!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(input.deadline)||!Number.isFinite(Date.parse(input.deadline))||new Date(input.deadline).toISOString().slice(0,10)!==input.deadline))return {error:'Provide a real deadline as YYYY-MM-DD, or null.'};
@@ -870,7 +1018,7 @@ async function registerWebMCP(){
    if(validate(h,['handler','reason','requirements','done_when'])||!['muse','user'].includes(h.handler)||typeof h.reason!=='string'||!h.reason.trim()||h.reason.length>1000||typeof h.done_when!=='string'||!h.done_when.trim()||h.done_when.length>2000||!Array.isArray(h.requirements)||h.requirements.length>10||h.requirements.some(r=>typeof r!=='string'||!r.trim()||r.length>500))return {error:'Provide a complete handoff assessment with handler, reason, requirements, and done_when, or null.'};
   }
  }
- function publicTask({id,parent_task_id,title,description,deadline,user_importance_level,status,version,handoff,handoff_source}){return {id,parent_task_id,title,description,deadline,user_importance_level,status,version,handoff,handoff_source};}
+ function publicTask({id,parent_task_id,title,description,deadline,time_horizon,user_importance_level,status,version,handoff,handoff_source}){return {id,parent_task_id,title,description,deadline,time_horizon,user_importance_level,status,version,handoff,handoff_source};}
  function savedTask(task){if(!isUUID(task?.id)||!Number.isInteger(task.version)||typeof task.title!=='string')throw Error('Invalid saved task response');return {status:'saved',task:publicTask(task)};}
  function publicProposal(proposal){return proposal?{reply:proposal.reply,tasks:proposal.tasks.map(({task_id,title,description,deadline,handoff,subtasks})=>({task_id,title,description,deadline,handoff,subtasks:subtasks.map(({title,description,handoff})=>({title,description,handoff}))}))}:null;}
  function publicRun(run){if(!isUUID(run?.id)||typeof run.status!=='string')throw Error('Invalid run response');return {id:run.id,request_id:run.request_id,status:run.status,reply:run.proposal?.reply||null,error:run.error||null};}
@@ -908,19 +1056,21 @@ async function registerWebMCP(){
      const response=await fetch('/api/dashboard',{credentials:'same-origin',signal});
      if(!response.ok)return {error:response.status===401?'Connect using the visible demo access form first.':'Could not load saved state. Retry when the server is available.',status:response.status};
      const data=await response.json();signal?.throwIfAborted();
-     return {tasks:data.tasks.map(publicTask),reviews:data.runs.filter(run=>run.task_id===null&&run.status==='awaiting_review').map(run=>({id:run.id,status:run.status,proposal:publicProposal(run.proposal)})),runs:data.runs.filter(run=>input.request_id?run.request_id===input.request_id:run.input_payload?.conversation_id===conversationId).map(publicRun),execution:{connected:false,status:'unavailable',reason:'No computer connected. Hand off does not start execution.'},source:'Saved server state; unsaved interface edits and sample fixtures are not included.'};
+     return {tasks:data.tasks.map(publicTask),reviews:data.runs.filter(run=>run.task_id===null&&run.status==='awaiting_review').map(run=>({id:run.id,status:run.status,proposal:publicProposal(run.proposal)})),runs:data.runs.filter(run=>input.request_id?run.request_id===input.request_id:(chatTaskId?(run.input_payload?.chat_task_id===chatTaskId||(!run.input_payload?.chat_task_id&&run.related_task_ids?.includes(chatTaskId))):!run.input_payload?.chat_task_id)).map(publicRun),execution:{connected:false,status:'unavailable',reason:'No computer connected. Ask Muse opens the saved task chat; it does not start execution.'},source:'Saved server state; unsaved interface edits and sample fixtures are not included.'};
     }catch(e){if(signal?.aborted)throw e;return {error:'Could not read saved state. Retry when the server is available.'};}
    }
   },
   {
    name:'create_task',
    description:'Save a task or subtask directly in this workspace. Supply parent_task_id for a subtask. Returns the saved task ID and version. Creates real records; use only for work the user requested. On uncertain results, read the dashboard before retrying to avoid duplicates.',
-   inputSchema:{type:'object',properties:{...taskFields,parent_task_id:{...uuid,type:['string','null']}},required:['title'],additionalProperties:false},
+   inputSchema:{type:'object',properties:{...taskFields,parent_task_id:{...uuid,type:['string','null']},subtasks:{type:'array',maxItems:20,items:{type:'object',properties:{title:{type:'string',minLength:1,maxLength:300}},required:['title'],additionalProperties:false}}},required:['title'],additionalProperties:false},
    annotations:{readOnlyHint:false,untrustedContentHint:true},
    async execute(input,{signal}={}){
-    const invalid=validate(input,[...Object.keys(taskFields),'parent_task_id']);if(invalid)return invalid;
+    const invalid=validate(input,[...Object.keys(taskFields),'parent_task_id','subtasks']);if(invalid)return invalid;
     if(!('title' in input))return {error:'Provide a task title.'};
     const invalidTask=taskError(input);if(invalidTask)return invalidTask;
+    if('subtasks' in input&&(!Array.isArray(input.subtasks)||input.subtasks.length>20||input.subtasks.some(step=>validate(step,['title'])||typeof step.title!=='string'||!step.title.trim()||step.title.trim().length>300)))return {error:'Provide at most 20 subtasks, each with a title.'};
+    if(input.subtasks?.length&&(input.parent_task_id||input.time_horizon==='long_term'))return {error:'Add subtasks with a short-term root task only.'};
     if(input.parent_task_id!==undefined&&input.parent_task_id!==null&&!isUUID(input.parent_task_id))return {error:'Provide a saved parent task UUID, or null.'};
     return mutate('/api/tasks','POST',input,signal,savedTask);
    }
@@ -951,7 +1101,7 @@ async function registerWebMCP(){
     const draft=$('#message').value;
     if(draft&&draft.trim()!==input.message.trim())return {error:'The composer contains different unsent text. It has been preserved; send that exact message or let the user finish it first.'};
     if(pending&&(pending.request_id!==input.request_id||pending.message!==input.message))return {error:'Another message has an uncertain pending request. Preserve it and check its request_id before sending new work.'};
-    const result=await mutate('/api/conversation','POST',{request_id:input.request_id,message:input.message,conversation_id:conversationId,apply_immediately:true},signal,run=>({...publicRun(run),...(['failed','stale'].includes(run.status)?{error:run.error||'Task updates were not applied.'}:{})}));
+    const result=await mutate('/api/conversation','POST',{request_id:input.request_id,message:input.message,conversation_id:conversationId,chat_task_id:chatTaskId,apply_immediately:true},signal,run=>({...publicRun(run),...(['failed','stale'].includes(run.status)?{error:run.error||'Task updates were not applied.'}:{})}));
     if(['applied','answered'].includes(result.status)){
      if($('#message').value===draft)$('#message').value='';
      if(pending?.request_id===input.request_id)pending=null;

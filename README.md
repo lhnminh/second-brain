@@ -38,7 +38,7 @@ missing, then change the saved task directly or through a follow-up message.
 There is no separate proposal form or save-plan step. Mark work complete, return
 later, and pick up where you left off.
 
-The current prototype supports conversation-based task creation and corrections,
+The current prototype supports manual and conversation-based task creation and corrections,
 task and subtask editing, five importance levels, saved context, real Muse planning,
 and direct saving of validated task updates. `/dev` provides a read-only developer console for model runs, request inputs,
 proposals, saved objects, and change history. Each browser has its own saved workspace, protected by a shared demo access token.
@@ -57,6 +57,12 @@ uv run alembic -c backend/alembic.ini upgrade head
 uv run second-brain
 ```
 
+Manual creation, editing, completion and reopening work without an API key.
+Use **+ Add task** beside either focus count: short-term tasks take named
+subtasks, while long-term tasks take a description. Entered steps save together
+with the short-term task, without a model call. Apply all migrations first; migration
+`c42b193d7e61` adds the saved focus-section choice without moving existing tasks.
+
 Add your `META_API_KEY` to `.env` to enable Muse planning. Keep credentials in
 that ignored file. Open [localhost:8000](http://localhost:8000/) for the dashboard
 or [/dev](http://localhost:8000/dev) for diagnostics and saved objects.
@@ -64,6 +70,28 @@ A successful demo connection lasts eight hours across both pages and reloads.
 Sign out ends access while keeping this browser’s workspace. A separate workspace
 cookie lasts one year, renewed on use; clearing cookies or switching browsers
 starts a new workspace.
+
+On Windows, copy `.env.example` to `.env` if it does not exist. Get a Meta
+Model API key from your team's Meta developer account and put it after
+`META_API_KEY=`. This project's variable name is `META_API_KEY`; Meta's general
+quickstart uses `MODEL_API_KEY`, which this app does not read. The existing
+`META_BASE_URL=https://api.meta.ai/v1` and `META_MODEL=muse-spark-1.3` defaults
+match the configured adapter. Never use the website demo access token as a model
+key. Do not commit `.env` or paste the key into chat.
+
+Restart the backend after saving the key (`Ctrl+C`, then `uv run second-brain`
+from the repository root). Open the live workspace at
+[127.0.0.1:8000](http://127.0.0.1:8000/), or choose **My workspace** from sample
+mode. Use the same hostname/browser to keep your workspace. Try: “Create a task
+to prepare for an interview on November 6, 2026, with three subtasks.” Check
+the resulting cards, open **Task chat**, send a correction, and reload to check
+saved tasks and history. Inspect failed runs in `/dev` without exposing secrets.
+Model billing/access and credits must be active in the Meta account.
+
+Hosted testing uses the server's key configured in Vercel. A local `.env` change
+does not configure or deploy the hosted site. Computer handoff remains a separate,
+unimplemented worker connection; no laptop or cloud computer is connected by
+adding the model key.
 The API explorer is at [/docs](http://localhost:8000/docs). After updating an
 existing checkout, run the migration command above and restart the server.
 
