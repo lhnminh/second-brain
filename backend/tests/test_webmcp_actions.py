@@ -73,7 +73,7 @@ let receive;lines.on('line',line=>receive(JSON.parse(line)));
 const tools=new Map(),elements=new Map(),requests=[];
 const $=key=>{if(!elements.has(key))elements.set(key,{hidden:true,value:'',open:false});return elements.get(key);};
 let state={tasks:[],runs:[]},busy=false,voiceSession=null,samplePreview=false,pending=null,dirty=[],mode='normal',refreshFailed=false,refreshes=0;
-let conversationId=randomUUID();
+let conversationId=null,chatTaskId=null;
 const document={querySelectorAll:()=>dirty,modelContext:{async registerTool(tool){tools.set(tool.name,tool);}}};
 const window={isSecureContext:true,addEventListener(){}};
 function setBusy(value){busy=value;}
@@ -131,7 +131,7 @@ const call=(name,input={},options)=>tools.get(name).execute(input,options);
  await assert.rejects(call('create_task',{title:'Cancelled'},{signal:controller.signal}),{name:'AbortError'});assert.equal(requests.length,count);
  dashboard=await call('get_dashboard');assert.equal(dashboard.tasks.find(t=>t.id===created.task.id).title,'Launch review');assert.equal(dashboard.tasks.find(t=>t.id===child.task.id).status,'pending');assert.equal(dashboard.execution.connected,false);
  assert.equal(dashboard.runs.find(r=>r.id===run.id).status,'applied');assert.ok(refreshes>0);
- conversationId=randomUUID();assert.equal((await call('get_dashboard')).runs.length,0);assert.equal((await call('get_dashboard',{request_id})).runs[0].id,run.id);
+ conversationId=null;assert.ok((await call('get_dashboard')).runs.length>0);assert.equal((await call('get_dashboard',{request_id})).runs[0].id,run.id);
  const inFlight=call('create_task',{title:'First request'});assert.ok((await call('create_task',{title:'Concurrent request'})).error);assert.equal((await inFlight).status,'saved');
  process.stdout.write(JSON.stringify({done:true})+'\n');lines.close();
 })().catch(e=>{console.error(e);lines.close();process.exitCode=1;});

@@ -22,8 +22,9 @@ HANDOFF = {
 }
 
 
-def test_assessment_outcome_and_work_scaffold_survive_adapter_and_persistence(
-    setup, monkeypatch
+@pytest.mark.parametrize("request_steps", [False, True])
+def test_assessment_defaults_to_one_task_and_saves_explicitly_requested_steps(
+    setup, monkeypatch, request_steps
 ):
     clients, muse, _ = setup
     value = {
@@ -62,13 +63,20 @@ def test_assessment_outcome_and_work_scaffold_survive_adapter_and_persistence(
         ],
     }
 
+    if not request_steps:
+        value["tasks"][0]["subtasks"] = []
+
     def handler(request):
         body = json.loads(request.content)
         instructions = body["messages"][0]["content"]
         assert body["max_completion_tokens"] == 8192
         assert "Root tasks must name the user's intended outcome" in instructions
         assert "Ask for missing inputs in reply" in instructions
-        assert "checking the result against those requirements" in instructions
+        assert "Default to subtasks=[]" in instructions
+        assert "current user message explicitly" in instructions
+        assert "Do not create a generic work scaffold" in instructions
+        assert "Before returning, remove any newly generated subtasks" in instructions
+        assert "With no brief, use a grounded scaffold" not in instructions
         return httpx.Response(
             200,
             json={
@@ -91,7 +99,7 @@ def test_assessment_outcome_and_work_scaffold_survive_adapter_and_persistence(
         "/api/conversation",
         json={
             "request_id": str(uuid4()),
-            "message": MESSAGE,
+            "message": MESSAGE + ("; break it into subtasks" if request_steps else ""),
             "apply_immediately": True,
         },
     ).json()
@@ -113,7 +121,7 @@ def test_assessment_outcome_and_work_scaffold_survive_adapter_and_persistence(
     )
 
 
-def test_priority_heading_preserves_the_task_outcome_above_its_next_action():
+def test_priority_heading_and_single_subtask_list_preserve_the_outcome():
     node = shutil.which("node")
     if not node:
         pytest.skip("Node is required for the priority rendering harness")
@@ -123,24 +131,50 @@ def test_priority_heading_preserves_the_task_outcome_above_its_next_action():
     functions = page.split("function orderedChildren(", 1)[1].split(
         "const sampleStepNames=", 1
     )[0]
-    script = r"""
+    script = (
+        r"""
 const assert=require('node:assert/strict'),vm=require('node:vm');new vm.Script(FULL_JS);
 const state={tasks:[{id:'parent',title:'Complete Duolingo take-home assessment',status:'pending',description:'',deadline:null},{id:'child',parent_task_id:'parent',title:'Review the current requirements',status:'pending',position:0}]};
 const esc=value=>String(value??'').replaceAll('<','&lt;').replaceAll('>','&gt;');
 function agentActions(){return '';}function badge(){return '';}
 function orderedChildren(FUNCTIONS
+BUBBLE
 const html=overviewFocus(state.tasks[0],0);
 assert.match(html,/<h3 class="focus-plan"><input[^>]*data-task-name="parent"[^>]*value="Complete Duolingo take-home assessment"/);
-assert.ok(html.indexOf('Complete Duolingo take-home assessment')<html.indexOf('Next action'));
-assert.ok(html.indexOf('Next action')<html.indexOf('Review the current requirements'));
+assert.ok(html.indexOf('Complete Duolingo take-home assessment')<html.indexOf('Subtasks'));
+assert.ok(html.indexOf('Subtasks')<html.indexOf('Review the current requirements'));
 assert.match(html,/data-complete="child"/);assert.doesNotMatch(html,/data-complete="parent"/);
-const sample=overviewFocus(state.tasks[0],0,state.tasks,true);assert.match(sample,/<h3 class="focus-plan">Complete Duolingo take-home assessment<\/h3>/);
+const sample=overviewFocus(state.tasks[0],0,state.tasks,true);assert.match(sample,/<h3 class="focus-plan"><input[^>]*value="Complete Duolingo take-home assessment"/);
 const single={id:'single',title:'One task',status:'pending'};
-const singleHtml=overviewFocus(single,0,[single]);assert.match(singleHtml,/is-single/);assert.doesNotMatch(singleHtml,/next-action-label/);
+const singleHtml=overviewFocus(single,0,[single]);assert.match(singleHtml,/Task details/);assert.doesNotMatch(singleHtml,/next-action-label/);
 assert.equal((singleHtml.match(/value="One task"/g)||[]).length,1);
+assert.equal((html.match(/<details /g)||[]).length,1);assert.doesNotMatch(html,/<details[^>]* open/);
+assert.equal((html.match(/data-step-id=/g)||[]).length,1);assert.match(html,/0 \/ 1 completed/);
+assert.doesNotMatch(html,/Sample plan|Completed ·|next-action-label/);
+const three=[state.tasks[0],{...state.tasks[1],id:'first',position:0,status:'completed'},{...state.tasks[1],id:'second',position:1,status:'pending'},{...state.tasks[1],id:'third',position:2,status:'completed'}];
+const ordered=overviewFocus(three[0],0,three);assert.match(ordered,/2 \/ 3 completed/);
+assert.equal((ordered.match(/data-step-id=/g)||[]).length,3);
+assert.ok(ordered.indexOf('data-step-id="first"')<ordered.indexOf('data-step-id="second"'));assert.ok(ordered.indexOf('data-step-id="second"')<ordered.indexOf('data-step-id="third"'));
+assert.equal((ordered.match(/class="task-name step-title done"/g)||[]).length,2);
+const dated=[{...three[0],deadline:'2026-11-10'},{...three[1],deadline:'2026-11-06'},three[2],three[3]];
+assert.equal((overviewFocus(dated[0],0,dated).match(/data-urgency=/g)||[]).length,2);
+assert.equal((overviewFocus({...three[0],deadline:'2026-11-10'},0,three).match(/data-urgency=/g)||[]).length,1);
+let selectedBubble='parent';
+const bubble=renderBubbleDetails([three[0]],three);
+assert.doesNotMatch(bubble,/<details|<summary|data-plan-disclosure=/);
+assert.equal((bubble.match(/data-step-id=/g)||[]).length,3);
 const unsafe={...state.tasks[0],title:'<script>bad</script>'};assert.doesNotMatch(overviewFocus(unsafe,0),/<script>bad/);
-""".replace("FUNCTIONS", functions).replace(
-        "FULL_JS", json.dumps(page.split("<script>", 1)[1].split("</script>", 1)[0])
+""".replace("FUNCTIONS", functions)
+        .replace(
+            "BUBBLE",
+            "function renderBubbleDetails("
+            + page.split("function renderBubbleDetails(", 1)[1].split(
+                "// Animate native disclosures", 1
+            )[0],
+        )
+        .replace(
+            "FULL_JS", json.dumps(page.split("<script>", 1)[1].split("</script>", 1)[0])
+        )
     )
     result = subprocess.run(
         [node, "-e", script], capture_output=True, text=True, check=False, timeout=15
@@ -220,7 +254,8 @@ def test_clarification_only_plan_is_repaired_by_existing_ids(setup, monkeypatch)
         "/api/conversation",
         json={
             "request_id": str(uuid4()),
-            "message": MESSAGE,
+            "message": MESSAGE
+            + "; replace the clarification step with work steps and add the missing subtasks",
             "apply_immediately": True,
         },
     ).json()

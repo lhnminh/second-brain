@@ -29,7 +29,7 @@ new vm.Script(FULL_JS);
 const elements=new Map(),$=key=>{if(!elements.has(key))elements.set(key,{value:'',textContent:'',innerHTML:'',hidden:false,scrollHeight:0});return elements.get(key);};
 const esc=value=>String(value??'').replaceAll('<','&lt;').replaceAll('>','&gt;');
 let busy=false,voiceSession=null,pending=null,conversationId='visit',nextId=0,mode='applied',refreshes=0,lastAction;
-let state={tasks:[],runs:[],messages:[]};
+let state={tasks:[],runs:[],messages:[]};let chatTaskId=null;
 const crypto={randomUUID:()=>String(++nextId)},requests=[],errors=[];
 function chatRuns(){return state.runs;}
 function renderOverview(){}
@@ -41,6 +41,7 @@ async function api(path,method,body){
 }
 function error(e){errors.push(e.message);}
 function action(work){lastAction=(async()=>{try{await work();await refresh();}catch(e){error(e);}})();return lastAction;}
+CHAT_RENDER
 SUBMIT
 RENDER
 (async()=>{
@@ -50,8 +51,8 @@ RENDER
  assert.equal($('#message').value,'');assert.equal(pending,null);assert.equal(refreshes,1);
  assert.ok(requests.every(r=>!r.path.includes('/approve')));
  state={tasks:[{id:'saved'}],runs:[{id:'run',task_id:null,status:'applied'}],messages:[{run_id:'run',role:'assistant',content:'Your workshop plan.'}]};
- render();assert.equal($('#reviews').innerHTML,'');assert.match($('#conversation').innerHTML,/TASKS SAVED/);
- assert.match($('#status').textContent,/Task updates saved/);
+ render();assert.equal($('#reviews').innerHTML,'');assert.match($('#conversation').innerHTML,/MUSE/);
+ assert.equal($('#status').textContent,'');
  // Network uncertainty keeps the same message and idempotency key for retry.
  mode='offline';$('#message').value='Add a meeting';$('#chat-form').onsubmit({preventDefault(){}});await lastAction;
  const request=requests.at(-1).body;assert.equal($('#message').value,'Add a meeting');assert.equal(pending.request_id,request.request_id);
@@ -68,6 +69,13 @@ RENDER
  render();assert.match($('#reviews').innerHTML,/Add these tasks/);assert.doesNotMatch($('#reviews').innerHTML,/<input|<textarea|data-object=/);
 })().catch(e=>{console.error(e);process.exitCode=1;});
 """.replace("SUBMIT", submit)
+        .replace(
+            "CHAT_RENDER",
+            "function renderChat(){"
+            + page.split("function renderChat(){", 1)[1].split(
+                "function openTaskChat(", 1
+            )[0],
+        )
         .replace("RENDER", render)
         .replace(
             "FULL_JS", json.dumps(page.split("<script>", 1)[1].split("</script>", 1)[0])

@@ -29,7 +29,7 @@ def test_upgrade_preserves_existing_tasks_and_reviewable_plans(tmp_path, monkeyp
                 **{
                     key: value
                     for key, value in task.items()
-                    if key not in {"handoff", "handoff_source"}
+                    if key not in {"handoff", "handoff_source", "time_horizon"}
                 }
             )
         )

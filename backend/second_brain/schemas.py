@@ -14,6 +14,7 @@ from pydantic import (
 
 Importance = Literal["very_low", "low", "medium", "high", "very_high"]
 Status = Literal["pending", "in_progress", "completed"]
+TimeHorizon = Literal["short_term", "long_term"]
 Score = Annotated[StrictInt, Field(ge=0, le=100)]
 Title = Annotated[str, Field(min_length=1, max_length=300)]
 Text = Annotated[str, Field(max_length=10000)]
@@ -43,6 +44,10 @@ class Handoff(Input):
     done_when: Annotated[str, Field(min_length=1, max_length=2000)]
 
 
+class ManualSubtask(Input):
+    title: Title
+
+
 class TaskCreate(Input):
     title: Title
     description: Text = ""
@@ -50,6 +55,18 @@ class TaskCreate(Input):
     parent_task_id: UUID | None = None
     user_importance_level: Importance | None = None
     handoff: Handoff | None = None
+    time_horizon: TimeHorizon | None = None
+    subtasks: Annotated[list[ManualSubtask], Field(max_length=20)] = Field(
+        default_factory=list
+    )
+
+    @model_validator(mode="after")
+    def manual_subtasks_belong_to_short_term_roots(self):
+        if self.subtasks and (
+            self.parent_task_id is not None or self.time_horizon == "long_term"
+        ):
+            raise ValueError("Subtasks can be added with a short-term root task only")
+        return self
 
 
 class TaskEdit(Input):
@@ -60,6 +77,7 @@ class TaskEdit(Input):
     user_importance_level: Importance | None = None
     status: Status | None = None
     handoff: Handoff | None = None
+    time_horizon: TimeHorizon | None = None
 
     @model_validator(mode="after")
     def required_fields_not_null(self):
@@ -127,6 +145,7 @@ class ConversationApproval(Input):
 
 class ConversationRequest(PlanRequest):
     conversation_id: UUID | None = None
+    chat_task_id: UUID | None = None
     review_draft: ConversationProposal | None = None
     # The dashboard saves directly. False preserves existing review-mode API clients.
     apply_immediately: StrictBool = False
