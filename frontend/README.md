@@ -17,12 +17,12 @@ composer through the chat panel into the page. No live model call was made.
 ## Task conversations and simpler task lists (November 3, 2026)
 
 This supersedes the earlier visit-reset chat behavior and next-action display.
-**Task chat** opens a task's persistent conversation; the conversation selector
-also includes subtasks and **All tasks**. Histories are server-stored in the
+**Ask Muse** opens a task's persistent conversation; the conversation selector
+lists root tasks and **General chat**; subtasks share the root task history. Histories are server-stored in the
 current browser workspace and survive reload/sign-out. The selected scope is
 remembered per workspace, and unsent drafts/retry IDs stay separate while
 switching scopes in the current page. Unsent drafts do not survive reload.
-**Ctrl+Enter** or **Cmd+Enter** sends; Enter alone keeps multiline input.
+**Enter** sends; **Shift+Enter** inserts a newline.
 
 Each task has one **Subtasks** disclosure, initially closed. It contains the
 complete ordered leaf-step list with completed steps struck through. The progress
@@ -270,7 +270,7 @@ provider is introduced. Results omit owner IDs and internal importance scores.
 `user_importance_level` is the explicit user choice and can be unset.
 
 Tools preserve unsaved inline names, open editors, and differing composer text.
-Mutations refuse sample preview, concurrent requests, or voice capture. A model
+Mutations refuse concurrent requests or voice capture. A model
 failure or stale run returns its actual status. A transport failure after sending
 returns `outcome: "unknown"`, because the server may have saved the request.
 Read the dashboard before retrying task creation to avoid duplicates. A task
@@ -346,7 +346,7 @@ chevrons that turn on expansion. **Complete task** remains
 last at the right of each action group, including when **Ask Muse** is available.
 Chat close and microphone controls use the current neutral/blue palette.
 
-**Ask Muse** opens the existing persistent chat for the exact saved task or subtask.
+**Ask Muse** opens the existing persistent chat for the root task, including when opened from a subtask.
 It sends no message, creates no run, and starts no machine execution. History stays
 saved across visits and unsent drafts stay separate while switching scopes.
 Sample tasks cannot open saved task chats. API credits and computer integration
@@ -357,25 +357,24 @@ replace saved workspace state or enter model context; their completions reset on
 reload. All dashboard surfaces retain keyboard focus, reduced motion, and scroll
 chaining through textboxes. Ctrl+Enter/Cmd+Enter sends chat; Enter adds a line.
 
-**+ Add task** sits before each section count. Short-term creation asks for a task
-name and numbered subtasks, with **+ Add subtask** and removal controls; at least
-one entered step is required. It has no description field. Long-term creation
-keeps an optional description and has no subtask rows. Both offer optional date
-and importance. The short-term root and all entered steps save atomically in one
-request; invalid or failed writes leave no partial plan. No Muse call or generated
-steps are involved. Existing saved notes are preserved.
+**+ Add task** sits before each section count. Both focus sections use the same
+name-only form with optional numbered subtasks, **+ Add subtask**, and removal
+controls. Zero subtasks are allowed. Both offer optional date and importance.
+The root and entered steps save atomically in one request; invalid or failed
+writes leave no partial plan. Existing tasks have **+ Add subtask** in their
+expanded view and bubble details. No Muse call or generated steps are involved.
+Existing saved notes are preserved in storage, without description controls.
 
 A saved `time_horizon` keeps the task in its chosen section. Edit task → Focus
-section can change this or select Automatic for legacy inference. Apply migration
+section can change this between Short-term and Long-term. Apply migration
 `c42b193d7e61` on a new checkout; no additional migration is required for these
 form, toggle and archive refinements.
 
-Task/subtask names and descriptions are inline fields; date badges open editable
-dates. Enter/blur saves names, Ctrl/Cmd+Enter or blur saves descriptions, and Escape
-cancels the edit. Names do not toggle long-term descriptions; use the dedicated
-chevron, which announces its expanded state. Counts and interface labels remain
-derived/static. Sample edits and added tasks reset on reload. The header tagline
-has been removed.
+Task/subtask names are inline fields; date badges open editable dates. Enter/blur
+saves names and Escape cancels. The dedicated long-term chevron opens its subtask
+list and task actions; title editing does not toggle it. Short-term and long-term
+subtasks use the same renderer and typography. Bubble steps remain expanded.
+Sample edits and added tasks reset on reload. The header tagline is removed.
 
 Verification: 164 checks passed, including exact entered-step persistence/order,
 invalid-list rejection and rollback of parents/children after an audit failure.
@@ -552,3 +551,192 @@ the level supported by the known facts. Unknown briefs support a broad scaffold
 (requirements review, required work, and checking the result); specific tools,
 deliverables, or exact dates must not be invented. Existing clarification-only
 plans should be improved by saved task/step IDs rather than duplicated.
+
+
+### Chat refinement (November 3)
+
+Only root tasks appear in the conversation selector. Subtask Ask Muse shares its
+root's persistent history, including earlier subtask messages. Creating a single
+task or clearly discussing an existing one selects its chat after a successful
+response; ambiguous multi-task messages keep the current chat. Unsent drafts in
+other task chats remain separate. Send clears the input immediately and restores
+it after a failure. Uncertain retries keep the same request UUID.
+
+The fixed-height flex chat panel keeps selection, composer and voice disclosure
+visible while message history scrolls. Subtask descriptions are hidden by default;
+use Add description/Description beside the subtask, before Ask Muse. Empty
+subtasks no longer reveal a text block just by focusing the title. Existing notes
+remain saved. Long-term deadlines precede descriptions and task actions; Go to
+task chat sits below Edit task and Complete task.
+
+The editor has only Focus section (Short-term/Long-term), five importance levels
+and Who handles this? (You/Muse). Other fields remain inline. Muse instructions
+now default descriptions to empty and forbid invented context. Structured focus
+updates persist before Muse can report a successful save. No migration needed.
+
+Verification: 167 automated tests pass, with 26 affected checks rerun after the
+final prompt/routing adjustment. Four live Muse requests in an isolated SQLite
+workspace verified task creation, a focus change, explicit steps with empty
+descriptions, and a task-specific answer that selected the matching chat. Desktop,
+390×844 and 1226×540 browser checks found no outer chat overflow, including with
+the voice disclosure expanded. Production deployment is not part of this change.
+
+
+The exclusive-history correction gives each saved exchange one `chat_scope_id`.
+An exchange routed from Task A to Task B is shown only in B, including after
+reload; its original request remains intact for retries. General chat task
+creation no longer passes an array index into the root-task helper. A successful
+send clears matching draft text before the UI refresh, so a UI error cannot
+restore a delivered question. Distinct unsent drafts in other chats stay intact.
+Regression harnesses now use the shipped routing helpers rather than a simplified
+root lookup, covering root/child audit links, exclusive history and failed refresh.
+
+Verification of this correction: all 170 automated tests pass. Two isolated live
+Muse/browser requests verified General chat creation with two explicit subtasks
+and an existing-task question sent from another task chat. After switching and
+reloading, the exchange appeared once in its destination, zero times in its
+origin, and the composer remained empty. No user records were deleted.
+
+
+### Name-only task correction
+
+This supersedes the description-button design: description fields, buttons and
+text blocks are removed from all dashboard task surfaces and creation forms.
+Subtask creation on an existing task asks for one name. Failures preserve that
+name; successful additions persist in order and keep the current focus section,
+pinning a legacy inferred horizon before its first child when needed. New tasks
+in either section may start without steps. Existing descriptions remain stored
+and are not cleared by these controls. All task chats and completion controls
+retain their previous behavior. No database migration is needed.
+
+Verification: all 171 automated tests pass. Isolated browser checks saved a new
+subtask under an existing long-term task and created a long-term task with two
+entered steps; reload preserved them. Both focus lists use 14px subtask names.
+Dashboard/bubble description textarea counts are zero. Manual checks made no
+Muse requests. The legacy-focus pin, failure drafts and double-submit guard are
+covered by the shipped-controller regression harness.
+
+
+### Current actions and suitability flow (November 3)
+
+Sample mode, its fixtures and its workspace switch are removed; `?draft=1` also
+shows the saved workspace. Blue Ask Muse opens the root task chat on the same
+row as Edit task and Complete task. This row is always visible for short-term
+tasks and folded with long-term subtasks. Enter sends; Shift+Enter adds a line.
+The editor contains only focus and importance.
+
+A saved manual subtask is assessed by Muse in the background without blocking
+creation or replacing an active inline edit. Chat-created steps already carry
+validated assessments. Each step has a right-side Hand off control; human work
+is disabled, old unassessed work offers Assess with Muse, and errors offer Retry
+assessment. Retries preserve request identity after an uncertain connection.
+Handoff opens an honest no-computer-connected dialog: no execution or chat request
+is started. No worker/computer is connected yet.
+
+Verification of the current flow: 180 automated tests pass. An isolated real-Muse
+browser check saved two manual steps, assessed digital drafting as Muse work and
+physical room setup as human work, and verified Enter submission with an empty
+composer afterward. The editor and collapsed/expanded action visibility were
+checked in the browser. No user task data was modified by these checks.
+
+
+### Dedicated browser handoff (November 3)
+
+This supersedes the disconnected-only Handoff notice. The local browser command
+connects the action to a start URL and optional context form. Starting explicitly
+creates a real execution run; merely opening Hand off or assessing suitability
+does not execute anything. The panel polls owned status and shows saved screenshots,
+action summaries and download links. A Saved runs selector restores earlier
+results after reload. Full-size screenshots open in a separate tab. Pause/Resume
+and Stop stay available independently of chat requests. Closing the panel leaves
+the worker running; reopening retrieves its state. Finished results require review
+and never automatically check off the subtask.
+
+The standard/hosted app shows local setup instructions; no browser is opened on
+the server. Existing task/chat state and the unavailable-button arrow cursor are
+preserved. See BROWSER_HANDOFF.md for setup, test evidence and limitations.
+
+Final verification: 208 automated tests pass, with one existing Starlette/httpx
+deprecation warning. Real Muse/browser checks verified a dashboard-started run,
+recovery from an out-of-bounds click request, the IANA page result, saved screenshots,
+reload/restart persistence, Pause acknowledgment and Stop acknowledgment. Existing
+configured task/chat/context/audit record counts were unchanged by the migration.
+
+
+### Current chat workbench (November 4)
+
+Talk to Muse always opens General, with no visible conversation selector. Ask Muse
+opens a larger modal task chat; each root retains one persistent conversation and
+its subtasks share it. Whole-task Hand off sits on the right of the deadline row.
+Whole/subtask handoff sends a work request in that root conversation, using real
+Meta web search when useful. Source links come from provider citations. Use browser
+is an optional task-chat control; it opens the separate computer setup and requires
+Start browser before execution. Saved browser run cards appear in task chat.
+
+General/task drafts are distinct. Handoff preserves a different unsent draft, and
+sent text clears immediately. New exchanges stay in the selected surface; older
+histories remain intact. The same mounted composer is moved between surfaces,
+with larger textarea/panel dimensions and only history scrolling. Successful voice
+transcription fills the field without a notification. Errors are visible inside
+the active chat as well as on the dashboard.
+
+Concrete requirements proactively produce grounded named steps, respecting explicit
+no-steps instructions and existing corrections. Trash controls appear under the
+short-term index, before each step checkbox and beside long-term expansion. Trash
+hides the tree and bubble, with a per-workspace session Undo stack (last 20 items).
+Undo restores IDs, order and chat association. No permanent purge is exposed.
+Removed task chats are kept out of General. Apply migration e490ac621fb8.
+
+Relevant earlier user statements that created or clearly discussed a task in
+another chat are supplied as bounded task_user_context in model snapshots. Current
+saved state and later corrections take precedence. Visible exchanges remain in
+their original General/task surface, without copied messages or unrelated general
+context. Uncertain subtask handoff retries retain the original delegated ID.
+
+November 4 verification: all 224 automated tests pass. Isolated real-Muse browser
+checks verified contextual creation of three grounded steps, official-source web
+research, a whole-task handoff in the existing task chat, separate General history
+and drafts, optional browser setup, deletion/Undo for both focus sections and a
+subtask, and restored task chat after Undo/reload. Desktop, 390×844 and 1226×540
+checks found no outer chat overflow, including the expanded voice note. The
+configured migration preserved existing task/chat/context/audit/browser-run counts.
+
+
+November 4 refinement: new delegated chat/browser requests require short-term
+work. Whole-task handoff requires every leaf step to be assessed for Muse;
+a task with no steps requires its own Muse assessment. Long-term tasks keep
+planning chat and saved results, without handoff controls. The backend rejects
+ineligible new requests with 409. Chat replies hide native citation reference
+codes and retain real source links; the provider is instructed to use readable
+Markdown. Focus headers omit counts, composers are compact, and the long-term
+list scrolls only after reaching the adjacent short-term panel's height.
+
+
+Interaction repairs (November 4): deletion notices dismiss automatically after
+8 seconds or with Close. Workspace → Undo last deletion keeps recovery available
+after dismissal. Completion updates the existing checkbox while saving, without
+exit/reentry animation, then renders the confirmed state once and restores focus.
+Bubble details have a separate full-width header and deadline/handoff row, growing
+with their content. Chat headers and the combined composer/control row use less
+vertical space. Only short-/long-term Past task counters remain.
+
+Verification: 228 tests passed. Isolated browser checks verified completion and
+reopening, deletion auto-dismiss/Close and later Undo for tasks and steps, bubble
+header layout, and separate history counters. Desktop task history occupies 430px
+in a 613px panel with a 60px composer. At 390×844 both chat surfaces fit without
+outer scrolling; no live user tasks were changed.
+
+
+Stable updates refinement (November 4): completing a subtask no longer disables
+all controls or rebuilds the dashboard/bubble physics. Only its mounted controls,
+versions and progress change. When a plan finishes, only its active card and bubble
+are removed and history is updated. Bubble selection replaces only its detail
+panel and scrolls its bottom to 16px above the viewport bottom. Reduced-motion
+uses instant scrolling. Textareas default to four 24px lines (96px), with a 44px
+minimum for manual resizing. Checkbox/name and Workspace-chevron centers align.
+The page-top informational notice surface is removed; errors remain visible.
+
+Verification: 229 tests passed. Isolated browser checks confirmed unchanged bubble
+positions after a checkbox save, final-subtask movement into history, zero center
+alignment differences, bottom-aligned details, and the four-line composer without
+outer chat overflow. Fixture records were used; live user tasks were unchanged.

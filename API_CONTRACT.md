@@ -539,10 +539,10 @@ The request scope is part of retry identity: changing tasks with the same
 `request_id` returns 409. Omitted fields in old stored requests normalize to null.
 
 The dashboard sends `conversation_id: null` so general history persists rather
-than starting a new visit. A non-null `chat_task_id` selects that task's messages
-and model context across visits. Initial creation/correction runs from general
-chat are linked by existing task audit records. Other task-specific threads are
-excluded. General chat excludes messages sent within a task-specific thread.
+than starting a new visit. A non-null `chat_task_id` selects the root task's messages
+and model context across visits, resolving descendant IDs to that root. Creation/correction runs are linked by task audit records; task-specific
+answers also carry the validated proposal `chat_task_id`. Unrelated task
+conversations are excluded. General chat excludes messages sent within a task-specific thread.
 Legacy non-null `conversation_id` still scopes a general API conversation to a
 visit. No database migration or authentication change is needed.
 
@@ -580,14 +580,231 @@ when all saved steps are finished. Explicitly completed roots remain historical.
 Past-task rows expose only this action, without changing stored chats or steps.
 
 
-## Short-term manual plans (November 3)
+## Manual named-subtask plans (November 3)
 
 `POST /api/tasks` also accepts optional `subtasks: [{"title": "..."}]` (maximum
 20; each title 1–300 non-whitespace characters). This applies to root tasks only
-and is rejected for an explicit `long_term` root. The root, children, and audit
+in either focus section. Batches are rejected when `parent_task_id` is supplied. The root, children, and audit
 records save in one transaction, with no model call or generated content.
 When supplied, the response remains a saved root object and additionally includes
 `subtasks`, containing the saved child records in entered order. Without children
 the response is unchanged. Child deadlines/classifications are not invented.
-The short-term form requires at least one entered step; other API clients can
-still create a short-term root without children. No new database migration.
+Both forms allow zero entered steps. Adding to an existing task uses the normal
+`POST /api/tasks` child creation endpoint with a title and `parent_task_id`. No new database migration.
+
+
+## Root-task chat routing and focus corrections (November 3)
+
+Conversation task objects now accept nullable `time_horizon` (`short_term` or
+`long_term`). A non-null choice persists on new/existing tasks; omitted/null
+values preserve an existing task's focus. Older saved proposals remain readable.
+New Meta structured generations require the field, using null when unchanged.
+
+`ConversationProposal` also accepts `chat_task_id` (owned saved task UUID or null).
+This identifies an unambiguous task discussion, including answers with no edits.
+Unavailable/foreign IDs fail validation before any changes or assistant success
+message are saved. The frontend uses this ID, a unique newly created root, or a
+unique affected root to select the matching persistent chat after success.
+Ambiguous multiple-task responses keep the current selection.
+
+Subtask chat requests resolve to their owned root for model context. Historical
+runs retain their original input payloads and request identities; root histories
+include descendant scopes and linked changes. No messages are deleted or moved.
+The browser selector lists roots only, and subtask Ask Muse opens its root.
+
+The simplified task editor PATCHes only focus, importance and a changed handoff
+assessment. It retains the existing structured handoff context; a fresh manual
+assignment records `reason: "Assigned by you."`, empty requirements and the task
+name as the completion criterion. Status, title, description and deadline remain
+available through direct dashboard controls. No database migration is needed.
+
+
+### Exclusive chat ownership correction
+
+Dashboard runs now include computed `chat_scope_id` (an owned root task UUID or
+null for General chat). Each exchange has exactly one destination: after a
+successful reply, prefer the validated proposal `chat_task_id`, then a unique
+created root, then a unique affected root, otherwise retain the original scope.
+Unsuccessful/running exchanges stay in the original scope. Subtasks resolve to
+their root. The UI, WebMCP current-chat reads and model-history snapshots all use
+that same destination. Raw messages and original `input_payload` remain stored
+once; request identity is unchanged, so older routed exchanges are corrected on
+reload without deleting messages or migrating the database. `related_task_ids`
+remains audit information, not additional copies of the chat.
+
+A delivered message clears its matching draft/pending request before UI refresh.
+A later rendering/refresh error must not restore already-sent text. Genuine
+network uncertainty still preserves the draft and request UUID. WebMCP retries
+reuse the original request scope even after automatic selection moves to a task.
+
+
+## Name-only task interface
+
+Tasks and subtasks use editable titles and optional deadlines; descriptions no
+longer have dashboard, creation-form or bubble controls. Description columns and
+API fields remain compatible, and existing stored context is preserved. New model
+descriptions default to empty; supporting context belongs in the task chat.
+
+Both manual root forms accept optional named subtasks (maximum 20 per batch).
+Existing tasks expose Add subtask with one required name, saving a pending child
+without a model call, generated metadata or an inherited deadline. For an older
+root with null `time_horizon`, the frontend first pins its current effective focus
+using version-checked PATCH, then creates the child. A failure preserves the form;
+a successful pin alone does not move the task's visible section. No migration.
+
+
+## Background subtask suitability assessment (November 3)
+
+`POST /api/handoff/assess` requires the normal workspace session:
+
+```json
+{"request_id":"UUID", "task_ids":["saved-subtask-UUID"]}
+```
+
+Supply 1–20 unique owned subtasks with one shared parent. Roots and duplicate IDs
+return 422; foreign/unavailable tasks return 404; user-assigned classifications
+are protected with 409. Reusing a request UUID with different input returns 409.
+The configured Meta model receives the saved parent/step context and a strict
+assessment schema. Output must classify exactly the requested IDs once each.
+
+Responses include `id`, `request_id`, `status`, `error`, and `tasks` (the current
+saved requested records). Status is `running`, `answered`, `failed`, or `stale`.
+Successful assessments atomically update only `handoff`, `handoff_source=model`,
+version and timestamps, with audit events and a diagnostic run. Parent/child
+version changes during inference make the run stale without overwriting edits.
+Invalid/provider output leaves the saved steps intact. Repeating the same UUID
+returns the existing run without repeating the model call. No chat messages are
+created, no task is marked running/completed, and no computer work is executed.
+
+The browser saves manually entered steps first, then calls this endpoint in the
+background. Chat-created steps already have validated classifications. Failed
+assessments can be retried separately from task creation. Sample workspace mode
+is removed. The task editor now PATCHes only focus and importance, preserving
+existing handoff metadata. Blue Ask Muse opens root chat; per-subtask Hand off
+opens a no-computer-connected notice until an execution worker is implemented.
+
+
+## Dedicated laptop browser (November 3)
+
+Migration `d785c418a901` adds owned `browser_runs`, separate from planning runs
+and chat messages. All routes use normal workspace identity. Start, run reads,
+controls and artifacts additionally require a loopback client and localhost host,
+reject foreign Origin headers, and reject hosted execution. The local app must
+run with its optional browser worker enabled and one process.
+
+| Route | Result |
+| --- | --- |
+| `GET /api/browser` | `connected`, `mode`, setup `reason`, latest 30 owned `runs`; hosted returns disconnected with no runs |
+| `POST /api/browser/runs` | 202 with saved run; requires UUID `request_id`, owned leaf `task_id`, current `expected_version`, public `start_url`, optional `instructions` <=2000 chars |
+| `GET /api/browser/runs/{id}` | Owned persisted status/result |
+| `POST /api/browser/runs/{id}/control` | `{action: pause/resume/stop}`; Resume only from paused/needs_input |
+| `GET /api/browser/runs/{id}/frames/{frame}` | Owned saved PNG, no-store |
+| `GET /api/browser/runs/{id}/downloads/{file_id}` | Owned attachment; original sanitized display name, opaque local storage filename |
+
+Run responses contain id, task_id, task_title (the title at start), request_id, start_url, status, summary, steps,
+downloads, frame, created_at and updated_at. Goal snapshots/owner IDs are not
+returned. Statuses: queued, running, pausing, paused, needs_input, stopping, stopped,
+interrupted, failed, finished. Finished means the worker ended for user review,
+including a step-limit exit; it never marks a task complete.
+
+Duplicate request UUIDs with identical payload return the same run, without
+repeating execution; changed payload gives 409. Unavailable worker gives 503,
+foreign work 404, stale versions/ineligible or completed work/capacity conflicts
+409, invalid URLs or non-leaf targets 422. A run requires unfinished Muse-suitable
+work beneath unfinished ancestors. Task/ancestor version changes interrupt further
+actions. Browser state changes never mutate task status or insert chat messages.
+
+One local thread owns each browser, with one active browser per app process. The
+worker saves screenshots/actions/downloads after action batches. Pause/Stop wait
+for an in-flight action/model request before the next action; Resume discards
+stale actions and starts from a fresh screenshot. Shutdown requests stop; a new
+worker marks abandoned active records interrupted. Use one process and one local
+worker per database. There is no hosted pairing protocol or cloud worker.
+
+Screenshots/task context go to the existing Meta model via `/responses` with
+`store:false`, strict validated function tools and serial calls. The native tool
+was rejected in the account's smoke check; it is not silently retried. URLs are
+checked against public HTTP/HTTPS and standard ports, including DNS results on
+browser requests; this is a browser guard rather than network/VM isolation.
+
+
+## Internet chat, stable surfaces and reversible removal (November 4)
+
+Current dashboard/WebMCP conversations send `web_enabled: true` and
+`keep_chat_scope: true`. Both fields default false for legacy clients. General
+requests retain null chat_task_id even when creating/discussing one task; task
+requests retain their owned root scope. Older stored request payloads and retry
+identities remain valid through default normalization. No history is rewritten.
+
+Optional `delegated_task_id` identifies the specific task/subtask handed off. It
+must be active, owned, and in the supplied root task chat; wrong chat scope gives
+422, foreign work 404 and finished work 409. The snapshot includes that saved
+object plus the root/current task context. This invokes internet-enabled chat,
+not browser execution, and never changes task completion status automatically.
+
+Internet answers use Meta `/responses` with built-in `web_search`, store:false and
+a strict ConversationProposal schema. Progress messages can precede the final
+structured message; only the last message is parsed as the proposal. All task
+changes still pass normal ownership, score, revision and user-correction checks
+before atomic application. `proposal.web_search_used` and `proposal.sources`
+({url,title}, max 10) are derived from actual completed search calls and URL
+citation annotations, overriding any generated values. A valid answer may use no
+search; the interface must not claim otherwise. Legacy no-web calls clear this
+metadata. Failures preserve work and are visible inside the current chat surface.
+
+### Task trash and Undo
+
+Migration `e490ac621fb8` adds nullable tasks.deleted_at. These endpoints use normal
+workspace authentication and same-origin checks:
+
+- `DELETE /api/tasks/{id}` with `{request_id: UUID, expected_version: integer}`
+  removes that active task and its active descendants from dashboard/model state.
+  Returns `{deletion_id, task_ids}`. All affected rows receive one deletion stamp
+  and version increment in a transaction, with an audit record and revision bump.
+- `POST /api/tasks/{id}/restore` with `{deletion_id: UUID}` restores that exact
+  deletion group, using the same IDs and saved fields. A deleted parent must be
+  restored first. Independently deleted children are not resurrected with a later
+  parent deletion. Repeated restoration is safe; an older token cannot undo a
+  later deletion of the same task.
+
+Duplicate deletion request IDs with identical input return the same result; a
+changed input or stale version gives 409. Cross-owner actions give 404. There is
+no physical row deletion, chat deletion, artifact deletion or purge endpoint.
+Normal task reads/edits/add-child operations exclude removed tasks. Dashboard runs
+retain their original root chat_scope_id and mark `chat_hidden` for a removed root,
+so preserved task exchanges do not appear in General or its model context. Undo
+restores visibility. Raw owner-scoped diagnostic history is retained.
+
+### Optional whole-task browser runs
+
+Only an explicit browser start endpoint launches a computer. It now accepts an
+unfinished whole task, with saved descendant context, as well as a Muse-suitable
+subtask. Whole-task execution remains limited to the available browser; human
+steps are not authorized automatically. Captured task/ancestor/descendant versions
+and the current descendant set are checked before actions; corrections, removal
+or newly added delegated steps interrupt execution. Results remain separate from
+completion status and are rendered in the root's task chat.
+
+Relevant earlier user statements that created or clearly discussed a task in
+another chat are supplied as bounded task_user_context in model snapshots. Current
+saved state and later corrections take precedence. Visible exchanges remain in
+their original General/task surface, without copied messages or unrelated general
+context. Uncertain subtask handoff retries retain the original delegated ID.
+
+November 4 verification: all 224 automated tests pass. Isolated real-Muse browser
+checks verified contextual creation of three grounded steps, official-source web
+research, a whole-task handoff in the existing task chat, separate General history
+and drafts, optional browser setup, deletion/Undo for both focus sections and a
+subtask, and restored task chat after Undo/reload. Desktop, 390×844 and 1226×540
+checks found no outer chat overflow, including the expanded voice note. The
+configured migration preserved existing task/chat/context/audit/browser-run counts.
+
+
+November 4 refinement: new delegated chat/browser requests require short-term
+work. Whole-task handoff requires every leaf step to be assessed for Muse;
+a task with no steps requires its own Muse assessment. Long-term tasks keep
+planning chat and saved results, without handoff controls. The backend rejects
+ineligible new requests with 409. Chat replies hide native citation reference
+codes and retain real source links; the provider is instructed to use readable
+Markdown. Focus headers omit counts, composers are compact, and the long-term
+list scrolls only after reaching the adjacent short-term panel's height.

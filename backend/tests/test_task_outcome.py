@@ -72,10 +72,13 @@ def test_assessment_defaults_to_one_task_and_saves_explicitly_requested_steps(
         assert body["max_completion_tokens"] == 8192
         assert "Root tasks must name the user's intended outcome" in instructions
         assert "Ask for missing inputs in reply" in instructions
-        assert "Default to subtasks=[]" in instructions
-        assert "current user message explicitly" in instructions
+        assert "A bare task name or deadline can use subtasks=[]" in instructions
+        assert "proactively" in instructions
         assert "Do not create a generic work scaffold" in instructions
-        assert "Before returning, remove any newly generated subtasks" in instructions
+        assert (
+            "remove invented subtasks not grounded in concrete user context"
+            in instructions
+        )
         assert "With no brief, use a grounded scaffold" not in instructions
         return httpx.Response(
             200,
@@ -129,12 +132,12 @@ def test_priority_heading_and_single_subtask_list_preserve_the_outcome():
         str(Path(__file__).resolve().parents[2] / "frontend/dashboard.py")
     )["PAGE"]
     functions = page.split("function orderedChildren(", 1)[1].split(
-        "const sampleStepNames=", 1
+        "function dashboardGroups(", 1
     )[0]
     script = (
         r"""
 const assert=require('node:assert/strict'),vm=require('node:vm');new vm.Script(FULL_JS);
-const state={tasks:[{id:'parent',title:'Complete Duolingo take-home assessment',status:'pending',description:'',deadline:null},{id:'child',parent_task_id:'parent',title:'Review the current requirements',status:'pending',position:0}]};
+const busy=false;const state={tasks:[{id:'parent',title:'Complete Duolingo take-home assessment',status:'pending',description:'',deadline:null},{id:'child',parent_task_id:'parent',title:'Review the current requirements',status:'pending',position:0}]};
 const esc=value=>String(value??'').replaceAll('<','&lt;').replaceAll('>','&gt;');
 function agentActions(){return '';}function badge(){return '';}
 function orderedChildren(FUNCTIONS
@@ -144,9 +147,8 @@ assert.match(html,/<h3 class="focus-plan"><input[^>]*data-task-name="parent"[^>]
 assert.ok(html.indexOf('Complete Duolingo take-home assessment')<html.indexOf('Subtasks'));
 assert.ok(html.indexOf('Subtasks')<html.indexOf('Review the current requirements'));
 assert.match(html,/data-complete="child"/);assert.doesNotMatch(html,/data-complete="parent"/);
-const sample=overviewFocus(state.tasks[0],0,state.tasks,true);assert.match(sample,/<h3 class="focus-plan"><input[^>]*value="Complete Duolingo take-home assessment"/);
 const single={id:'single',title:'One task',status:'pending'};
-const singleHtml=overviewFocus(single,0,[single]);assert.match(singleHtml,/Task details/);assert.doesNotMatch(singleHtml,/next-action-label/);
+const singleHtml=overviewFocus(single,0,[single]);assert.match(singleHtml,/Subtasks/);assert.match(singleHtml,/data-add-subtask="single"/);assert.doesNotMatch(singleHtml,/next-action-label/);
 assert.equal((singleHtml.match(/value="One task"/g)||[]).length,1);
 assert.equal((html.match(/<details /g)||[]).length,1);assert.doesNotMatch(html,/<details[^>]* open/);
 assert.equal((html.match(/data-step-id=/g)||[]).length,1);assert.match(html,/0 \/ 1 completed/);
@@ -162,7 +164,7 @@ assert.equal((overviewFocus({...three[0],deadline:'2026-11-10'},0,three).match(/
 let selectedBubble='parent';
 const bubble=renderBubbleDetails([three[0]],three);
 assert.doesNotMatch(bubble,/<details|<summary|data-plan-disclosure=/);
-assert.equal((bubble.match(/data-step-id=/g)||[]).length,3);
+assert.equal((bubble.match(/data-step-id=/g)||[]).length,3);assert.match(bubble,/<div class="bubble-detail-header"><h3[^>]*><input[^>]*><\/h3>/);assert.ok(bubble.indexOf('task-deadline-row')>bubble.indexOf('</h3>'));
 const unsafe={...state.tasks[0],title:'<script>bad</script>'};assert.doesNotMatch(overviewFocus(unsafe,0),/<script>bad/);
 """.replace("FUNCTIONS", functions)
         .replace(

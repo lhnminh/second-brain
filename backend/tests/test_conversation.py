@@ -6,6 +6,7 @@ from uuid import uuid4
 import pytest
 
 from second_brain.muse import MuseFailure
+from second_brain.schemas import ConversationProposal
 
 TASK = {
     "task_id": None,
@@ -141,7 +142,9 @@ def test_take_home_cards_survive_review_correction_and_return(setup, monkeypatch
         "and prepare the required submission.",
     ).json()
     assert run["status"] == "awaiting_review"
-    assert run["proposal"] == proposal
+    assert run["proposal"] == ConversationProposal.model_validate(proposal).model_dump(
+        mode="json"
+    )
     assert client.get("/api/dashboard").json()["tasks"] == []
     run["proposal"]["tasks"][0]["subtasks"][0]["title"] = "Read the brief I received"
     assert approve(client, run, proposal=run["proposal"]).status_code == 200

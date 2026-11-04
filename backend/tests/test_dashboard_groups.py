@@ -17,20 +17,20 @@ def test_deadline_order_separate_goals_and_accessible_past_tasks(tmp_path):
     )["PAGE"]
     helpers = (
         "function orderedChildren("
-        + page.split("function orderedChildren(", 1)[1].split(
-            "const sampleStepNames=", 1
-        )[0]
+        + page.split("function orderedChildren(", 1)[1].split("// Focus grouping.", 1)[
+            0
+        ]
     )
     overview = (
-        "function hasNextAction("
-        + page.split("function hasNextAction(", 1)[1].split(
+        "function handoffRoot("
+        + page.split("function handoffRoot(", 1)[1].split(
             "function renderOverview(", 1
         )[0]
     )
     script = r"""
 const assert=require('node:assert/strict');
 const esc=value=>String(value??'').replaceAll('<','&lt;').replaceAll('>','&gt;');
-const state={tasks:[]},openPlans=new Set();function agentActions(t){return t.handoff?'<div class="agent-actions"><button>Ask Muse</button></div>':'';}
+const busy=false,state={tasks:[]},openPlans=new Set();function agentActions(t){return t.handoff?'<div class="agent-actions"><button>Ask Muse</button></div>':'';}
 HELPERS
 OVERVIEW
 const roots=[
@@ -49,9 +49,15 @@ assert.deepEqual(grouped.short.map(t=>t.id),['early','later','plan']);
 assert.deepEqual(grouped.long.map(t=>t.id),['goal']);
 assert.deepEqual(grouped.past.map(t=>t.id),['done','steps-done']);
 assert.equal(new Set([...grouped.short,...grouped.long].map(t=>t.id)).size,grouped.active.length);
-const longHtml=longTermEntry(roots[2]);
-assert.match(longHtml,/<div class="goal-heading"><input[^>]*data-task-name="goal"[^>]*value="Learn pottery"/);assert.match(longHtml,/data-toggle-description="goal"[^>]*aria-expanded="false"/);assert.match(longHtml,/id="goal-description-goal"[^>]*hidden/);assert.doesNotMatch(longHtml,/<summary|<details/);
-assert.match(longHtml,/Explore shapes and clay/);assert.doesNotMatch(longHtml,/data-bubble=|Show .* more/);
+const longHtml=longTermEntry(roots[2]);assert.doesNotMatch(longHtml,/data-handoff=/);
+assert.doesNotMatch(sectionTaskControls('short_term'),/section-count|tasks<\/span>/);
+const whole={id:'whole',time_horizon:'short_term',status:'pending'},one={id:'one',parent_task_id:'whole',status:'pending',handoff:{handler:'muse'}},two={id:'two',parent_task_id:'whole',status:'pending',handoff:{handler:'user'}};state.tasks.push(whole,one,two);assert.equal(canHandoff(whole),false);assert.match(taskDeadlineRow(whole),/disabled/);two.handoff.handler='muse';assert.equal(canHandoff(whole),true);whole.time_horizon='long_term';assert.equal(canHandoff(whole),false);assert.equal(canHandoff(one),false);assert.doesNotMatch(taskDeadlineRow(whole),/data-handoff=/);whole.time_horizon='short_term';
+
+assert.match(longHtml,/<div class="goal-heading"><input[^>]*data-task-name="goal"[^>]*value="Learn pottery"/);assert.match(longHtml,/data-toggle-subtasks="goal"[^>]*aria-expanded="false"/);assert.match(longHtml,/id="goal-subtasks-goal"[^>]*hidden/);assert.doesNotMatch(longHtml,/<summary|<details/);
+assert.doesNotMatch(longHtml,/Explore shapes and clay|<textarea|Description/);assert.match(longHtml,/data-add-subtask="goal"/);assert.ok(longHtml.indexOf('Ask Muse')<longHtml.indexOf('Edit task'));assert.doesNotMatch(longHtml,/Go to task chat/);
+const stepHtml=focusStep({id:'empty-step',title:'Review layout',description:'Preserved note',handoff:true});assert.doesNotMatch(stepHtml,/<textarea|Add description|Preserved note/);assert.match(stepHtml,/Review layout/);
+
+assert.doesNotMatch(longHtml,/data-bubble=|Show .* more/);
 const groupedPast=renderPastGroups([{...roots[4],time_horizon:'long_term',deadline:'2026-11-01'},roots[5]],tasks);
 assert.match(groupedPast,/Past short-term tasks/);assert.match(groupedPast,/Past long-term tasks/);assert.ok(groupedPast.indexOf('Steps done')<groupedPast.indexOf('Past long-term tasks'));assert.ok(groupedPast.indexOf('Finished')>groupedPast.indexOf('Past long-term tasks'));
 const pastHtml=pastTask(roots[4],tasks);
@@ -70,7 +76,7 @@ assert.match(taskDeadline({deadline:date}),/data-urgency="urgent">Due today/);
 assert.match(taskDeadline({deadline:'2099-01-01'}),/data-urgency="later">Due/);
 assert.equal(taskDeadline({}), '');
 // Reopening a saved step restores its original task to the active group.
-tasks.at(-1).status='pending';assert.deepEqual(dashboardGroups(roots,tasks).past.map(t=>t.id),['done']);
+tasks.find(t=>t.id==='finished-step').status='pending';assert.deepEqual(dashboardGroups(roots,tasks).past.map(t=>t.id),['done']);
 assert.ok(dashboardGroups(roots,tasks).short.some(t=>t.id==='steps-done'));
 """.replace("HELPERS", helpers).replace("OVERVIEW", overview)
     path = tmp_path / "dashboard.cjs"

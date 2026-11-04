@@ -8,32 +8,53 @@ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 from .db import accounts, context, drafts, events, messages, now, runs, tasks, uid
 from .muse import MuseFailure
-from .schemas import RANGES, ConversationProposal, Proposal
+from .schemas import RANGES, ConversationProposal, HandoffAssessment, Proposal
 
 
-def rows(connection, table, user_id):
-    return [
-        dict(row)
-        for row in connection.execute(
-            select(table).where(table.c.user_id == user_id)
-        ).mappings()
-    ]
+def rows(connection, table, user_id, *, include_deleted=False):
+    query = select(table).where(table.c.user_id == user_id)
+    if table is tasks and not include_deleted:
+        query = query.where(tasks.c.deleted_at.is_(None))
+    return [dict(row) for row in connection.execute(query).mappings()]
 
 
-def owned(connection, table, record_id, user_id):
-    record = (
-        connection.execute(
-            select(table).where(
-                table.c.id == record_id,
-                table.c.user_id == user_id,
-            )
-        )
-        .mappings()
-        .first()
-    )
+def owned(connection, table, record_id, user_id, *, include_deleted=False):
+    query = select(table).where(table.c.id == record_id, table.c.user_id == user_id)
+    if table is tasks and not include_deleted:
+        query = query.where(tasks.c.deleted_at.is_(None))
+    record = connection.execute(query).mappings().first()
     if record is None:
         raise HTTPException(404, "Record not found")
     return dict(record)
+
+
+def handoff_available(task, saved):
+    """Short-term work only; every leaf must have a Muse assessment."""
+    by_id = {t["id"]: t for t in saved}
+    root, seen = task, set()
+    while root.get("parent_task_id"):
+        if root["id"] in seen or root["parent_task_id"] not in by_id:
+            return False
+        seen.add(root["id"])
+        root = by_id[root["parent_task_id"]]
+        if root["status"] == "completed":
+            return False
+
+    def leaves(parent):
+        children = [t for t in saved if t.get("parent_task_id") == parent["id"]]
+        return (
+            [leaf for child in children for leaf in leaves(child)]
+            if children
+            else [parent]
+        )
+
+    root_leaves = leaves(root)
+    horizon = root.get("time_horizon") or (
+        "short_term" if root.get("deadline") or root_leaves != [root] else "long_term"
+    )
+    if horizon != "short_term" or task["status"] == "completed":
+        return False
+    return all((t.get("handoff") or {}).get("handler") == "muse" for t in leaves(task))
 
 
 def audit(connection, user_id, kind, entity_id, details):
@@ -107,6 +128,7 @@ def task_values(user_id, data, position=0, score=None, handoff_source=None):
         "version": 1,
         "created_at": now(),
         "updated_at": now(),
+        "deleted_at": None,
     }
 
 
@@ -161,6 +183,55 @@ def planning_tasks(saved_tasks):
     return active, history
 
 
+def scope_conversations(saved_runs, saved_tasks, saved_events):
+    """Project each exchange into one chat without rewriting its retry input."""
+    by_id = {task["id"]: task for task in saved_tasks}
+
+    def root_id(value):
+        task = by_id.get(str(value))
+        while task and task["parent_task_id"]:
+            task = by_id.get(task["parent_task_id"])
+        return task["id"] if task else None
+
+    linked, created = {}, {}
+    for event in saved_events:
+        run_id = event["details"].get("run_id")
+        if run_id and event["kind"] in {"task.created", "task.edited"}:
+            linked.setdefault(run_id, set()).add(event["entity_id"])
+            if (
+                event["kind"] == "task.created"
+                and root_id(event["entity_id"]) == event["entity_id"]
+            ):
+                created.setdefault(run_id, set()).add(event["entity_id"])
+
+    result = []
+    for run in saved_runs:
+        related = sorted(linked.get(run["id"], set()))
+        scope = root_id((run["input_payload"] or {}).get("chat_task_id"))
+        if run["status"] in {"applied", "answered"} and not (
+            run["input_payload"] or {}
+        ).get("keep_chat_scope"):
+            explicit = root_id((run["proposal"] or {}).get("chat_task_id"))
+            new_roots = created.get(run["id"], set())
+            affected = {root_id(value) for value in related} - {None}
+            scope = (
+                explicit
+                or (next(iter(new_roots)) if len(new_roots) == 1 else None)
+                or (next(iter(affected)) if len(affected) == 1 else None)
+                or scope
+            )
+        hidden = bool(scope and by_id.get(scope, {}).get("deleted_at"))
+        result.append(
+            {
+                **run,
+                "related_task_ids": related,
+                "chat_scope_id": scope,
+                "chat_hidden": hidden,
+            }
+        )
+    return result
+
+
 class Service:
     def __init__(self, engine, muse, user_id, model):
         self.engine, self.muse, self.user_id, self.model = engine, muse, user_id, model
@@ -194,13 +265,11 @@ class Service:
                         r["id"],
                     ),
                 )
-            linked = {}
-            for event in data["events"]:
-                run_id = event["details"].get("run_id")
-                if run_id and event["kind"] in {"task.created", "task.edited"}:
-                    linked.setdefault(run_id, set()).add(event["entity_id"])
-            for run in data["runs"]:
-                run["related_task_ids"] = sorted(linked.get(run["id"], set()))
+            data["runs"] = scope_conversations(
+                data["runs"],
+                rows(c, tasks, self.user_id, include_deleted=True),
+                data["events"],
+            )
             return data
 
     def create_task(self, body):
@@ -246,6 +315,223 @@ class Service:
             bump(c, self.user_id)
             audit(c, self.user_id, "task.created", record["id"], record)
             return {**record, "subtasks": children} if children else record
+
+    def trash_task(self, task_id, body):
+        with self.engine.begin() as c:
+            lock_account(c, self.user_id)
+            previous = (
+                c.execute(
+                    select(events).where(
+                        events.c.user_id == self.user_id,
+                        events.c.kind == "task.trashed",
+                        events.c.details["request_id"].as_string()
+                        == str(body.request_id),
+                    )
+                )
+                .mappings()
+                .first()
+            )
+            if previous:
+                details = previous["details"]
+                if (
+                    previous["entity_id"] != task_id
+                    or details["expected_version"] != body.expected_version
+                ):
+                    raise HTTPException(409, "request_id was used for another deletion")
+                return {"deletion_id": previous["id"], "task_ids": details["task_ids"]}
+            root = owned(c, tasks, task_id, self.user_id)
+            if root["version"] != body.expected_version:
+                raise HTTPException(409, "Task changed; refresh before deleting")
+            saved = rows(c, tasks, self.user_id)
+            ids = {task_id}
+            while True:
+                children = {t["id"] for t in saved if t["parent_task_id"] in ids}
+                if children <= ids:
+                    break
+                ids |= children
+            stamp, deletion_id = now(), uid()
+            c.execute(
+                update(tasks)
+                .where(tasks.c.user_id == self.user_id, tasks.c.id.in_(ids))
+                .values(deleted_at=stamp, version=tasks.c.version + 1, updated_at=stamp)
+            )
+            c.execute(
+                insert(events).values(
+                    id=deletion_id,
+                    user_id=self.user_id,
+                    kind="task.trashed",
+                    entity_id=task_id,
+                    details={
+                        "request_id": str(body.request_id),
+                        "expected_version": body.expected_version,
+                        "task_ids": sorted(ids),
+                        "deleted_at": stamp,
+                    },
+                    created_at=stamp,
+                )
+            )
+            bump(c, self.user_id)
+            return {"deletion_id": deletion_id, "task_ids": sorted(ids)}
+
+    def restore_task(self, task_id, body):
+        with self.engine.begin() as c:
+            lock_account(c, self.user_id)
+            deletion = owned(c, events, str(body.deletion_id), self.user_id)
+            if deletion["kind"] != "task.trashed" or deletion["entity_id"] != task_id:
+                raise HTTPException(422, "This deletion does not match the task")
+            root = owned(c, tasks, task_id, self.user_id, include_deleted=True)
+            if root["deleted_at"] is None:
+                return {"restored": True}
+            if root["deleted_at"] != deletion["details"]["deleted_at"]:
+                raise HTTPException(
+                    409, "The task was deleted again; use its latest Undo"
+                )
+            if root["parent_task_id"]:
+                owned(c, tasks, root["parent_task_id"], self.user_id)
+            ids = deletion["details"]["task_ids"]
+            c.execute(
+                update(tasks)
+                .where(
+                    tasks.c.user_id == self.user_id,
+                    tasks.c.id.in_(ids),
+                    tasks.c.deleted_at == root["deleted_at"],
+                )
+                .values(deleted_at=None, version=tasks.c.version + 1, updated_at=now())
+            )
+            audit(
+                c,
+                self.user_id,
+                "task.restored",
+                task_id,
+                {"deletion_id": deletion["id"], "task_ids": ids},
+            )
+            bump(c, self.user_id)
+            return {"restored": True}
+
+    def assess_handoff(self, body):
+        ids = [str(value) for value in body.task_ids]
+        if len(set(ids)) != len(ids):
+            raise HTTPException(422, "Each subtask must be supplied once")
+        payload = {"operation": "handoff_assessment", **body.model_dump(mode="json")}
+
+        def result(c, run):
+            return {
+                "id": run["id"],
+                "request_id": run["request_id"],
+                "status": run["status"],
+                "error": run["error"],
+                "tasks": [owned(c, tasks, value, self.user_id) for value in ids],
+            }
+
+        with self.engine.begin() as c:
+            revision = lock_account(c, self.user_id)
+            saved = [owned(c, tasks, value, self.user_id) for value in ids]
+            previous = (
+                c.execute(
+                    select(runs).where(
+                        runs.c.user_id == self.user_id,
+                        runs.c.request_id == str(body.request_id),
+                    )
+                )
+                .mappings()
+                .first()
+            )
+            if previous:
+                if previous["input_payload"] != payload:
+                    raise HTTPException(
+                        409, "request_id was already used for a different request"
+                    )
+                return result(c, previous)
+            parents = {task["parent_task_id"] for task in saved}
+            if None in parents or len(parents) != 1:
+                raise HTTPException(422, "Assess saved subtasks from one parent task")
+            if any(task["handoff_source"] == "user" for task in saved):
+                raise HTTPException(409, "A user assignment must be preserved")
+            parent = owned(c, tasks, next(iter(parents)), self.user_id)
+            run_id = uid()
+            c.execute(
+                insert(runs).values(
+                    id=run_id,
+                    user_id=self.user_id,
+                    task_id=parent["id"],
+                    request_id=str(body.request_id),
+                    message="Assess saved subtask handoffs",
+                    input_payload=payload,
+                    snapshot_revision=revision,
+                    status="running",
+                    model=self.model,
+                    created_at=now(),
+                    updated_at=now(),
+                )
+            )
+            audit(c, self.user_id, "planning.running", run_id, payload)
+        try:
+            assessment = HandoffAssessment.model_validate(
+                self.muse.assess_handoff(
+                    {
+                        "parent": parent,
+                        "tasks": saved,
+                    }
+                )
+            )
+            if len(assessment.tasks) != len(ids) or {
+                str(item.task_id) for item in assessment.tasks
+            } != set(ids):
+                raise ValueError("Assessment must match exactly the requested subtasks")
+            failure = None
+        except MuseFailure, ValueError:
+            assessment, failure = (
+                None,
+                "Muse could not assess these subtasks. They remain saved; retry the assessment.",
+            )
+        with self.engine.begin() as c:
+            lock_account(c, self.user_id)
+            run = owned(c, runs, run_id, self.user_id)
+            if run["status"] != "running":
+                return result(c, run)
+            current = {value: owned(c, tasks, value, self.user_id) for value in ids}
+            stale = owned(c, tasks, parent["id"], self.user_id)["version"] != parent[
+                "version"
+            ] or any(
+                current[task["id"]]["version"] != task["version"] for task in saved
+            )
+            if failure:
+                self._finish(c, run_id, "failed", error=failure)
+            elif stale:
+                self._finish(
+                    c,
+                    run_id,
+                    "stale",
+                    error="A subtask changed during assessment. Retry using its latest state.",
+                )
+            else:
+                for item in assessment.tasks:
+                    task = current[str(item.task_id)]
+                    changes = {
+                        "handoff": item.handoff.model_dump(),
+                        "handoff_source": "model",
+                        "version": task["version"] + 1,
+                        "updated_at": now(),
+                    }
+                    c.execute(
+                        update(tasks)
+                        .where(
+                            tasks.c.id == task["id"], tasks.c.user_id == self.user_id
+                        )
+                        .values(**changes)
+                    )
+                    audit(
+                        c,
+                        self.user_id,
+                        "task.assessed",
+                        task["id"],
+                        {"run_id": run_id, "before": task, "changes": changes},
+                    )
+                bump(c, self.user_id)
+                self._finish(
+                    c, run_id, "answered", proposal=assessment.model_dump(mode="json")
+                )
+            return result(c, owned(c, runs, run_id, self.user_id))
 
     def edit_task(self, task_id, body):
         with self.engine.begin() as c:
@@ -354,6 +640,11 @@ class Service:
                 if chat_task_id
                 else None
             )
+            # Subtasks share their root's chat. Keep legacy messages accessible.
+            while chat_task and chat_task["parent_task_id"]:
+                chat_task = owned(c, tasks, chat_task["parent_task_id"], self.user_id)
+            if chat_task:
+                chat_task_id = chat_task["id"]
             previous = (
                 c.execute(
                     select(runs).where(
@@ -370,6 +661,9 @@ class Service:
                     previous_input = {
                         "apply_immediately": False,
                         "chat_task_id": None,
+                        "keep_chat_scope": False,
+                        "web_enabled": False,
+                        "delegated_task_id": None,
                         **previous_input,
                     }
                 if (
@@ -387,33 +681,50 @@ class Service:
             run_id = uid()
             recent_runs = rows(c, runs, self.user_id)
             recent_messages = rows(c, messages, self.user_id)
+            saved_tasks = rows(c, tasks, self.user_id)
+            task_user_context = []
             if task_id is None:
                 recent_runs = [
                     run
-                    for run in recent_runs
-                    if (run["input_payload"] or {}).get("operation") != "draft"
+                    for run in scope_conversations(
+                        recent_runs,
+                        rows(c, tasks, self.user_id, include_deleted=True),
+                        rows(c, events, self.user_id),
+                    )
+                    if run["task_id"] is None
+                    and (run["input_payload"] or {}).get("operation") != "draft"
                 ]
-                run_ids = {run["id"] for run in recent_runs}
-                recent_messages = [m for m in recent_messages if m["run_id"] in run_ids]
-                # A task's original creation/corrections belong to its history too.
-                linked_runs = set()
                 if chat_task_id:
-                    linked_runs = {
-                        event["details"].get("run_id")
-                        for event in rows(c, events, self.user_id)
-                        if event["entity_id"] == str(chat_task_id)
-                        and event["kind"] in {"task.created", "task.edited"}
-                    }
+                    scope_ids = {str(chat_task_id)}
+                    while True:
+                        children = {
+                            t["id"]
+                            for t in saved_tasks
+                            if t["parent_task_id"] in scope_ids
+                        }
+                        if children <= scope_ids:
+                            break
+                        scope_ids |= children
+                    relevant = [
+                        run
+                        for run in recent_runs
+                        if run["chat_scope_id"] != str(chat_task_id)
+                        and run["status"] in {"applied", "answered"}
+                        and (
+                            scope_ids.intersection(run["related_task_ids"])
+                            or str((run["proposal"] or {}).get("chat_task_id"))
+                            in scope_ids
+                        )
+                    ]
+                    task_user_context = [
+                        {"message": run["message"], "created_at": run["created_at"]}
+                        for run in sorted(relevant, key=lambda r: r["created_at"])[-5:]
+                    ]
                 recent_runs = [
                     run
                     for run in recent_runs
-                    if (run["input_payload"] or {}).get("chat_task_id")
+                    if run["chat_scope_id"]
                     == (str(chat_task_id) if chat_task_id else None)
-                    or (
-                        chat_task_id
-                        and run["id"] in linked_runs
-                        and not (run["input_payload"] or {}).get("chat_task_id")
-                    )
                 ]
                 run_ids = {run["id"] for run in recent_runs}
                 recent_messages = [m for m in recent_messages if m["run_id"] in run_ids]
@@ -435,8 +746,22 @@ class Service:
                     for message in recent_messages
                     if message["run_id"] in run_ids
                 ]
-            saved_tasks = rows(c, tasks, self.user_id)
             active_tasks, completed_tasks = planning_tasks(saved_tasks)
+            delegated = None
+            if task_id is None and body.delegated_task_id:
+                delegated = owned(c, tasks, str(body.delegated_task_id), self.user_id)
+                target = delegated
+                while target["parent_task_id"]:
+                    target = owned(c, tasks, target["parent_task_id"], self.user_id)
+                if not chat_task or target["id"] != chat_task["id"]:
+                    raise HTTPException(422, "Hand off work in its own task chat")
+                if delegated["id"] not in {t["id"] for t in active_tasks}:
+                    raise HTTPException(409, "Reopen this task before handing it off")
+            if delegated and not handoff_available(delegated, saved_tasks):
+                raise HTTPException(
+                    409,
+                    "Handoff requires short-term work with all subtasks suitable for Muse",
+                )
             snapshot = {
                 "apply_immediately": task_id is None
                 and getattr(body, "apply_immediately", False),
@@ -453,6 +778,9 @@ class Service:
                 ],
                 "task": task or chat_task,
                 "chat_task_id": str(chat_task_id) if chat_task_id else None,
+                "web_enabled": getattr(body, "web_enabled", False),
+                "delegated_task": delegated,
+                "task_user_context": task_user_context,
                 "tasks": active_tasks,
                 "completed_tasks": completed_tasks,
                 "context": rows(c, context, self.user_id),
@@ -682,6 +1010,11 @@ class Service:
         self, proposal, saved_tasks, protect_handoff=False, protect_history=False
     ):
         saved = {t["id"]: t for t in saved_tasks}
+        if (
+            proposal.chat_task_id is not None
+            and str(proposal.chat_task_id) not in saved
+        ):
+            raise ValueError("Chat references an unavailable task")
         historical_ids = (
             {t["id"] for t in planning_tasks(saved_tasks)[1]}
             if protect_history
@@ -713,6 +1046,8 @@ class Service:
             )
             if item.task_id:
                 task = owned(c, tasks, str(item.task_id), self.user_id)
+                if item.time_horizon is None:
+                    data.pop("time_horizon", None)
                 # Old pending proposals cannot erase newer classification data.
                 if item.handoff is None and (
                     baseline is None or baseline.handoff is None

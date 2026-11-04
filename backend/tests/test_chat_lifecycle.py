@@ -62,9 +62,15 @@ def test_browser_task_histories_and_unsent_drafts_are_separate(tmp_path):
             r"let conversationId=.*?;\n",
             r"const chatDrafts=.*?;\n",
             r"function newChat\(\).*?\n",
+            r"function rootTaskId.*?\n",
+            r"function runChatScope.*?\n",
             r"function chatRuns\(\).*?\n",
             r"async function refresh\(\).*?\n",
         ]
+    )
+    functions += (
+        "\nfunction safeChatUrl"
+        + page.split("function safeChatUrl", 1)[1].split("function renderChat(){", 1)[0]
     )
     chat = (
         "function renderChat(){"
@@ -76,8 +82,9 @@ def test_browser_task_histories_and_unsent_drafts_are_separate(tmp_path):
 const assert=require('node:assert/strict');
 let state={tasks:[],messages:[],runs:[]},pending=null,ranges={},busy=false;
 const elements=new Map(),$=key=>{if(!elements.has(key))elements.set(key,{reset(){this.value='';},value:'',textContent:'',innerHTML:'',hidden:false});return elements.get(key);};
-const esc=String;function render(){}function setMuseOpen(){}
-let data={tasks:[{id:'a',title:'Task A'},{id:'b',title:'Task B'}],runs:[
+function canHandoff(){return true;}const esc=String;function refreshBrowserState(){}function loadTrashUndo(){}
+function render(){}function setMuseOpen(){}
+let data={tasks:[{id:'a',title:'Task A'},{id:'b',title:'Task B'},{id:'child',title:'Subtask',parent_task_id:'a'}],runs:[
 {id:'created',task_id:null,input_payload:{conversation_id:'old-visit'},related_task_ids:['a'],status:'applied'},
 {id:'a-run',task_id:null,input_payload:{chat_task_id:'a'},status:'answered'},
 {id:'b-run',task_id:null,input_payload:{chat_task_id:'b'},status:'answered'}],
@@ -87,7 +94,7 @@ FUNCTIONS
 CHAT
 (async()=>{
  await refresh();assert.equal(state.messages.length,3);
- openTaskChat('a');assert.match($('#conversation').innerHTML,/Create task A/);assert.match($('#conversation').innerHTML,/A private discussion/);assert.doesNotMatch($('#conversation').innerHTML,/B discussion/);
+ openTaskChat('child');assert.equal(chatTaskId,'a');assert.doesNotMatch($('#chat-scope').innerHTML,/Subtask/);assert.match($('#conversation').innerHTML,/Create task A/);assert.match($('#conversation').innerHTML,/A private discussion/);assert.doesNotMatch($('#conversation').innerHTML,/B discussion/);
  $('#message').value='A draft';pending={request_id:'retry-a',message:'A draft'};
  openTaskChat('b');assert.equal($('#message').value,'');assert.equal(pending,null);assert.match($('#conversation').innerHTML,/B discussion/);
  $('#message').value='B draft';openTaskChat('a');assert.equal($('#message').value,'A draft');assert.equal(pending.request_id,'retry-a');

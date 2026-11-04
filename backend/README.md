@@ -250,3 +250,80 @@ responses are still rejected, without partial task changes. Existing unassessed
 tasks can retain null handoff data when updated; new tasks/steps must still have
 a classification. This supports repairing older plans without inventing an
 assessment of existing work.
+
+
+### Subtask suitability assessment (November 3)
+
+`POST /api/handoff/assess` uses the configured Meta adapter and strict structured
+output to assess saved sibling subtasks. Saving remains independent of this
+background request. The endpoint validates owner, exact IDs, versions and user
+corrections; updates only handoff metadata; and logs an idempotent diagnostic run
+without chat messages or execution. Errors preserve saved tasks. Existing runs
+support request retries, so no migration is needed. The dashboard still has no
+connected computer worker. See API_CONTRACT.md for the boundary.
+
+
+### Dedicated local browser worker (November 3)
+
+`uv run --extra browser second-brain-browser` enables one loopback app/worker
+process. Apply migration `d785c418a901` first. Browser dependencies are optional;
+Windows uses installed Edge with a fresh profile, other platforms use Playwright
+Chromium. The worker owns a serial screenshot/action loop against Muse Spark
+`/responses` function tools. No shell, host filesystem, clipboard or existing
+browser profile is exposed to the model. Screenshots and downloads are local
+artifacts under ignored `.browser-workspace`, served only through owned routes.
+
+Browser execution state is separate from task status and model planning runs.
+Retries are idempotent, task/ancestor corrections interrupt execution, and restart
+marks abandoned activity interrupted. One active run per process; do not use
+multiple local workers against one database. Hosted execution is disabled.
+Setup, demo scenario and evidence: BROWSER_HANDOFF.md; endpoints: API_CONTRACT.md.
+
+Final verification: 208 automated tests pass, with one existing Starlette/httpx
+deprecation warning. Real Muse/browser checks verified a dashboard-started run,
+recovery from an out-of-bounds click request, the IANA page result, saved screenshots,
+reload/restart persistence, Pause acknowledgment and Stop acknowledgment. Existing
+configured task/chat/context/audit record counts were unchanged by the migration.
+
+
+### Internet task chat and reversible trash (November 4)
+
+Current clients use web_enabled and keep_chat_scope on /api/conversation. Internet
+answers use Muse Spark `/responses`, native web search and validated structured
+updates; the final schema message is separated from intermediate search narration.
+Actual search/citation metadata is persisted, without manufactured grounding or
+silent model fallback. delegated_task_id supplies owned task/subtask handoff context
+in its root chat. Neither flag nor handoff starts browser execution. Older API
+clients retain the previous default behavior and request replay compatibility.
+
+Migration e490ac621fb8 adds tasks.deleted_at. Authenticated version-checked deletion
+hides a task tree transactionally, retaining rows, chats and execution artifacts.
+An idempotent deletion record supports group Undo without reviving independently
+removed children. All normal task access excludes trashed rows. Chat projection
+uses retained task identities so deleted task chats do not migrate into General.
+Browser workers interrupt on deletions and scope changes, including newly added
+children when a whole task is delegated. See API_CONTRACT.md for request shapes.
+
+Relevant earlier user statements that created or clearly discussed a task in
+another chat are supplied as bounded task_user_context in model snapshots. Current
+saved state and later corrections take precedence. Visible exchanges remain in
+their original General/task surface, without copied messages or unrelated general
+context. Uncertain subtask handoff retries retain the original delegated ID.
+
+November 4 verification: all 224 automated tests pass. Isolated real-Muse browser
+checks verified contextual creation of three grounded steps, official-source web
+research, a whole-task handoff in the existing task chat, separate General history
+and drafts, optional browser setup, deletion/Undo for both focus sections and a
+subtask, and restored task chat after Undo/reload. Desktop, 390×844 and 1226×540
+checks found no outer chat overflow, including the expanded voice note. The
+configured migration preserved existing task/chat/context/audit/browser-run counts.
+
+
+November 4 refinement: new delegated chat/browser requests require short-term
+work. Whole-task handoff requires every leaf step to be assessed for Muse;
+a task with no steps requires its own Muse assessment. Long-term tasks keep
+planning chat and saved results, without handoff controls. The backend rejects
+ineligible new requests with 409. Chat replies hide native citation reference
+codes and retain real source links; the provider is instructed to use readable
+Markdown. Focus headers omit counts, composers are compact, and the long-term
+list scrolls only after reaching the adjacent short-term panel's height.

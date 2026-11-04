@@ -15,13 +15,14 @@ HANDOFF = {
 }
 
 
-def send(client, message, chat=None):
+def send(client, message, chat=None, chat_task_id=None):
     return client.post(
         "/api/conversation",
         json={
             "request_id": str(uuid4()),
             "message": message,
             "conversation_id": chat,
+            "chat_task_id": chat_task_id,
             "apply_immediately": True,
         },
     )
@@ -169,7 +170,9 @@ def test_old_chat_creation_reply_is_not_current_work(setup):
 
     muse.converse = respond
     assert (
-        send(client, "I have another assessment to do next week", chat).json()["status"]
+        send(
+            client, "I have another assessment to do next week", chat, old["id"]
+        ).json()["status"]
         == "applied"
     )
     assert len(client.get("/api/dashboard").json()["tasks"]) == 2

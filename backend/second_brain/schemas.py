@@ -44,6 +44,32 @@ class Handoff(Input):
     done_when: Annotated[str, Field(min_length=1, max_length=2000)]
 
 
+class HandoffAssessmentRequest(Input):
+    request_id: UUID
+    task_ids: Annotated[list[UUID], Field(min_length=1, max_length=20)]
+
+
+class BrowserStart(Input):
+    request_id: UUID
+    task_id: UUID
+    expected_version: Annotated[StrictInt, Field(ge=1)]
+    start_url: Annotated[str, Field(min_length=1, max_length=2000)]
+    instructions: Annotated[str, Field(max_length=2000)] = ""
+
+
+class BrowserControl(Input):
+    action: Literal["pause", "resume", "stop"]
+
+
+class AssessedSubtask(Input):
+    task_id: UUID
+    handoff: Handoff
+
+
+class HandoffAssessment(Input):
+    tasks: Annotated[list[AssessedSubtask], Field(min_length=1, max_length=20)]
+
+
 class ManualSubtask(Input):
     title: Title
 
@@ -61,11 +87,9 @@ class TaskCreate(Input):
     )
 
     @model_validator(mode="after")
-    def manual_subtasks_belong_to_short_term_roots(self):
-        if self.subtasks and (
-            self.parent_task_id is not None or self.time_horizon == "long_term"
-        ):
-            raise ValueError("Subtasks can be added with a short-term root task only")
+    def manual_subtasks_belong_to_roots(self):
+        if self.subtasks and self.parent_task_id is not None:
+            raise ValueError("A batch of subtasks can be added with a root task only")
         return self
 
 
@@ -85,6 +109,15 @@ class TaskEdit(Input):
             if key in self.model_fields_set and getattr(self, key) is None:
                 raise ValueError(f"{key} cannot be null")
         return self
+
+
+class TaskTrash(Input):
+    request_id: UUID
+    expected_version: Annotated[StrictInt, Field(ge=1)]
+
+
+class TaskRestore(Input):
+    deletion_id: UUID
 
 
 class ContextEdit(Input):
@@ -132,11 +165,24 @@ class ConversationTask(Input):
     importance_score: Score
     subtasks: Annotated[list[SuggestedTask], Field(max_length=20)]
     handoff: Handoff | None = None
+    # Null preserves an existing focus choice; older stored proposals omit it.
+    time_horizon: TimeHorizon | None = None
 
 
 class ConversationProposal(Input):
     reply: Annotated[str, Field(min_length=1, max_length=10000)]
     tasks: Annotated[list[ConversationTask], Field(max_length=10)]
+    # An unambiguous existing task being discussed, including answers with no edits.
+    chat_task_id: UUID | None = None
+    web_search_used: StrictBool = False
+    sources: Annotated[list[WebSource], Field(max_length=10)] = Field(
+        default_factory=list
+    )
+
+
+class WebSource(Input):
+    url: Annotated[str, Field(min_length=1, max_length=2000)]
+    title: Annotated[str, Field(max_length=300)]
 
 
 class ConversationApproval(Input):
@@ -149,3 +195,6 @@ class ConversationRequest(PlanRequest):
     review_draft: ConversationProposal | None = None
     # The dashboard saves directly. False preserves existing review-mode API clients.
     apply_immediately: StrictBool = False
+    keep_chat_scope: StrictBool = False
+    web_enabled: StrictBool = False
+    delegated_task_id: UUID | None = None

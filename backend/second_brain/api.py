@@ -1,4 +1,6 @@
+import ipaddress
 import secrets
+from contextlib import asynccontextmanager
 from pathlib import Path as FilePath
 from runpy import run_path
 from typing import Annotated
@@ -7,24 +9,30 @@ from uuid import UUID
 from fastapi import Depends, FastAPI, Header, Path, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.concurrency import run_in_threadpool
 from starlette.exceptions import HTTPException
 
+from .browser_worker import BrowserWorker
 from .config import Settings
 from .db import make_engine
 from .muse import Muse
 from .schemas import (
     RANGES,
     Approval,
+    BrowserControl,
+    BrowserStart,
     ContextEdit,
     ConversationApproval,
     ConversationRequest,
+    HandoffAssessmentRequest,
     PlanRequest,
     SessionCreate,
     TaskCreate,
     TaskEdit,
+    TaskRestore,
+    TaskTrash,
 )
 from .service import Service
 from .session import (
@@ -40,18 +48,27 @@ from .session import (
 from .voice import MAX_AUDIO_BYTES, VoiceFailure, VoiceTranscriber
 
 
-def create_app(settings=None, engine=None, muse=None, transcriber=None):
+def create_app(
+    settings=None, engine=None, muse=None, transcriber=None, browser_worker=None
+):
     settings = settings or Settings()
     settings.validate_hosted()
     engine = engine or make_engine(settings.database_url)
     muse = muse or Muse(settings)
     transcriber = transcriber or VoiceTranscriber(settings)
-    app = FastAPI(title="Visual Second Brain", version="0.1.0")
+    worker = browser_worker or BrowserWorker(engine, settings)
+
+    @asynccontextmanager
+    async def lifespan(app):
+        yield
+        await run_in_threadpool(worker.shutdown)
+
+    app = FastAPI(title="Visual Second Brain", version="0.1.0", lifespan=lifespan)
     app.state.engine = engine
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[settings.frontend_origin],
-        allow_methods=["GET", "POST", "PATCH", "PUT"],
+        allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE"],
         allow_headers=["Authorization", "Content-Type"],
     )
 
@@ -229,6 +246,18 @@ def create_app(settings=None, engine=None, muse=None, transcriber=None):
     ):
         return s.edit_task(str(task_id), body)
 
+    @app.delete("/api/tasks/{task_id}")
+    def trash_task(
+        task_id: UUID, body: TaskTrash, s: Annotated[Service, Depends(identity)]
+    ):
+        return s.trash_task(str(task_id), body)
+
+    @app.post("/api/tasks/{task_id}/restore")
+    def restore_task(
+        task_id: UUID, body: TaskRestore, s: Annotated[Service, Depends(identity)]
+    ):
+        return s.restore_task(str(task_id), body)
+
     @app.put("/api/context/{context_id}")
     def context(
         context_id: Annotated[str, Path(pattern=r"^[a-zA-Z0-9_-]{1,100}$")],
@@ -263,6 +292,92 @@ def create_app(settings=None, engine=None, muse=None, transcriber=None):
     @app.post("/api/conversation")
     def converse(body: ConversationRequest, s: Annotated[Service, Depends(identity)]):
         return s.plan(None, body)
+
+    @app.post("/api/handoff/assess")
+    def assess_handoff(
+        body: HandoffAssessmentRequest, s: Annotated[Service, Depends(identity)]
+    ):
+        return s.assess_handoff(body)
+
+    def require_laptop(request):
+        # Never expose a laptop's browser through hosted deployments or a LAN bind.
+        try:
+            local = ipaddress.ip_address(request.client.host).is_loopback
+        except ValueError, AttributeError:
+            local = False
+        if (
+            settings.vercel
+            or not local
+            or request.url.hostname not in {"127.0.0.1", "localhost", "::1"}
+        ):
+            raise HTTPException(
+                403, "Browser handoff is available only through the local laptop app"
+            )
+        same_origin(request)
+
+    @app.get("/api/browser")
+    def browser_status(request: Request, s: Annotated[Service, Depends(identity)]):
+        if settings.vercel:
+            return {
+                "connected": False,
+                "mode": "local_browser",
+                "reason": worker.readiness()["reason"],
+                "runs": [],
+            }
+        require_laptop(request)
+        return worker.listing(s.user_id)
+
+    @app.post("/api/browser/runs", status_code=202)
+    def browser_start(
+        body: BrowserStart, request: Request, s: Annotated[Service, Depends(identity)]
+    ):
+        require_laptop(request)
+        return worker.start(s.user_id, body)
+
+    @app.get("/api/browser/runs/{run_id}")
+    def browser_run(
+        run_id: UUID, request: Request, s: Annotated[Service, Depends(identity)]
+    ):
+        require_laptop(request)
+        return worker.get(s.user_id, str(run_id))
+
+    @app.post("/api/browser/runs/{run_id}/control")
+    def browser_control(
+        run_id: UUID,
+        body: BrowserControl,
+        request: Request,
+        s: Annotated[Service, Depends(identity)],
+    ):
+        require_laptop(request)
+        return worker.control(s.user_id, str(run_id), body.action)
+
+    @app.get("/api/browser/runs/{run_id}/frames/{frame}")
+    def browser_frame(
+        run_id: UUID,
+        frame: Annotated[int, Path(ge=1)],
+        request: Request,
+        s: Annotated[Service, Depends(identity)],
+    ):
+        require_laptop(request)
+        path, media, _ = worker.artifact(s.user_id, str(run_id), "frame", frame)
+        if not path.is_file():
+            raise HTTPException(404, "Screenshot is unavailable on this laptop")
+        return FileResponse(path, media_type=media)
+
+    @app.get("/api/browser/runs/{run_id}/downloads/{file_id}")
+    def browser_download(
+        run_id: UUID,
+        file_id: UUID,
+        request: Request,
+        s: Annotated[Service, Depends(identity)],
+    ):
+        require_laptop(request)
+        path, media, name = worker.artifact(
+            s.user_id, str(run_id), "download", str(file_id)
+        )
+        if not path.is_file():
+            raise HTTPException(404, "Download is unavailable on this laptop")
+        return FileResponse(path, media_type=media, filename=name)
 
     @app.post("/api/conversation/{run_id}/approve")
     def approve_conversation(

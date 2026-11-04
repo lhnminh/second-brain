@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     meta_voice_model: str = "muse-voice-transcribe-1.0"
     frontend_origin: str = "http://localhost:3000"
     vercel: str | None = None
+    browser_worker_enabled: bool = False
+    browser_data_dir: Path = Path(__file__).resolve().parents[2] / ".browser-workspace"
 
     def validate_hosted(self):
         if self.vercel and (

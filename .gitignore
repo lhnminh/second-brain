@@ -19,6 +19,8 @@ wheels/
 *.db-journal
 .pytest_cache/
 .ruff_cache/
+.uv-cache/
+.browser-workspace/
 
 # Local hosting project links
 .vercel/

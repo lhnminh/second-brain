@@ -52,6 +52,7 @@ tasks = Table(
     Column("version", Integer, nullable=False),
     Column("created_at", String(40), nullable=False),
     Column("updated_at", String(40), nullable=False),
+    Column("deleted_at", String(40)),
     UniqueConstraint("user_id", "id", name="uq_tasks_owner_id"),
     ForeignKeyConstraint(["user_id", "parent_task_id"], ["tasks.user_id", "tasks.id"]),
     CheckConstraint(
@@ -135,6 +136,27 @@ messages = Table(
     Column("content", String(10000), nullable=False),
     Column("created_at", String(40), nullable=False),
 )
+browser_runs = Table(
+    "browser_runs",
+    metadata,
+    Column("id", String(36), primary_key=True),
+    Column("user_id", String(100), nullable=False, index=True),
+    Column("task_id", String(36), nullable=False),
+    Column("request_id", String(36), nullable=False),
+    Column("task_version", Integer, nullable=False),
+    Column("goal", JSON, nullable=False),
+    Column("start_url", String(2000), nullable=False),
+    Column("status", String(30), nullable=False),
+    Column("summary", String(10000), nullable=False),
+    Column("steps", JSON, nullable=False),
+    Column("downloads", JSON, nullable=False),
+    Column("frame", Integer, nullable=False),
+    Column("created_at", String(40), nullable=False),
+    Column("updated_at", String(40), nullable=False),
+    UniqueConstraint("user_id", "request_id", name="uq_browser_request"),
+    ForeignKeyConstraint(["user_id", "task_id"], ["tasks.user_id", "tasks.id"]),
+)
+
 events = Table(
     "events",
     metadata,

@@ -5,6 +5,7 @@ and model-run orchestration use FastAPI and SQLite. Muse is an explicit fixture.
 """
 
 import json
+import re
 import runpy
 import shutil
 import subprocess
@@ -65,6 +66,15 @@ def test_agent_journey_without_browser_controls(setup, decision):
     controller = (
         "// WebMCP:" + page.split("// WebMCP:", 1)[1].split("// End WebMCP.", 1)[0]
     )
+    helpers = "\n".join(
+        re.search(pattern, page)[0]
+        for pattern in [
+            r"function rootTaskId.*?\n",
+            r"function runChatScope.*?\n",
+            r"(?s)function followTaskChat\(run\).*?\n}",
+        ]
+    )
+    controller = helpers + controller
     script = (
         r"""
 const assert=require('node:assert/strict'),vm=require('node:vm'),{randomUUID}=require('node:crypto');
@@ -72,7 +82,7 @@ const lines=require('node:readline').createInterface({input:process.stdin});
 let receive;lines.on('line',line=>receive(JSON.parse(line)));
 const tools=new Map(),elements=new Map(),requests=[];
 const $=key=>{if(!elements.has(key))elements.set(key,{hidden:true,value:'',open:false});return elements.get(key);};
-let state={tasks:[],runs:[]},busy=false,voiceSession=null,samplePreview=false,pending=null,dirty=[],mode='normal',refreshFailed=false,refreshes=0;
+let state={tasks:[],runs:[]},busy=false,voiceSession=null,pending=null,dirty=[],mode='normal',refreshFailed=false,refreshes=0;
 let conversationId=null,chatTaskId=null;
 const document={querySelectorAll:()=>dirty,modelContext:{async registerTool(tool){tools.set(tool.name,tool);}}};
 const window={isSecureContext:true,addEventListener(){}};
@@ -85,6 +95,7 @@ async function fetch(path,options={}){
  if(mode==='lost-response'&&options.method){mode='normal';throw Error('Connection lost after sending');}
  return {ok:response.status>=200&&response.status<300,status:response.status,json:async()=>response.body};
 }
+const chatDrafts=new Map(),chatRequests=new Map();function renderChat(){}function assessSubtasks(){}
 async function refresh(){if(refreshFailed)throw Error('Refresh offline');refreshes++;state=await (await fetch('/api/dashboard',{credentials:'same-origin'})).json();}
 function openEditor(){throw Error('No browser editor should be needed');}
 function setMuseOpen(){throw Error('No browser chat controls should be needed');}
@@ -113,9 +124,9 @@ const call=(name,input={},options)=>tools.get(name).execute(input,options);
  for(const input of [{task_id:child.task.id,expected_version:1},{task_id:child.task.id,expected_version:1,status:null},{task_id:child.task.id,expected_version:true,status:'completed'}])assert.ok((await call('update_task',input)).error);
  assert.equal(requests.length,before);
  // User drafts, sample fixtures, and in-flight work are preserved.
- for(const setup of [()=>busy=true,()=>voiceSession={},()=>$('#edit-dialog').open=true,()=>samplePreview=true,()=>dirty=[{value:'Unsaved',dataset:{taskName:created.task.id}}]]){
+ for(const setup of [()=>busy=true,()=>voiceSession={},()=>$('#edit-dialog').open=true,()=>dirty=[{value:'Unsaved',dataset:{taskName:created.task.id}}]]){
   setup();assert.ok((await call('create_task',{title:'Blocked'})).error);
-  busy=false;voiceSession=null;$('#edit-dialog').open=false;samplePreview=false;dirty=[];
+  busy=false;voiceSession=null;$('#edit-dialog').open=false;dirty=[];
  }
  assert.equal(requests.length,before);
  const request_id=randomUUID();$('#message').value='User draft';assert.ok((await call('send_muse_message',{request_id,message:'Plan my day'})).error);assert.equal($('#message').value,'User draft');$('#message').value='';

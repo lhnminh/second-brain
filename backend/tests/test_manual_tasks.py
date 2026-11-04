@@ -1,5 +1,6 @@
 """Manual tasks retain their selected focus section and user content."""
 
+import re
 import runpy
 import shutil
 import subprocess
@@ -14,14 +15,15 @@ from second_brain.db import tasks
 from second_brain.service import planning_tasks
 
 
-def test_manual_short_plan_saves_exact_steps_atomically_and_in_order(setup):
+@pytest.mark.parametrize("horizon", ["short_term", "long_term"])
+def test_manual_plan_saves_exact_steps_atomically_and_in_order(setup, horizon):
     clients, muse, _ = setup
     client = clients()
     response = client.post(
         "/api/tasks",
         json={
             "title": "Prepare workshop",
-            "time_horizon": "short_term",
+            "time_horizon": horizon,
             "deadline": "2026-11-10",
             "subtasks": [{"title": "Choose a topic"}, {"title": "Prepare slides"}],
         },
@@ -51,7 +53,7 @@ def test_manual_short_plan_saves_exact_steps_atomically_and_in_order(setup):
     [
         {"subtasks": [{"title": "   "}]},
         {"subtasks": [{"title": "Step"}] * 21},
-        {"time_horizon": "long_term", "subtasks": [{"title": "Step"}]},
+        {"parent_task_id": str(uuid4()), "subtasks": [{"title": "Nested"}]},
         {"subtasks": [{"title": "Step", "unexpected": True}]},
     ],
 )
@@ -206,33 +208,44 @@ def test_manual_task_form_preserves_failures_and_prevents_double_submission(tmp_
         0
     ]
     controller = controller[controller.index("function openAddTask(") :]
+    controller = re.search(r"function taskHorizon.*?\n", page)[0] + controller
     script = r"""
 const assert=require('node:assert/strict');
-let busy=false,samplePreview=false,renders=0,chats=0,fail=false,resolveRequest;
-const state={tasks:[]},samplePlans=[],sampleSteps=[],openPlans=new Set(),requests=[];
+let busy=false,renders=0,chats=0,fail=false,resolveRequest;
+const state={tasks:[]},openPlans=new Set(),requests=[];
 let manualSteps=[];function manualSubtaskValues(){return [...manualSteps];}function renderManualSubtasks(values){manualSteps=[...values];}
 const elements=new Map();
 const $=s=>{if(!elements.has(s))elements.set(s,{value:'',hidden:false,querySelectorAll(){return [];},reset(){},showModal(){this.open=true;},close(){this.open=false;},focus(){},setCustomValidity(v){this.validity=v;},reportValidity(){return !this.validity;}});return elements.get(s);};
-function setBusy(value){busy=value;}function renderOverview(){renders++;}function renderChat(){chats++;}
+function assessSubtasks(){}function setBusy(value){busy=value;}function renderOverview(){renders++;}function renderChat(){chats++;}
 function leafSteps(id,tasks){return tasks.filter(t=>t.parent_task_id===id);}
 async function api(path,method,body){requests.push({path,method,body});if(fail)throw Error('Offline');return new Promise(resolve=>resolveRequest=resolve);}
 async function action(work){return work();}
 CONTROLLER
 (async()=>{
  openAddTask('short_term');assert.equal($('#add-dialog').open,true);
- $('#add-name').value='My task';$('#add-description').value='Ignored short-term description';manualSteps=['Read the brief','Write the outline'];
- assert.equal($('#add-description-field').hidden,true);assert.equal($('#add-steps-field').hidden,false);
+ $('#add-name').value='My task';manualSteps=['Read the brief','Write the outline'];
+ assert.equal(manualSteps.length,2);
  const event={preventDefault(){}};
  const saving=createManualTask(event);assert.equal(busy,true);await createManualTask(event);assert.equal(requests.length,1);
  assert.deepEqual(requests[0],{path:'/api/tasks',method:'POST',body:{title:'My task',description:'',deadline:null,user_importance_level:null,time_horizon:'short_term',subtasks:[{title:'Read the brief'},{title:'Write the outline'}]}});
  resolveRequest({...requests[0].body,id:'saved',status:'pending',version:1,subtasks:manualSteps.map((title,index)=>({id:'step-'+index,parent_task_id:'saved',title,position:index,status:'pending',version:1}))});await saving;
  assert.equal(state.tasks.length,3);assert.equal($('#add-dialog').open,false);assert.equal(renders,1);assert.equal(chats,1);
- openAddTask('long_term');assert.equal($('#add-description-field').hidden,false);assert.equal($('#add-steps-field').hidden,true);$('#add-name').value='Keep my draft';fail=true;await createManualTask(event);
+ openAddTask('long_term');assert.equal(manualSteps.length,0);$('#add-name').value='Keep my draft';fail=true;await createManualTask(event);
  assert.equal($('#add-dialog').open,true);assert.equal($('#add-name').value,'Keep my draft');assert.equal($('#add-error').textContent,'Offline');assert.equal(busy,false);assert.equal(state.tasks.length,3);
+ // Adding a first subtask pins a legacy goal to its current section before saving.
+ state.tasks=[{id:'legacy',title:'Legacy goal',time_horizon:null,version:2,description:'Keep old context',status:'pending'}];fail=false;
+ openAddSubtask('legacy');$('#subtask-name').value='Choose the first action';const start=requests.length;
+ const adding=createSubtask(event);await createSubtask(event);assert.equal(requests.length,start+1);
+ assert.deepEqual(requests.at(-1),{path:'/api/tasks/legacy',method:'PATCH',body:{expected_version:2,time_horizon:'long_term'}});
+ resolveRequest({...state.tasks[0],time_horizon:'long_term',version:3});await new Promise(resolve=>setImmediate(resolve));
+ assert.deepEqual(requests.at(-1),{path:'/api/tasks',method:'POST',body:{title:'Choose the first action',parent_task_id:'legacy'}});
+ resolveRequest({id:'new-step',title:'Choose the first action',parent_task_id:'legacy',position:0,status:'pending',version:1});await adding;
+ assert.equal(state.tasks[0].time_horizon,'long_term');assert.equal(state.tasks[0].description,'Keep old context');assert.equal(state.tasks[1].parent_task_id,'legacy');assert.equal($('#subtask-dialog').open,false);
+ openAddSubtask('legacy');$('#subtask-name').value='Keep this subtask draft';fail=true;await createSubtask(event);
+ assert.equal($('#subtask-dialog').open,true);assert.equal($('#subtask-name').value,'Keep this subtask draft');assert.equal(state.tasks.length,2);assert.equal($('#subtask-error').textContent,'Offline');assert.equal(busy,false);
  state.tasks=[{id:'finished',version:4,status:'pending'},{id:'step',parent_task_id:'finished',status:'completed'}];fail=false;
  const reopen=reopenTask('finished');assert.deepEqual(requests.at(-1).body,{expected_version:4,status:'in_progress'});resolveRequest({});await reopen;
  assert.equal(state.tasks[1].status,'completed');
- samplePreview=true;samplePlans.push({id:'sample',status:'completed',completed:true});await reopenTask('sample');assert.equal(samplePlans[0].completed,false);assert.equal(samplePlans[0].status,'pending');
 })().catch(e=>{console.error(e);process.exitCode=1;});
 """.replace("CONTROLLER", controller)
     path = tmp_path / "manual-tasks.cjs"

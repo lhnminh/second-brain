@@ -1,6 +1,7 @@
 """Exercise shipped WebMCP tools with browser and authenticated-fetch doubles."""
 
 import json
+import re
 import runpy
 import shutil
 import subprocess
@@ -16,7 +17,15 @@ def test_webmcp_tools_and_lifecycle():
     page = runpy.run_path(
         str(Path(__file__).resolve().parents[2] / "frontend" / "dashboard.py")
     )["PAGE"]
-    script = "// WebMCP:" + page.split("// WebMCP:", 1)[1].split("// End WebMCP.", 1)[0]
+    helpers = "\n".join(
+        re.search(pattern, page)[0]
+        for pattern in [r"function rootTaskId.*?\n", r"function runChatScope.*?\n"]
+    )
+    script = (
+        helpers
+        + "// WebMCP:"
+        + page.split("// WebMCP:", 1)[1].split("// End WebMCP.", 1)[0]
+    )
     harness = r"""
 const assert=require('node:assert/strict'),vm=require('node:vm');
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
@@ -31,7 +40,7 @@ function browser({supported=true,secure=true,registrationFailure=false}={}){
   signal.addEventListener('abort',()=>tools.delete(tool.name),{once:true});
  }}}:{};
  const context=vm.createContext({document,window:{isSecureContext:secure,addEventListener:(name,fn)=>events[name]=fn},
-  $,state,busy:false,voiceSession:null,samplePreview:false,pending:null,conversationId:null,chatTaskId:null,AbortController,console:{warn(){}},
+  assessSubtasks:()=>{},$,state,busy:false,voiceSession:null,samplePreview:false,pending:null,conversationId:null,chatTaskId:null,AbortController,console:{warn(){}},
   setMuseOpen:(...args)=>opens.push(args),openEditor:id=>{editors.push(id);$('#edit-dialog').open=true;},
   fetch:async(path,options)=>{calls.push({path,...options});options.signal?.throwIfAborted();return response;}});
  vm.runInContext(SCRIPT,context);

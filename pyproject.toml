@@ -19,6 +19,10 @@ dependencies = [
 
 [project.scripts]
 second-brain = "second_brain:main"
+second-brain-browser = "second_brain.browser_worker:main"
+
+[project.optional-dependencies]
+browser = ["playwright>=1.58,<2"]
 
 [build-system]
 requires = ["uv_build>=0.13.5,<0.14.0"]

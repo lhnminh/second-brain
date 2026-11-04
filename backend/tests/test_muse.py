@@ -1,10 +1,56 @@
 import json
+from uuid import uuid4
 
 import httpx
 import pytest
 
 from second_brain.config import Settings
 from second_brain.muse import Muse, MuseFailure
+
+
+def test_handoff_assessment_uses_a_dedicated_validated_meta_contract(monkeypatch):
+    task_id = str(uuid4())
+    assessment = {
+        "tasks": [
+            {
+                "task_id": task_id,
+                "handoff": {
+                    "handler": "muse",
+                    "reason": "Computer work",
+                    "requirements": [],
+                    "done_when": "An agenda is ready",
+                },
+            }
+        ]
+    }
+
+    def handler(request):
+        body = json.loads(request.content)
+        assert body["response_format"]["json_schema"]["name"] == "handoff_assessment"
+        assert body["response_format"]["json_schema"]["strict"] is True
+        assert (
+            json.loads(body["messages"][1]["content"])["state"]["tasks"][0]["id"]
+            == task_id
+        )
+        assert body["store"] is False
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "finish_reason": "stop",
+                        "message": {"content": json.dumps(assessment)},
+                    }
+                ]
+            },
+        )
+
+    result = configure(monkeypatch, handler).assess_handoff(
+        {"tasks": [{"id": task_id}]}
+    )
+    assert str(result.tasks[0].task_id) == task_id
+    assert result.tasks[0].handoff.handler == "muse"
+
 
 VALID = {"reply": "Review", "importance_score": 70, "subtasks": []}
 
@@ -131,6 +177,14 @@ def test_conversation_uses_structured_objects(monkeypatch):
         assert contract["name"] == "conversation_plan"
         assert "tasks" in contract["schema"]["properties"]
         assert contract["strict"] is True
+        assert "chat_task_id" in contract["schema"]["required"]
+        assert (
+            "time_horizon"
+            in contract["schema"]["$defs"]["ConversationTask"]["required"]
+        )
+        assert (
+            "Default description to an empty string" in body["messages"][0]["content"]
+        )
         assert "task_id=null" in body["messages"][0]["content"]
         return httpx.Response(
             200,

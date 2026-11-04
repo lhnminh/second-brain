@@ -1,4 +1,4 @@
-"""Ask Muse reuses a saved task scope without starting execution or sending a message."""
+"""Subtask handoff assessments are separate from chat and computer execution."""
 
 import json
 import runpy
@@ -9,10 +9,10 @@ from pathlib import Path
 import pytest
 
 
-def test_ask_muse_opens_existing_task_scope_without_sending_or_executing():
+def test_handoff_controls_and_background_assessment_preserve_work(tmp_path):
     node = shutil.which("node")
     if not node:
-        pytest.skip("Node is required for the handoff UI harness")
+        pytest.skip("Node is required")
     page = runpy.run_path(
         str(Path(__file__).resolve().parents[2] / "frontend/dashboard.py")
     )["PAGE"]
@@ -20,58 +20,46 @@ def test_ask_muse_opens_existing_task_scope_without_sending_or_executing():
         "// Machine handoff:"
         + page.split("// Machine handoff:", 1)[1].split("// End machine handoff.", 1)[0]
     )
-    full_js = page.split("<script>", 1)[1].split("</script>", 1)[0]
     script = r"""
-const assert=require('node:assert/strict'),vm=require('node:vm');
-new vm.Script(FULL_JS);
-let busy=false,samplePreview=false;
+const assert=require('node:assert/strict'),vm=require('node:vm');new vm.Script(FULL_JS);
+const crypto=require('node:crypto');let busy=false;
 const assessment={handler:'muse',reason:'Computer work',requirements:['Notes'],done_when:'An outline is ready'};
-const state={tasks:[{id:'live',title:'Prepare <proposal>',status:'pending',handoff:assessment},{id:'human',title:'Choose a color',status:'pending',handoff:{...assessment,handler:'user'}},{id:'unknown',title:'Old task',status:'pending'}],runs:[],messages:[]};
-const samplePlans=[{id:'sample',title:'Sample task',completed:false,handoff:assessment}],sampleSteps=[];
-const original=structuredClone(state),opened=[];
-function openTaskChat(id){opened.push(id);}
-const elements=new Map();
-const $=selector=>{if(!elements.has(selector))elements.set(selector,{textContent:'',value:'',focus(){this.focused=true;},scrollIntoView(){this.scrolled=true;}});return elements.get(selector);};
-$('#message').value='Unsent message';
-function esc(value){return String(value).replaceAll('<','&lt;').replaceAll('>','&gt;');}
-function motionAllowed(){return false;}
-function api(){throw Error('Handoff must not call the API');}
-function fetch(){throw Error('Handoff must not make network requests');}
+let state={user_id:'workspace',tasks:[{id:'live',parent_task_id:'root',title:'Draft agenda',status:'pending',handoff:assessment},{id:'human',parent_task_id:'root',title:'Move chairs',status:'pending',handoff:{...assessment,handler:'user'}},{id:'unknown',title:'New step',status:'pending',version:1,handoff:null}]};
+const elements=new Map(),$=key=>{if(!elements.has(key))elements.set(key,{textContent:'',value:'',showModal(){this.open=true;},close(){this.open=false;}});return elements.get(key);};
+const control={dataset:{assessmentId:'unknown'},innerHTML:''},field={dataset:{taskName:'unknown',version:'1'},value:'My unsent title'};
+const document={querySelectorAll:selector=>selector==='.handoff-whole'?[]:selector==='[data-assessment-id]'?[control]:[field]};
+function handoffRoot(t){return {time_horizon:'short_term'}};function taskHorizon(t){return t.time_horizon};function canHandoff(t){return t?.handoff?.handler==='muse'&&t.status!=='completed'};
+const esc=value=>String(value??'').replaceAll('<','&lt;').replaceAll('>','&gt;');
+let delegatedTaskId=null,openedChat=null,sent=0;function openTaskChat(id){openedChat=id;}$('#chat-form').requestSubmit=()=>sent++;
+let requests=[],resolveRequest,rejectRequest;
+async function api(path,method,body){requests.push({path,method,body});return new Promise((resolve,reject)=>{resolveRequest=resolve;rejectRequest=reject;});}
 CONTROLLER
-assert.match(agentActions(state.tasks[0]),/Ask Muse about Prepare/);
-assert.doesNotMatch(agentActions(state.tasks[1]),/data-handoff=/);
-assert.equal(agentActions(state.tasks[1]),'');
-assert.doesNotMatch(agentActions(state.tasks[2]),/data-handoff=/);
-assert.match(agentActions(state.tasks[2]),/Not assessed/);
-assert.doesNotMatch(agentActions(state.tasks[0]),/For Muse|Why\?|handoff-details/);
-assert.doesNotMatch(agentActions(state.tasks[0]),/Rename/);
-assert.equal(agentActions({id:'done',title:'Done',status:'completed'}),'');
-samplePreview=true;assert.equal(agentActions({id:'done-sample',completed:true}),'');samplePreview=false;
-handoffToMuse('live');
-assert.deepEqual(opened,['live']);handoffToMuse('live');assert.deepEqual(opened,['live','live']);
-assert.equal($('#notice').textContent,'');
-assert.deepEqual(state,original);assert.equal($('#message').value,'Unsent message');
-samplePreview=true;handoffToMuse('sample');assert.match($('#notice').textContent,/Sample tasks have no saved chat/);
-const previous=$('#notice').textContent;handoffToMuse('missing');assert.equal($('#notice').textContent,previous);
-samplePreview=false;handoffToMuse('human');handoffToMuse('unknown');assert.equal($('#notice').textContent,previous);
-$('#edit-handoff-handler').value='muse';$('#edit-handoff-reason').value='Computer work';
-$('#edit-handoff-requirements').value=' Notes\n\nBrowser ';$('#edit-handoff-done').value='A useful result';
-const handoff=readEditorHandoff();
-assert.deepEqual(handoff.requirements,['Notes','Browser']);assert.ok(validHandoff(handoff));
-assert.match(handoffFields({handoff},'test'),/value="muse" selected/);
-assert.match(handoffFields({handoff:{...assessment,reason:'<script>'}},'test'),/&lt;script&gt;/);
-$('#edit-handoff-handler').value='user';assert.equal(readEditorHandoff().handler,'user');
-$('#edit-handoff-handler').value='';assert.equal(readEditorHandoff(),null);
-busy=true;samplePreview=false;handoffToMuse('live');assert.equal($('#notice').textContent,previous);
-assert.deepEqual(state,original);assert.deepEqual(opened,['live','live']);
-""".replace("CONTROLLER", controller).replace("FULL_JS", json.dumps(full_js))
+(async()=>{
+ assert.match(agentActions(state.tasks[0]),/Hand off/);assert.doesNotMatch(agentActions(state.tasks[0]),/Ask Muse/);
+ assert.match(agentActions(state.tasks[1]),/disabled/);assert.match(agentActions({...state.tasks[0],status:'completed'}),/disabled/);
+ assert.match(agentActions(state.tasks[2]),/Assess with Muse/);
+ handoffToMuse('live');assert.equal(openedChat,'live');assert.equal(delegatedTaskId,'live');assert.equal(sent,1);assert.match($('#message').value,/Draft agenda/);assert.equal(requests.length,0);handoffToMuse('human');assert.equal(sent,1);
+ const original=structuredClone(state.tasks[2]),pending=assessSubtasks([state.tasks[2]]);assert.match(control.innerHTML,/Assessing/);assert.equal(requests.length,1);
+ await assessSubtasks([state.tasks[2]]);assert.equal(requests.length,1);
+ resolveRequest({status:'answered',tasks:[{...original,version:2,handoff:assessment,handoff_source:'model'}]});await pending;
+ assert.equal(state.tasks[2].handoff.handler,'muse');assert.equal(state.tasks[2].title,'New step');assert.equal(state.tasks[2].status,'pending');assert.equal(field.value,'My unsent title');assert.equal(field.dataset.version,'2');assert.match(control.innerHTML,/Hand off/);
+ state.tasks[2]={...original};const failed=assessSubtasks([state.tasks[2]]);resolveRequest({status:'failed',error:'Model unavailable'});await failed;assert.equal(state.tasks[2].handoff,null);assert.match(control.innerHTML,/Retry assessment/);
+ const offline=assessSubtasks([state.tasks[2]]),request=requests.at(-1).body;rejectRequest(Error('Offline'));await offline;
+ const retry=assessSubtasks([state.tasks[2]]);assert.equal(requests.at(-1).body.request_id,request.request_id);resolveRequest({status:'answered',tasks:[{...original,version:2,handoff:assessment}]});await retry;
+ // Finishing in another workspace cannot populate its UI with the old result.
+ state.tasks[2]={...original};const old=assessSubtasks([state.tasks[2]]);state={user_id:'different',tasks:[]};resolveRequest({status:'answered',tasks:[{...original,version:2,handoff:assessment}]});await old;assert.deepEqual(state.tasks,[]);
+})().catch(e=>{console.error(e);process.exitCode=1;});
+""".replace("CONTROLLER", controller).replace(
+        "FULL_JS", json.dumps(page.split("<script>", 1)[1].split("</script>", 1)[0])
+    )
+    path = tmp_path / "handoff.cjs"
+    path.write_text(script, encoding="utf-8")
     result = subprocess.run(
-        [node, "-e", script], capture_output=True, text=True, check=False, timeout=15
+        [node, str(path)], capture_output=True, text=True, check=False, timeout=15
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert 'id="draft-dialog"' not in page
-    assert 'id="task-chat-context"' not in page
-    assert "Draft with Muse" not in page
+    assert "samplePreview" not in page and "Sample workspace" not in page
+    assert "Go to task chat" not in page and 'id="edit-handler"' not in page
 
 
 def test_legacy_drafting_endpoints_are_no_longer_exposed(setup):

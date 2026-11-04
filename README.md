@@ -33,7 +33,7 @@ helps turn it into a plan you can see and steer.
 ## The first experience
 
 You have homework due next Sunday. Tell Muse through chat and the task appears
-on your dashboard with useful steps. Answer a focused question if details are
+on your dashboard, with useful steps when your context supports them. Answer a focused question if details are
 missing, then change the saved task directly or through a follow-up message.
 There is no separate proposal form or save-plan step. Mark work complete, return
 later, and pick up where you left off.
@@ -44,7 +44,8 @@ and direct saving of validated task updates. `/dev` provides a read-only develop
 proposals, saved objects, and change history. Each browser has its own saved workspace, protected by a shared demo access token.
 Microphone recording and Meta transcription feed the reviewed text conversation (see `frontend/README.md`).
 Automatic onboarding and an animated companion remain incomplete. Individual sign-in
-is on the roadmap after the hackathon. The agent helps plan work; it does not execute the underlying tasks.
+is on the roadmap after the hackathon. The standard app plans work. An opt-in local browser worker can execute delegated
+website subtasks; see [browser handoff setup](BROWSER_HANDOFF.md).
 
 ## Try it locally
 
@@ -58,12 +59,14 @@ uv run second-brain
 ```
 
 Manual creation, editing, completion and reopening work without an API key.
-Use **+ Add task** beside either focus count: short-term tasks take named
-subtasks, while long-term tasks take a description. Entered steps save together
-with the short-term task, without a model call. Apply all migrations first; migration
+Use **+ Add task** beside either focus count: both forms take a task name and
+optional named subtasks. Entered steps save together with the task, without a
+model call during saving. The dashboard then asks Muse to assess each new subtask
+in the background; missing model access never prevents saving. Existing tasks have **+ Add subtask** in their expanded list and
+bubble details. Description fields are removed from the dashboard. Apply all migrations first; migration
 `c42b193d7e61` adds the saved focus-section choice without moving existing tasks.
 
-Add your `META_API_KEY` to `.env` to enable Muse planning. Keep credentials in
+Add your `META_API_KEY` to `.env` to enable Muse planning and internet-enabled chat. Keep credentials in
 that ignored file. Open [localhost:8000](http://localhost:8000/) for the dashboard
 or [/dev](http://localhost:8000/dev) for diagnostics and saved objects.
 A successful demo connection lasts eight hours across both pages and reloads.
@@ -81,17 +84,22 @@ key. Do not commit `.env` or paste the key into chat.
 
 Restart the backend after saving the key (`Ctrl+C`, then `uv run second-brain`
 from the repository root). Open the live workspace at
-[127.0.0.1:8000](http://127.0.0.1:8000/), or choose **My workspace** from sample
-mode. Use the same hostname/browser to keep your workspace. Try: “Create a task
+[127.0.0.1:8000](http://127.0.0.1:8000/). The dashboard has one saved workspace;
+sample mode has been removed. Use the same hostname/browser to keep your workspace. Try: “Create a task
 to prepare for an interview on November 6, 2026, with three subtasks.” Check
-the resulting cards, open **Task chat**, send a correction, and reload to check
+the resulting cards, click the blue **Ask Muse** button, send a correction, and reload to check
 saved tasks and history. Inspect failed runs in `/dev` without exposing secrets.
-Model billing/access and credits must be active in the Meta account.
+Enter sends; Shift+Enter adds a line. Model billing/access and credits must be active
+in the Meta account. Each new subtask receives a suitability assessment: **Hand off**
+is available for Muse-suitable work and disabled for work requiring you. Failed
+assessments offer a retry. Handoff starts work in that task’s internet-enabled chat. Ask Muse opens the same
+chat without sending. Computer control is a separate Use browser option; a
+suitability assessment alone never starts work.
 
 Hosted testing uses the server's key configured in Vercel. A local `.env` change
-does not configure or deploy the hosted site. Computer handoff remains a separate,
-unimplemented worker connection; no laptop or cloud computer is connected by
-adding the model key.
+does not configure or deploy the hosted site. Laptop browser handoff runs through the separate local launch command in
+[BROWSER_HANDOFF.md](BROWSER_HANDOFF.md). Adding the model key alone does not start
+the worker or connect the hosted site to your laptop.
 The API explorer is at [/docs](http://localhost:8000/docs). After updating an
 existing checkout, run the migration command above and restart the server.
 
@@ -107,3 +115,65 @@ SQLite for local development. Run checks with `uv run pytest`.
 - [API contract](API_CONTRACT.md) — the shared frontend/backend boundary.
 - [Deployment](DEPLOYMENT.md) — GitHub, Neon, and Vercel setup.
 - [Contributor instructions](AGENTS.md) — how we build and collaborate.
+
+
+## Run Muse in a dedicated browser locally
+
+```sh
+uv sync --extra browser
+uv run alembic -c backend/alembic.ini upgrade head
+uv run --extra browser second-brain-browser
+```
+
+Stop the existing port-8000 server first. On Windows, the worker opens a fresh
+Edge session. On other platforms, first run `uv run --extra browser playwright
+install chromium`. Keep the existing `META_API_KEY` in `.env`; no new MCP key is
+needed. Open the same [local workspace](http://127.0.0.1:8000/), expand a task,
+click **Ask Muse**, choose **Use browser**, enter the start website and click
+**Start browser**.
+Pause before taking over the browser; Resume observes the new screen. Stop ends
+the run. Closing the handoff panel alone leaves work running. Saved runs and
+downloads remain accessible through task chat’s Use browser option or saved run cards. A finished run requires your
+review and does not automatically complete the subtask. Hosted laptop pairing
+is not implemented. Full setup and limitations: [BROWSER_HANDOFF.md](BROWSER_HANDOFF.md).
+
+
+## General chat, task chat and trash
+
+Talk to Muse opens General chat. Ask Muse opens a larger persistent task chat;
+all of a task's subtasks use that same chat. Hand off task is beside its deadline,
+and subtask Hand off buttons delegate the selected work into that conversation.
+Muse can use real web search and show source links. Computer control starts only
+through Use browser → Start browser, and still requires the local worker.
+
+Concrete task requirements now become grounded subtasks without a separate request
+for a breakdown; vague task names do not justify invented steps. Both composers
+are larger. Voice transcription fills the composer without a success banner.
+Trash removes a task and its descendants from the dashboard with Undo, preserving
+saved chats and results. Run migrations after updating; `e490ac621fb8` adds the
+reversible-removal field. No existing task/chat records are deleted by migration.
+
+November 4 verification: all 224 automated tests pass. Isolated real-Muse browser
+checks verified contextual creation of three grounded steps, official-source web
+research, a whole-task handoff in the existing task chat, separate General history
+and drafts, optional browser setup, deletion/Undo for both focus sections and a
+subtask, and restored task chat after Undo/reload. Desktop, 390×844 and 1226×540
+checks found no outer chat overflow, including the expanded voice note. The
+configured migration preserved existing task/chat/context/audit/browser-run counts.
+
+
+November 4 follow-up: focus headers no longer show counts, short-term cards and
+both chat composers are more compact, and long-term lists grow to the neighboring
+short-term height before scrolling (natural height on mobile). Handoff is limited
+to short-term work. Whole tasks require all leaf steps to be suitable for Muse;
+tasks with no steps use their own assessment. These rules are enforced for new
+chat/browser handoffs. Ask Muse remains available for long-term planning. Replies
+render Markdown and remove opaque native citation codes from old and new output,
+while preserving verified source links.
+
+Follow-up verification: 227 automated tests passed. Isolated desktop fixtures
+verified matching panel heights once long-term overflow begins, natural expansion
+without overflow, eligible and mixed handoff controls, and the pasted citation
+example. At 390×844, task chat had no outer/horizontal overflow and long-term
+entries had natural height without their own scrollbar. No live user tasks or
+chat records were changed for these layout checks.

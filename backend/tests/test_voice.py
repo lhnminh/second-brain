@@ -52,7 +52,7 @@ function browser({supported=true,secure=true,permissionError=false,deferPermissi
  const sent=[],uploads=[],urls={revoked:[],createObjectURL:()=> 'blob:recorder',revokeObjectURL(url){this.revoked.push(url);}};
  const context=vm.createContext({$,window,navigator,document,AudioWorkletNode:Worklet,Blob,URL:urls,AbortController,TypeError,busy:false,
  setTimeout:fn=>{timers.set(++nextTimer,fn);return nextTimer;},clearTimeout:id=>timers.delete(id),
- chatTaskId:null,renderChat:()=>{},conversationId:null,chatRuns:()=>[],state:{runs:[]},pending:null,drafts:new Map(),crypto:{randomUUID:()=> 'request-1'},structuredClone,
+ delegatedTaskId:null,chatTaskId:null,renderChat:()=>{},followTaskChat:()=>{},forgetSentMessage:()=>{},conversationId:null,chatRuns:()=>[],state:{runs:[]},pending:null,drafts:new Map(),crypto:{randomUUID:()=> 'request-1'},structuredClone,
  action:async fn=>fn(),api:async(path,method,body)=>{sent.push({path,body});return {status:'answered'};},refresh:async()=>{},error:e=>$('#error').textContent=e.message,
  fetch:async(path,options)=>{
   uploads.push({path,...options});
@@ -77,7 +77,7 @@ function browser({supported=true,secure=true,permissionError=false,deferPermissi
  const buffer=await b.uploads[0].body.arrayBuffer(),view=new DataView(buffer);
  assert.equal(view.getUint32(24,true),24000);assert.equal(view.getUint16(22,true),1);
  assert.equal(view.getUint32(40,true),24000);assert.equal(view.getInt16(44,true),16384);
- assert.equal(b.$('#message').value,'Today: Finish my math homework.');assert.equal(b.sent.length,0);
+ assert.equal(b.$('#message').value,'Today: Finish my math homework.');assert.equal(b.sent.length,0);assert.equal(b.$('#voice-status').textContent,'');
  assert.equal(b.$('#send').disabled,false);assert.equal(b.$('#message').readOnly,false);
  b.$('#message').value='Today: Finish biology homework.';await b.submit();await flush();
  assert.equal(b.sent[0].path,'/api/conversation');assert.equal(b.sent[0].body.message,'Today: Finish biology homework.');
