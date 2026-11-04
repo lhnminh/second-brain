@@ -1,5 +1,11 @@
 # Conversation canvas and development workspace
 
+
+**Current direction (November 4):** Browser/computer control is removed. Handoff
+uses internet-enabled task chat. Input starts at one line and grows to six lines
+before scrolling. Earlier browser execution notes below are historical. Document
+attachments are available in General and task chats using the paperclip button.
+
 ## Follow-up polish (November 3)
 
 Section counts include **task/tasks**. Bubble details open their subtask list
@@ -169,7 +175,7 @@ used an isolated local SQLite database, not deployed Neon.
 
 ## Voice input
 
-Choose the **microphone icon**, allow microphone access, record up to one minute,
+Choose the **microphone icon**, allow microphone access, record up to three minutes,
 then choose the **stop icon** (labelled **Stop & transcribe**). Meta Voice Transcribe returns text into the composer.
 Review/edit it and choose **Send** to use the existing Muse conversation and
 conversation flow. After you send the reviewed transcript, validated task updates save directly.
@@ -177,7 +183,7 @@ conversation flow. After you send the reviewed transcript, validated task update
 Capture uses `getUserMedia` and an AudioWorklet, with mono PCM16 WAV encoding at
 24 kHz. It requires HTTPS or localhost and microphone/Web Audio support. It does
 not depend on the browser's speech recognition service, which failed in Dia.
-At the one-minute limit, capture stops and waits for your transcription action.
+At the three-minute limit, capture stops and waits for your transcription action.
 Hiding/leaving the page, cancellation, and sign-out release recording resources.
 Typing stays available when microphone capture is unavailable or denied.
 
@@ -640,28 +646,10 @@ composer afterward. The editor and collapsed/expanded action visibility were
 checked in the browser. No user task data was modified by these checks.
 
 
-### Dedicated browser handoff (November 3)
+## Browser control removed (November 4)
 
-This supersedes the disconnected-only Handoff notice. The local browser command
-connects the action to a start URL and optional context form. Starting explicitly
-creates a real execution run; merely opening Hand off or assessing suitability
-does not execute anything. The panel polls owned status and shows saved screenshots,
-action summaries and download links. A Saved runs selector restores earlier
-results after reload. Full-size screenshots open in a separate tab. Pause/Resume
-and Stop stay available independently of chat requests. Closing the panel leaves
-the worker running; reopening retrieves its state. Finished results require review
-and never automatically check off the subtask.
-
-The standard/hosted app shows local setup instructions; no browser is opened on
-the server. Existing task/chat state and the unavailable-button arrow cursor are
-preserved. See BROWSER_HANDOFF.md for setup, test evidence and limitations.
-
-Final verification: 208 automated tests pass, with one existing Starlette/httpx
-deprecation warning. Real Muse/browser checks verified a dashboard-started run,
-recovery from an out-of-bounds click request, the IANA page result, saved screenshots,
-reload/restart persistence, Pause acknowledgment and Stop acknowledgment. Existing
-configured task/chat/context/audit record counts were unchanged by the migration.
-
+Browser execution is removed. Run `uv run second-brain`; handoffs use task chat
+with web search. Historical execution rows/artifacts remain untouched.
 
 ### Current chat workbench (November 4)
 
@@ -740,3 +728,17 @@ Verification: 229 tests passed. Isolated browser checks confirmed unchanged bubb
 positions after a checkbox save, final-subtask movement into history, zero center
 alignment differences, bottom-aligned details, and the four-line composer without
 outer chat overflow. Fixture records were used; live user tasks were unchanged.
+
+
+Chat-only verification (November 4): the retired browser routes return 404 and
+are absent from OpenAPI. Source/entrypoint/config and optional Playwright/pyee
+lock entries are removed. Historical database record counts are unchanged.
+The remaining automated suite has 199 checks; all passed across the full run and
+focused correction rerun. Desktop/mobile UI checks verified one-line empty input,
+three-line growth, a six-line cap with internal scrolling, soft wrapping, shrinking,
+and restored task drafts. Typing previews were never sent to Muse.
+
+
+The attachment paperclip opens a file-type menu (PDF, TXT, Word `.docx`, Image).
+Choosing an option opens the native picker filtered to that type. Escape or
+clicking outside dismisses the menu; arrow keys move between its options.

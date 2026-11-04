@@ -30,7 +30,7 @@ const control={dataset:{assessmentId:'unknown'},innerHTML:''},field={dataset:{ta
 const document={querySelectorAll:selector=>selector==='.handoff-whole'?[]:selector==='[data-assessment-id]'?[control]:[field]};
 function handoffRoot(t){return {time_horizon:'short_term'}};function taskHorizon(t){return t.time_horizon};function canHandoff(t){return t?.handoff?.handler==='muse'&&t.status!=='completed'};
 const esc=value=>String(value??'').replaceAll('<','&lt;').replaceAll('>','&gt;');
-let delegatedTaskId=null,openedChat=null,sent=0;function openTaskChat(id){openedChat=id;}$('#chat-form').requestSubmit=()=>sent++;
+let delegatedTaskId=null,openedChat=null,sent=0;function resizeComposer(){}function openTaskChat(id){openedChat=id;}$('#chat-form').requestSubmit=()=>sent++;
 let requests=[],resolveRequest,rejectRequest;
 async function api(path,method,body){requests.push({path,method,body});return new Promise((resolve,reject)=>{resolveRequest=resolve;rejectRequest=reject;});}
 CONTROLLER

@@ -27,9 +27,16 @@ def test_chat_saves_without_approval_and_preserves_retry_text():
     )
     helpers += (
         "\nfunction safeChatUrl"
-        + page.split("function safeChatUrl", 1)[1].split("function renderChat(){", 1)[0]
+        + page.split("function safeChatUrl", 1)[1].split(
+            "// General file attachments;", 1
+        )[0]
     )
-    submit = re.search(r"\$\('#chat-form'\)\.onsubmit=.*?;\n", page)[0]
+    submit = (
+        "$('#chat-form').onsubmit="
+        + page.split("$('#chat-form').onsubmit=", 1)[1].split(
+            "$('#message').addEventListener('input'", 1
+        )[0]
+    )
     render = (
         "function render(){"
         + page.split("function render(){", 1)[1].split("$('#chat-form').onsubmit", 1)[0]
@@ -44,9 +51,9 @@ let busy=false,voiceSession=null,pending=null,conversationId='visit',nextId=0,mo
 let state={tasks:[],runs:[],messages:[]};let chatTaskId=null,delegatedTaskId=null;let refreshFailed=false,responseData=null;
 const crypto={randomUUID:()=>String(++nextId)},requests=[],errors=[];
 CHAT_HELPERS
-function canHandoff(){return true;}let chatWorkId=null;function renderOverview(){}
+function renderAttachments(){}function fileLinks(){return "";}function draftFiles(){return attachmentDrafts.get(chatTaskId||"")||[];}function canHandoff(){return true;}let chatWorkId=null;function renderOverview(){}
 async function refresh(){refreshes++;if(refreshFailed)throw Error('Refresh failed');if(responseData)state=structuredClone(responseData);}
-const chatDrafts=new Map(),chatRequests=new Map();
+const chatDrafts=new Map(),chatRequests=new Map(),attachmentDrafts=new Map(),chatFiles=new Map();
 async function api(path,method,body){
  requests.push({path,method,body:structuredClone(body)});
  assert.equal($('#message').value,'');if(mode==='offline')throw Error('Offline');
@@ -77,6 +84,19 @@ RENDER
   assert.equal($('#message').value,'Keep this text');assert.equal(pending,null);
  }
  mode='answered';$('#message').value='What next?';$('#chat-form').onsubmit({preventDefault(){}});await lastAction;assert.equal($('#message').value,'');
+ // File-only sends clear the draft immediately; an uncertain response restores
+ // both the file IDs and the same retry request without uploading files again.
+ const attached=[{id:'file-a',filename:'general-notes.txt',size:24}];attachmentDrafts.set('',attached);
+ mode='offline';$('#chat-form').onsubmit({preventDefault(){}});await lastAction;
+ assert.equal(requests.at(-1).body.message,'');assert.deepEqual(requests.at(-1).body.attachment_ids,['file-a']);
+ assert.equal(draftFiles()[0].id,'file-a');const fileRequest=pending.request_id;
+ mode='answered';$('#chat-form').onsubmit({preventDefault(){}});await lastAction;
+ assert.equal(requests.at(-1).body.request_id,fileRequest);assert.equal(draftFiles().length,0);
+ // Failed or still-uploading files cannot be submitted.
+ for(const file of [{id:'pending',uploading:true},{id:'failed',error:'Offline'}]){
+  attachmentDrafts.set('',[file]);$('#message').value='Keep this';const before=requests.length;
+  $('#chat-form').onsubmit({preventDefault(){}});assert.equal(requests.length,before);assert.equal($('#message').value,'Keep this');
+ }attachmentDrafts.clear();$('#message').value='';
  // Saved creation/corrections and task-only answers route to the exact task.
  state={tasks:[{id:'a'},{id:'b'},{id:'child',parent_task_id:'a'}],runs:[{id:'new',status:'applied',related_task_ids:['a']}],messages:[]};
  $('#message').value='General draft';followTaskChat({id:'new',status:'applied'});assert.equal(chatTaskId,'a');assert.equal(chatDrafts.get(''),'General draft');

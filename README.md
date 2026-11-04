@@ -1,5 +1,11 @@
 # Visual Second Brain
 
+
+**Current direction (November 4):** Browser/computer control is removed. Handoff
+uses internet-enabled task chat. Input starts at one line and grows to six lines
+before scrolling. Earlier browser execution notes below are historical. Document
+attachments are available in General and task chats using the paperclip button.
+
 **A new way to interact with AI agents. The future is visual.**
 
 Working with an AI agent should feel as natural as seeing a plan take shape.
@@ -93,13 +99,12 @@ Enter sends; Shift+Enter adds a line. Model billing/access and credits must be a
 in the Meta account. Each new subtask receives a suitability assessment: **Hand off**
 is available for Muse-suitable work and disabled for work requiring you. Failed
 assessments offer a retry. Handoff starts work in that task’s internet-enabled chat. Ask Muse opens the same
-chat without sending. Computer control is a separate Use browser option; a
-suitability assessment alone never starts work.
+chat without sending. Browser/computer control has been removed; a suitability
+assessment alone never starts work.
 
 Hosted testing uses the server's key configured in Vercel. A local `.env` change
-does not configure or deploy the hosted site. Laptop browser handoff runs through the separate local launch command in
-[BROWSER_HANDOFF.md](BROWSER_HANDOFF.md). Adding the model key alone does not start
-the worker or connect the hosted site to your laptop.
+does not configure or deploy the hosted site. The app uses Muse chat with web search,
+without a connection to your laptop or a separate browser.
 The API explorer is at [/docs](http://localhost:8000/docs). After updating an
 existing checkout, run the migration command above and restart the server.
 
@@ -117,34 +122,18 @@ SQLite for local development. Run checks with `uv run pytest`.
 - [Contributor instructions](AGENTS.md) — how we build and collaborate.
 
 
-## Run Muse in a dedicated browser locally
+## Browser control removed (November 4)
 
-```sh
-uv sync --extra browser
-uv run alembic -c backend/alembic.ini upgrade head
-uv run --extra browser second-brain-browser
-```
-
-Stop the existing port-8000 server first. On Windows, the worker opens a fresh
-Edge session. On other platforms, first run `uv run --extra browser playwright
-install chromium`. Keep the existing `META_API_KEY` in `.env`; no new MCP key is
-needed. Open the same [local workspace](http://127.0.0.1:8000/), expand a task,
-click **Ask Muse**, choose **Use browser**, enter the start website and click
-**Start browser**.
-Pause before taking over the browser; Resume observes the new screen. Stop ends
-the run. Closing the handoff panel alone leaves work running. Saved runs and
-downloads remain accessible through task chat’s Use browser option or saved run cards. A finished run requires your
-review and does not automatically complete the subtask. Hosted laptop pairing
-is not implemented. Full setup and limitations: [BROWSER_HANDOFF.md](BROWSER_HANDOFF.md).
-
+Browser execution is removed. Run `uv run second-brain`; handoffs use task chat
+with web search. Historical execution rows/artifacts remain untouched.
 
 ## General chat, task chat and trash
 
 Talk to Muse opens General chat. Ask Muse opens a larger persistent task chat;
 all of a task's subtasks use that same chat. Hand off task is beside its deadline,
 and subtask Hand off buttons delegate the selected work into that conversation.
-Muse can use real web search and show source links. Computer control starts only
-through Use browser → Start browser, and still requires the local worker.
+Muse can use real web search and show source links. Browser/computer control is
+removed. Research and drafting results are returned in the task conversation.
 
 Concrete task requirements now become grounded subtasks without a separate request
 for a breakdown; vague task names do not justify invented steps. Both composers
@@ -177,3 +166,30 @@ without overflow, eligible and mixed handoff controls, and the pasted citation
 example. At 390×844, task chat had no outer/horizontal overflow and long-term
 entries had natural height without their own scrollbar. No live user tasks or
 chat records were changed for these layout checks.
+
+
+Chat-only verification (November 4): the retired browser routes return 404 and
+are absent from OpenAPI. Source/entrypoint/config and optional Playwright/pyee
+lock entries are removed. Historical database record counts are unchanged.
+The remaining automated suite has 199 checks; all passed across the full run and
+focused correction rerun. Desktop/mobile UI checks verified one-line empty input,
+three-line growth, a six-line cap with internal scrolling, soft wrapping, shrinking,
+and restored task drafts. Typing previews were never sent to Muse.
+
+
+### Chat files and longer voice recordings
+
+Use the paperclip in either chat view to attach PDF, TXT, Word `.docx`, PNG,
+JPEG, WebP or GIF. Up to five files, 4 MB each. Remove a chip before sending or
+retry an upload if it fails. Files sent with a message remain downloadable and
+available for later questions in that chat. No guideline-specific format or
+prompt is required. Word supplies text; export it as PDF when visual layout or
+embedded images matter. Legacy `.doc` needs exporting first.
+
+Voice capture allows three minutes. Stop & transcribe fills the editable draft;
+it never sends the message automatically. Audio is uploaded in small parts and
+is not saved by this app. The existing server Meta API key handles both features.
+
+After pulling this version, run `uv sync` and
+`uv run alembic -c backend/alembic.ini upgrade head`, then restart the server.
+The attachment migration adds a table and preserves existing tasks/chats.

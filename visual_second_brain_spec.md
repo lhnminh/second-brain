@@ -1,7 +1,7 @@
 # Visual Second Brain — Product Spec
 
 **Status:** MVP product scope defined; technical integration and implementation details open  
-**Version:** 0.35
+**Version:** 0.37
 **Date:** November 4, 2026\
 **Format:** Hosted web application  
 **Working name:** Visual Second Brain
@@ -244,6 +244,46 @@ the prior stay-in-place behavior. Chat textareas default to four lines while sti
 allowing smaller/larger manual sizing. Subtask checkboxes align with the first
 name line. The Workspace label/chevron share a centered row. Page-top informational
 save notices are removed; failures remain visible.
+
+**Chat-only handoff and adaptive input (November 4):** Browser/computer execution
+is removed: no worker, runtime routes, controls or optional Playwright dependency.
+Existing execution records, migrations and local artifacts remain untouched.
+Handoff continues as internet-enabled Muse task chat. Textareas start at one line,
+grow with typed/wrapped text to six lines, then scroll internally. Draft switches,
+transcription, clearing and viewport changes recalculate their size.
+
+**General attachments (November 4):** General and task chats accept PDF, TXT,
+Word `.docx`, PNG, JPEG, WebP and GIF through a paperclip button. The paperclip
+first shows PDF, TXT, Word and Image options; selecting one opens the native file
+picker filtered to that type. There is no
+special document purpose or required prompt. Up to five files (4 MB each) can
+be attached to a message; files can also be sent without text. Removable chips
+show pending uploads and retry controls. Sent files persist as workspace-owned
+original bytes in the database and appear as download links in their message.
+Files follow the message's root-task chat scope and are available in later turns;
+subtasks still share the root's chat. Unsent file drafts survive chat switches in
+memory, but not page reload. Uploads removed before sending are not model input.
+
+Muse receives PDFs and images through its native multimodal Responses API;
+PDFs include text and page images, including scanned pages. TXT and Word files
+supply extracted text (paragraphs and tables); Word embedded graphics/layout are
+not conveyed, and legacy `.doc` needs exporting to `.docx` or PDF. The same Meta
+key is used server-side. Malformed, encrypted, empty or oversized files fail
+visibly before conversation state changes. Document contents are reference data,
+not authority to make unrelated dashboard changes. No file bytes enter dashboard
+JSON, run payloads or audit events. Each request includes at most 50 PDF pages
+and images, 10 files, 20 MB and 500,000 extracted characters; current attachments
+are included first, then files named in the message and recent chat files. Muse
+is told which historical files were excluded and must not claim to read them.
+A workspace has a 500 MB original-file cap; retention cleanup is future work.
+
+**Three-minute voice (November 4):** Capture now stops at 180 seconds and waits
+for Stop & transcribe. Audio format/provider/key and reviewed-text sending are
+unchanged. The browser uploads approximately one-minute WAV parts, keeping each
+request under the hosted body limit. A short tail is joined to its preceding
+part. Retry resumes from the failed part and keeps prior transcripts; silence-only
+parts in a longer recording do not discard spoken parts. Audio is not saved by
+the app. Longer recordings can require more transcription time.
 
 ### Voice-first onboarding
 

@@ -1,5 +1,11 @@
 # Backend
 
+
+**Current direction (November 4):** Browser/computer control is removed. Handoff
+uses internet-enabled task chat. Input starts at one line and grows to six lines
+before scrolling. Earlier browser execution notes below are historical. Document
+attachments are available in General and task chats using the paperclip button.
+
 Current dashboard flow: describe work → Muse creates classified tasks →
 validated updates save atomically → user edits saved tasks. Python/FastAPI, SQLAlchemy, Alembic, Neon
 (Postgres). SQLite is a local-development/test option only.
@@ -263,28 +269,10 @@ support request retries, so no migration is needed. The dashboard still has no
 connected computer worker. See API_CONTRACT.md for the boundary.
 
 
-### Dedicated local browser worker (November 3)
+## Browser control removed (November 4)
 
-`uv run --extra browser second-brain-browser` enables one loopback app/worker
-process. Apply migration `d785c418a901` first. Browser dependencies are optional;
-Windows uses installed Edge with a fresh profile, other platforms use Playwright
-Chromium. The worker owns a serial screenshot/action loop against Muse Spark
-`/responses` function tools. No shell, host filesystem, clipboard or existing
-browser profile is exposed to the model. Screenshots and downloads are local
-artifacts under ignored `.browser-workspace`, served only through owned routes.
-
-Browser execution state is separate from task status and model planning runs.
-Retries are idempotent, task/ancestor corrections interrupt execution, and restart
-marks abandoned activity interrupted. One active run per process; do not use
-multiple local workers against one database. Hosted execution is disabled.
-Setup, demo scenario and evidence: BROWSER_HANDOFF.md; endpoints: API_CONTRACT.md.
-
-Final verification: 208 automated tests pass, with one existing Starlette/httpx
-deprecation warning. Real Muse/browser checks verified a dashboard-started run,
-recovery from an out-of-bounds click request, the IANA page result, saved screenshots,
-reload/restart persistence, Pause acknowledgment and Stop acknowledgment. Existing
-configured task/chat/context/audit record counts were unchanged by the migration.
-
+Browser execution is removed. Run `uv run second-brain`; handoffs use task chat
+with web search. Historical execution rows/artifacts remain untouched.
 
 ### Internet task chat and reversible trash (November 4)
 
@@ -327,3 +315,12 @@ ineligible new requests with 409. Chat replies hide native citation reference
 codes and retain real source links; the provider is instructed to use readable
 Markdown. Focus headers omit counts, composers are compact, and the long-term
 list scrolls only after reaching the adjacent short-term panel's height.
+
+
+Chat-only verification (November 4): the retired browser routes return 404 and
+are absent from OpenAPI. Source/entrypoint/config and optional Playwright/pyee
+lock entries are removed. Historical database record counts are unchanged.
+The remaining automated suite has 199 checks; all passed across the full run and
+focused correction rerun. Desktop/mobile UI checks verified one-line empty input,
+three-line growth, a six-line cap with internal scrolling, soft wrapping, shrinking,
+and restored task drafts. Typing previews were never sent to Muse.

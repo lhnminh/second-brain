@@ -324,10 +324,9 @@ dialog{border:1px solid var(--line);border-radius:16px;padding:28px}.handoff-fie
 @media(max-width:700px){.step-actions{margin-left:32px}.step-line{flex-wrap:wrap}.step-label{flex-basis:calc(100% - 44px)}.chat{right:12px;max-width:calc(100vw - 24px)}}
 .add-subtask{margin-top:12px}.goal-subtasks .plan-subtasks{margin-top:0}.plan-subtasks .step-title,.focus-details .step-title,.backlog-details .step-title{font:500 14px/1.6 "Segoe UI",sans-serif}
 .card-actions .ask-muse{background:#f5f7fd;color:#3e50a4;border:1px solid #dce2f3}.step-line>.agent-actions{margin:0 0 0 auto;flex:none}.focus-item>.card-actions{padding-top:12px;border-top:1px solid var(--line)}
-#handoff-dialog{width:min(1000px,calc(100vw - 32px));max-width:calc(100vw - 32px);max-height:92dvh;overflow:auto}#handoff-dialog .browser-summary{white-space:pre-wrap;line-height:1.6;font-size:14px}#browser-frame{display:block;width:100%;max-height:48dvh;object-fit:contain;background:#f4f5f8;border:1px solid var(--line);border-radius:10px;margin:16px 0}#browser-frame[hidden]{display:none}#browser-steps{font-size:13px;color:var(--muted);padding-left:20px;line-height:1.8}#browser-downloads a{display:block;margin:8px 0}#browser-note{font-size:13px;line-height:1.6;margin:14px 0}#browser-run .row{margin-top:14px}#browser-controls{position:sticky;top:0;z-index:2;background:var(--panel);padding:10px 0}#browser-history-field{margin-top:14px}#browser-state{font-size:16px;margin:16px 0 8px}#browser-form textarea{min-height:70px}
 
 .chat{width:min(580px,calc(100vw - 32px));max-width:calc(100vw - 32px);height:min(820px,calc(100dvh - 112px));max-height:calc(100dvh - 112px)}
-.composer textarea{height:48px;min-height:48px;max-height:120px;font-size:16px;line-height:1.5;resize:vertical}.chat-head-copy{min-width:0}.chat-head h2{overflow-wrap:anywhere}.chat-context{font-size:13px;color:var(--muted);margin-top:5px}#chat-scope{display:none}#task-chat-dialog{width:min(1120px,calc(100vw - 32px));max-width:calc(100vw - 32px);height:min(900px,92dvh);max-height:92dvh;padding:0;overflow:hidden}#task-chat-host{height:100%}.chat.is-task-chat{position:static;inset:auto;width:100%;max-width:none;height:100%;max-height:none;border:0;border-radius:0;box-shadow:none;padding:24px;transform:none}.is-task-chat .history{padding:14px 20px}.is-task-chat .composer textarea{height:56px;min-height:48px;max-height:140px}.is-task-chat .chat-head h2{font-size:21px}.chat>#chat-error{flex:none;font-size:13px;line-height:1.5;margin:0}.chat-sources{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:12px;font-size:13px}.chat-sources a{color:#3e50a4}.chat-message a{overflow-wrap:anywhere}.chat-message code{white-space:pre-wrap}.browser-chat-result{border-left:3px solid #dce2f3}.browser-chat-result button{margin-top:12px}
+.composer textarea{height:48px;min-height:48px;max-height:120px;font-size:16px;line-height:1.5;resize:vertical}.chat-head-copy{min-width:0}.chat-head h2{overflow-wrap:anywhere}.chat-context{font-size:13px;color:var(--muted);margin-top:5px}#chat-scope{display:none}#task-chat-dialog{width:min(1120px,calc(100vw - 32px));max-width:calc(100vw - 32px);height:min(900px,92dvh);max-height:92dvh;padding:0;overflow:hidden}#task-chat-host{height:100%}.chat.is-task-chat{position:static;inset:auto;width:100%;max-width:none;height:100%;max-height:none;border:0;border-radius:0;box-shadow:none;padding:24px;transform:none}.is-task-chat .history{padding:14px 20px}.is-task-chat .composer textarea{height:56px;min-height:48px;max-height:140px}.is-task-chat .chat-head h2{font-size:21px}.chat>#chat-error{flex:none;font-size:13px;line-height:1.5;margin:0}.chat-sources{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:12px;font-size:13px}.chat-sources a{color:#3e50a4}.chat-message a{overflow-wrap:anywhere}.chat-message code{white-space:pre-wrap}
 .trash-task{display:inline-grid;place-items:center;width:28px;height:28px;min-height:28px;padding:4px;border:0;background:transparent;color:#8b8f99;border-radius:6px;flex:none}.trash-task svg{width:17px;height:17px}.trash-task:hover{color:#b34141;background:#fbefef}.focus-context{display:grid;grid-template-columns:28px minmax(0,1fr) auto;column-gap:12px;row-gap:8px}.rank-actions{display:flex;flex-direction:column;align-items:center;gap:8px;grid-row:1/span 2}.rank-actions .focus-rank{margin:0}.task-deadline-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin-top:8px}.task-deadline-row .inline-date{margin:0}.task-deadline-row .handoff-whole{margin-left:auto;font-size:12px;min-height:32px;white-space:nowrap;background:#f5f7fd;color:#3e50a4;border:1px solid #dce2f3}.focus-context>.task-deadline-row{grid-column:2/-1;margin-top:0}.goal-heading .trash-task{margin-left:auto}.goal-heading .subtasks-toggle{margin-left:0}.step-line>.trash-task{margin:0 0 0 -4px}.step-line>.check{margin-top:5px}#trash-undo{display:flex;align-items:center;justify-content:space-between;gap:16px;position:fixed;bottom:24px;left:24px;z-index:40;background:var(--ink);color:white;padding:12px 16px;border-radius:12px;box-shadow:0 8px 30px #0002;max-width:calc(100vw - 48px)}#trash-undo[hidden]{display:none}#trash-undo button{color:white;border-color:#ffffff50;background:transparent}#trash-undo .undo-error{color:#ffc6c6}.focus-plan{min-width:0}.goal-subtasks>.task-deadline-row{margin:0 0 16px}
 @media(max-height:600px){.chat{height:calc(100dvh - 94px);max-height:calc(100dvh - 94px)}.composer textarea{height:48px;min-height:40px;max-height:90px}.chat.is-task-chat{height:100%;max-height:none}.is-task-chat .composer textarea{height:48px;min-height:40px;max-height:90px}}
 @media(max-width:700px){.chat{right:12px;width:calc(100vw - 24px);max-width:calc(100vw - 24px)}.chat.is-task-chat{width:100%;max-width:none;padding:14px}.is-task-chat .history{padding:8px}.is-task-chat .chat-head h2{font-size:18px}.step-line>.trash-task{margin:0}.step-line .step-label{flex-basis:calc(100% - 86px)}.task-deadline-row{flex-wrap:wrap}#task-chat-dialog{height:94dvh;max-height:94dvh}}
@@ -341,20 +340,21 @@ dialog{border:1px solid var(--line);border-radius:16px;padding:28px}.handoff-fie
 /* Stable row alignment and four-line default chat input. */
 .workspace-menu>summary{display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:20px;min-height:40px}.workspace-menu>summary>span{display:block;line-height:20px}.workspace-menu>summary .disclosure-chevron{width:16px;height:16px;align-self:center;transform-origin:center}
 .plan-subtasks .step-line{display:grid;grid-template-columns:28px 20px minmax(0,1fr) auto;align-items:start;column-gap:8px;row-gap:6px}.step-line>.check{margin:6px 0 0}.step-line>.trash-task{margin:2px 0 0}.step-line .step-label{gap:4px}.step-label input.task-name.step-title{height:32px;line-height:24px;padding:3px 4px;margin:0}.step-line>.agent-actions{margin:0;align-self:start}.step-line .inline-date{margin-left:4px}
-.chat .composer textarea{height:96px;min-height:44px;max-height:40dvh;line-height:24px}.bubble-detail{scroll-margin-block:16px}
+.chat .composer textarea{height:24px;min-height:24px;max-height:144px;line-height:24px;resize:none;overflow-y:hidden}.bubble-detail{scroll-margin-block:16px}
 @media(max-width:700px){.step-line>.agent-actions{grid-column:3/-1;justify-self:end}}
+.file-list{display:flex;flex-wrap:wrap;gap:6px;grid-column:1/-1;min-width:0}.file-list[hidden]{display:none}.file-chip,.file-link{display:flex;align-items:center;gap:8px;max-width:100%;min-width:0;border:1px solid #dfe3ea;border-radius:10px;padding:6px 8px;background:#f6f7fa;color:#313b4b;font-size:12px;text-decoration:none}.file-chip{flex:1 1 180px}.file-name,.file-link>span:last-child{min-width:0;overflow-wrap:anywhere;flex:1}.file-chip small,.file-link small{display:block;color:#6c7482;font-size:11px}.file-type{font-size:9px;letter-spacing:.04em;font-weight:700;color:#53627a;background:#e9edf4;border-radius:5px;padding:5px}.file-remove,.file-retry{border:0;background:transparent;box-shadow:none;padding:3px;min-height:24px;line-height:1;color:#667085}.file-remove{font-size:20px}.sent-files{margin-top:8px}.file-link:hover{border-color:#9baeca;background:#edf1f8}.composer #attach{width:32px;height:36px;min-height:36px;padding:7px}.composer #attach svg{width:19px;height:19px;display:block}.composer .file-list~textarea{grid-column:1}
+.attachment-picker{position:relative;display:flex;align-items:center}.attachment-menu{position:absolute;bottom:calc(100% + 10px);right:0;z-index:30;width:180px;padding:5px;background:#fff;border:1px solid #e0e4ec;border-radius:13px;box-shadow:0 8px 30px #17203524}.attachment-menu[hidden]{display:none}.attachment-menu button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;min-height:40px;border:0;border-radius:8px;background:transparent;box-shadow:none;color:#313b4b;font-size:13px;text-align:left}.attachment-menu button:hover,.attachment-menu button:focus-visible{background:#eef2fa}.attachment-menu button:focus-visible{outline:2px solid #8798cf;outline-offset:-2px}.attachment-menu .file-type{width:31px;text-align:center;padding:5px 2px}.attachment-menu svg{width:26px;height:26px;margin-inline:2px;color:#53627a;flex-shrink:0}
 </style></head><body>
 <header class="topbar row between"><div class="row"><span class="brand">Visual Second Brain</span></div><nav class="row" aria-label="Workspace"><details class="workspace-menu"><summary><span>Workspace</span><svg class="disclosure-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></summary><div class="workspace-menu-items"><button id="refresh" class="small ghost">Refresh</button><button id="undo-trash-menu" class="small ghost" hidden>Undo last deletion</button><a href="/dev">Developer console</a><button id="signout" class="small ghost" hidden>Sign out</button></div></details></nav></header>
 <main><div id="error" class="error" role="alert" hidden></div>
 <section id="access" class="panel" hidden style="margin-bottom:24px"><form id="access-form" class="panel-body"><h2>Demo access</h2><p class="muted">Enter the app’s demo access token. Access lasts eight hours. Your workspace belongs to this browser; clearing cookies starts a new one.</p><div class="row" style="margin-top:12px"><input id="token" type="password" aria-label="Demo access token" autocomplete="off" maxlength="4096" required><button class="primary">Connect</button></div></form></section>
 <div id="layout" class="canvas-layout"><section class="canvas" aria-label="Your saved tasks"><div class="intro row between wrap"><div><h1 class="eyebrow"><time id="workspace-date" class="workspace-date"></time></h1></div></div><div id="reviews" tabindex="-1"></div><div id="canvas" aria-live="polite"><div class="canvas-state"><p>Loading your workspace…</p></div></div></section>
-<aside id="muse-chat" class="chat" aria-labelledby="muse-title" aria-hidden="true" inert><div class="chat-head row"><div class="chat-head-copy"><h2 id="muse-title">Muse</h2><p id="chat-context" class="chat-context">General chat</p><label class="sr-only" for="chat-scope" aria-hidden="true">Conversation</label><select id="chat-scope" hidden aria-hidden="true" tabindex="-1"><option value="">General chat</option></select></div><button id="use-task-browser" class="small ghost" type="button" data-chat-control hidden>Use browser</button><button id="close-muse" class="chat-close" type="button" data-chat-control aria-label="Close Muse chat"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><a id="review-link" href="#reviews" hidden>Review proposed changes</a><div id="chat-welcome" class="chat-welcome" hidden><h3>What’s on your mind?</h3></div><p id="chat-error" class="error" role="alert" hidden></p><div id="conversation" class="history" aria-live="polite"></div><div id="status" class="status" role="status" aria-live="polite"></div>
-<form id="chat-form" class="composer"><label for="message">What’s on your mind?</label><textarea id="message" rows="4" maxlength="10000" required placeholder="Message Muse…"></textarea><div class="row between"><div class="row wrap" style="margin:0"><button id="voice" class="small" type="button" aria-pressed="false" aria-label="Record voice message" title="Record voice message" aria-describedby="voice-status voice-privacy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11v1a7 7 0 0 0 14 0v-1M12 19v3M9 22h6"/></svg></button><button id="voice-retry" class="small ghost" type="button" hidden>Retry transcription</button><button id="voice-cancel" class="small ghost" type="button" hidden>Cancel</button></div><button id="send" class="primary" type="submit" aria-label="Send message" title="Send message (Enter; Shift+Enter for a new line)">Send</button></div></form><p id="voice-status" class="voice-status" role="status" aria-live="polite"></p><p id="voice-preview" class="voice-preview" hidden></p><details class="voice-note"><summary>Voice uses Meta transcription<svg class="disclosure-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></summary><p id="voice-privacy" class="voice-status">Record up to one minute. Stop &amp; transcribe sends audio to Meta for transcription. Review the text before sending. This app does not save audio.</p></details></aside></div></main>
+<aside id="muse-chat" class="chat" aria-labelledby="muse-title" aria-hidden="true" inert><div class="chat-head row"><div class="chat-head-copy"><h2 id="muse-title">Muse</h2><p id="chat-context" class="chat-context">General chat</p><label class="sr-only" for="chat-scope" aria-hidden="true">Conversation</label><select id="chat-scope" hidden aria-hidden="true" tabindex="-1"><option value="">General chat</option></select></div><button id="close-muse" class="chat-close" type="button" data-chat-control aria-label="Close Muse chat"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><a id="review-link" href="#reviews" hidden>Review proposed changes</a><div id="chat-welcome" class="chat-welcome" hidden><h3>What’s on your mind?</h3></div><p id="chat-error" class="error" role="alert" hidden></p><div id="conversation" class="history" aria-live="polite"></div><div id="status" class="status" role="status" aria-live="polite"></div>
+<form id="chat-form" class="composer"><label for="message">What’s on your mind?</label><div id="draft-attachments" class="file-list" hidden></div><input id="file-input" type="file" accept=".pdf,.txt,.docx,.png,.jpg,.jpeg,.webp,.gif" multiple hidden><textarea id="message" rows="1" maxlength="10000" placeholder="Message Muse…"></textarea><div class="row between"><div class="row wrap" style="margin:0"><div id="attachment-picker" class="attachment-picker"><button id="attach" class="small ghost" type="button" aria-label="Attach files" title="Attach files" aria-haspopup="menu" aria-controls="attachment-menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 12 6-6a3 3 0 0 1 4 4l-8 8a5 5 0 0 1-7-7l9-9M6 14l8-8"/></svg></button><div id="attachment-menu" class="attachment-menu" role="menu" aria-label="File type" hidden><button type="button" role="menuitem" data-file-kind="pdf"><span class="file-type" aria-hidden="true">PDF</span>PDF</button><button type="button" role="menuitem" data-file-kind="txt"><span class="file-type" aria-hidden="true">TXT</span>TXT</button><button type="button" role="menuitem" data-file-kind="word"><span class="file-type" aria-hidden="true">DOCX</span>Word (.docx)</button><button type="button" role="menuitem" data-file-kind="image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.5"/><path d="m4 18 5-5 4 4 3-4 5 5"/></svg>Image</button></div></div><button id="voice" class="small" type="button" aria-pressed="false" aria-label="Record voice message" title="Record voice message" aria-describedby="voice-status voice-privacy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11v1a7 7 0 0 0 14 0v-1M12 19v3M9 22h6"/></svg></button><button id="voice-retry" class="small ghost" type="button" hidden>Retry transcription</button><button id="voice-cancel" class="small ghost" type="button" hidden>Cancel</button></div><button id="send" class="primary" type="submit" aria-label="Send message" title="Send message (Enter; Shift+Enter for a new line)">Send</button></div></form><p id="voice-status" class="voice-status" role="status" aria-live="polite"></p><p id="voice-preview" class="voice-preview" hidden></p><details class="voice-note"><summary>Voice uses Meta transcription<svg class="disclosure-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></summary><p id="voice-privacy" class="voice-status">Record up to three minutes. Stop &amp; transcribe sends audio to Meta for transcription. Review the text before sending. This app does not save audio.</p></details></aside></div></main>
 <button id="muse-launcher" class="muse-launcher" type="button" data-chat-control aria-label="Open Muse chat" aria-expanded="false" aria-controls="muse-chat"><svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M9 8h22a4 4 0 0 1 4 4v13a4 4 0 0 1-4 4H18l-9 6v-6a4 4 0 0 1-4-4V12a4 4 0 0 1 4-4Z" stroke="currentColor" stroke-width="2.2"/><path d="M13 17h14M13 23h9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span class="launcher-caption" aria-hidden="true">Talk to Muse</span></button>
 <dialog id="task-chat-dialog" aria-label="Task conversation"><div id="task-chat-host"></div></dialog><div id="trash-undo" role="status" hidden><span id="trash-label"></span><button id="undo-trash" type="button" data-chat-control>Undo</button><button id="dismiss-trash" type="button" data-chat-control aria-label="Dismiss deletion notification">×</button></div>
 <dialog id="add-dialog" aria-labelledby="add-title"><form id="add-form"><div class="row between" style="margin-bottom:20px"><h2 id="add-title">Add task</h2><button type="button" id="close-add" class="small" aria-label="Close new task">×</button></div><input id="add-horizon" type="hidden"><div class="field"><label for="add-name">Task name</label><input id="add-name" required maxlength="300" autocomplete="off"></div><div id="add-steps-field" class="field"><label id="add-steps-label">Subtasks</label><div id="add-subtasks" class="manual-subtasks" role="group" aria-labelledby="add-steps-label"></div><button type="button" id="add-subtask" class="small ghost">+ Add subtask</button></div><div class="grid2"><div class="field"><label for="add-deadline">Deadline</label><input id="add-deadline" type="date"></div><div class="field"><label for="add-importance">Importance</label><select id="add-importance" data-level-select></select></div></div><p id="add-error" class="error" role="alert" hidden></p><div class="row between"><button type="button" id="cancel-add" class="small ghost">Cancel</button><button class="primary" type="submit">Add task</button></div></form></dialog>
 <dialog id="subtask-dialog" aria-labelledby="subtask-heading"><form id="subtask-form"><div class="row between" style="margin-bottom:20px"><h2 id="subtask-heading">Add subtask</h2><button type="button" id="close-subtask" class="small" aria-label="Close new subtask">×</button></div><input id="subtask-parent" type="hidden"><div class="field"><label for="subtask-name">Subtask name</label><input id="subtask-name" required maxlength="300" autocomplete="off" placeholder="What needs to be done?"></div><p id="subtask-error" class="error" role="alert" hidden></p><div class="row between"><button type="button" id="cancel-subtask" class="small ghost">Cancel</button><button class="primary" type="submit">Add subtask</button></div></form></dialog>
-<dialog id="handoff-dialog" aria-labelledby="handoff-heading"><div class="row between"><h2 id="handoff-heading">Use dedicated browser</h2><button id="close-handoff" type="button" class="small" data-chat-control aria-label="Close browser handoff">×</button></div><p id="handoff-task" style="margin-top:14px;font-weight:600"></p><p id="browser-error" class="error" role="alert" hidden></p><p id="browser-note" class="muted"></p><div id="browser-history-field" class="field" hidden><label for="browser-history">Saved runs</label><select id="browser-history"></select></div><form id="browser-form" hidden><div class="field"><label for="browser-url">Start website</label><input id="browser-url" type="url" maxlength="2000" required value="https://www.google.com/"></div><div class="field"><label for="browser-instructions">Anything Muse needs to know? <span class="muted">Optional</span></label><textarea id="browser-instructions" maxlength="2000" placeholder="What should the result look like? Include relevant links or constraints."></textarea></div><button id="browser-start" type="submit" class="primary">Start browser</button></form><section id="browser-run" hidden><h3 id="browser-state" role="status"></h3><p id="browser-summary" class="browser-summary"></p><div id="browser-controls" class="row wrap"><button id="browser-pause" type="button" data-chat-control>Pause</button><button id="browser-resume" type="button" class="primary" data-chat-control hidden>Resume</button><button id="browser-stop" type="button" data-chat-control>Stop</button><button id="browser-again" type="button" hidden>New handoff</button></div><img id="browser-frame" alt="Latest screenshot from Muse’s dedicated browser" hidden><a id="browser-frame-link" target="_blank" rel="noopener" hidden>Open full-size screenshot</a><ol id="browser-steps"></ol><div id="browser-downloads"></div></section></dialog>
 <dialog id="edit-dialog" aria-labelledby="edit-heading"><form id="edit-form"><div class="row between" style="margin-bottom:20px"><h2 id="edit-heading">Edit task</h2><button type="button" id="close-edit" class="small" aria-label="Close editor">×</button></div><input id="edit-id" type="hidden"><div class="field"><label for="edit-horizon">Focus section</label><select id="edit-horizon"><option value="short_term">Short-term</option><option value="long_term">Long-term</option></select></div><div class="field"><label for="edit-importance">Importance</label><select id="edit-importance" data-level-select></select></div><button class="primary" type="submit">Save changes</button></form></dialog>
 <script>
 'use strict';
@@ -364,8 +364,8 @@ let state={tasks:[],messages:[],runs:[]},ranges={},busy=false,pending=null,editV
 
 // Chat messages live on the server; only unsent drafts stay in this page.
 let conversationId=null,chatTaskId=null,chatWorkId=null,delegatedTaskId=null;
-const chatDrafts=new Map(),chatRequests=new Map();
-function newChat(){conversationId=null;chatTaskId=null;chatWorkId=null;delegatedTaskId=null;chatDrafts.clear();chatRequests.clear();pending=null;$('#chat-form').reset();}
+const chatDrafts=new Map(),chatRequests=new Map(),attachmentDrafts=new Map(),chatFiles=new Map();
+function newChat(){conversationId=null;chatTaskId=null;chatWorkId=null;delegatedTaskId=null;chatDrafts.clear();chatRequests.clear();attachmentDrafts.clear();chatFiles.clear();pending=null;$('#chat-form').reset();}
 function rootTaskId(id,tasks=state.tasks){let task=tasks.find(t=>t.id===id),seen=new Set();while(task?.parent_task_id&&!seen.has(task.id)){seen.add(task.id);task=tasks.find(t=>t.id===task.parent_task_id);}return task?.id||null;}
 function runChatScope(run,tasks=state.tasks,savedEvents=state.events||[]){const root=id=>rootTaskId(id,tasks);if(Object.hasOwn(run,'chat_scope_id'))return root(run.chat_scope_id);const original=root(run.input_payload?.chat_task_id);if(!['applied','answered'].includes(run.status))return original;const explicit=root(run.proposal?.chat_task_id),created=[...new Set(savedEvents.filter(e=>e.kind==='task.created'&&e.details?.run_id===run.id&&root(e.entity_id)===e.entity_id).map(e=>e.entity_id))],affected=[...new Set((run.related_task_ids||[]).map(id=>root(id)).filter(Boolean))];return explicit||(created.length===1?created[0]:affected.length===1?affected[0]:original);}
 function chatRuns(){return state.runs.filter(r=>!r.chat_hidden&&r.task_id===null&&r.input_payload?.operation!=='draft'&&runChatScope(r)===chatTaskId);}
@@ -376,7 +376,7 @@ function badge(t){return `<span class="pill ${esc(level(t))}">${esc(labels[level
 function error(e){const message=e.message||'Something went wrong. Your draft is still here.';$('#error').textContent=message;$('#error').hidden=false;$('#chat-error').textContent=message;$('#chat-error').hidden=false;}
 async function api(path,method='GET',body){let r;try{r=await fetch(path,{method,credentials:'same-origin',headers:{'Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})});}catch{throw Error('Could not reach the server. Your draft is preserved; try again.');}let data;try{data=await r.json();}catch{throw Error('The server returned an unreadable response. Your draft is preserved.');}if(!r.ok){if(r.status===401){endVoice({discard:true});$('#access').hidden=false;$('#signout').hidden=true;newChat();state={tasks:[],messages:[],runs:[]};render();}throw Error((data.error?.message||'Request failed')+(r.status===409?' Refresh to see the latest state.':''));}return data;}
 function setBusy(value){if(value)endVoice({discard:true});busy=value;document.querySelectorAll('button:not([data-chat-control]),input,textarea,select').forEach(el=>el.disabled=value);$('#send').textContent=value?'…':'Send';syncVoice();updateHandoffControls();}
-async function refresh(){const [data,levels,health]=await Promise.all([api('/api/dashboard'),api('/api/importance-levels'),api('/health')]);if(state.user_id!==data.user_id){chatTaskId=null;chatWorkId=null;delegatedTaskId=null;}state=data;if(chatTaskId)chatTaskId=rootTaskId(chatTaskId);ranges=levels;$('#access').hidden=true;$('#signout').hidden=!health.demo_access_required;render();loadTrashUndo();refreshBrowserState();}
+async function refresh(){const [data,levels,health]=await Promise.all([api('/api/dashboard'),api('/api/importance-levels'),api('/health')]);if(state.user_id!==data.user_id){chatTaskId=null;chatWorkId=null;delegatedTaskId=null;}state=data;if(chatTaskId)chatTaskId=rootTaskId(chatTaskId);ranges=levels;$('#access').hidden=true;$('#signout').hidden=!health.demo_access_required;render();loadTrashUndo();}
 async function action(work){if(busy)return;setBusy(true);$('#error').hidden=true;$('#chat-error').hidden=true;try{await work();await refresh();}catch(e){$('#status').textContent='';error(e);}finally{setBusy(false);}}
 function stepProgress(task){const steps=state.tasks.filter(t=>t.parent_task_id===task.id);if(!steps.length)return '';const done=steps.filter(t=>t.status==='completed').length;return `<div class="task-progress"><progress value="${done}" max="${steps.length}" aria-label="Completed steps for ${esc(task.title)}"></progress><span>${done} of ${steps.length} steps complete</span></div>`;}
 let selectedBubble=null;
@@ -653,6 +653,12 @@ function handleOverviewClick(e){
 }
 
 function safeChatUrl(value){try{const url=new URL(value);return ['http:','https:'].includes(url.protocol)&&!url.username&&!url.password?url.href:null;}catch{return null;}}
+function resizeComposer(){
+ const input=$('#message');if(!input?.isConnected)return;
+ const line=parseFloat(getComputedStyle(input).lineHeight)||24,max=line*6;
+ input.style.height='0px';const needed=Math.max(line,input.scrollHeight);
+ input.style.height=Math.min(needed,max)+'px';input.style.overflowY=needed>max?'auto':'hidden';
+}
 function chatInline(value){
  return String(value||'').replace(/【[^】\n]*】|\uE200[^\uE201\n]*\uE201/g,'').split(/(\[[^\]\n]{1,200}\]\(https?:\/\/[^\s)]{1,2000}\)|https?:\/\/[^\s<>"`]+|```[\s\S]*?```)/g).map(part=>{
   const link=part.match(/^\[([^\]]+)\]\((https?:\/\/.+)\)$/),url=safeChatUrl(link?link[2]:part);
@@ -676,23 +682,81 @@ function chatContent(value){
   }flushParagraph();flushList();return out.join('');
  }).join('')+'</div>';
 }
+// General file attachments; drafts are kept separately for each chat.
+function draftFiles(){return attachmentDrafts.get(chatTaskId||'')||[];}
+function fileSize(bytes){return bytes<1000000?Math.max(1,Math.round(bytes/1000))+' KB':(bytes/1000000).toFixed(1)+' MB';}
+function fileLinks(files){return files.length?'<div class="file-list sent-files">'+files.map(file=>`<a class="file-link" href="/api/attachments/${esc(file.id)}" download><span class="file-type">${esc(file.filename.split('.').at(-1).toUpperCase())}</span><span>${esc(file.filename)}<small>${fileSize(file.size)}</small></span></a>`).join('')+'</div>':'';}
+function renderAttachments(){
+ const files=draftFiles(),host=$('#draft-attachments');host.hidden=!files.length;
+ host.innerHTML=files.map(file=>`<div class="file-chip"><span class="file-type">${esc(file.filename.split('.').at(-1).toUpperCase())}</span><span class="file-name">${esc(file.filename)}<small>${file.uploading?'Uploading…':file.error?esc(file.error):fileSize(file.size)}</small></span>${file.error?`<button type="button" class="file-retry" data-retry-file="${esc(file.id)}" aria-label="Retry upload of ${esc(file.filename)}">Retry</button>`:''}<button type="button" class="file-remove" data-remove-file="${esc(file.id)}" aria-label="Remove ${esc(file.filename)}">×</button></div>`).join('');
+ $('#send').disabled=busy||!!voiceSession||files.some(file=>file.uploading||file.error);
+ $('#attach').disabled=busy||!!voiceSession;
+}
+async function uploadFile(file,key){
+ file.uploading=true;file.error=null;renderAttachments();
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),60000);
+ try{
+  const response=await fetch('/api/attachments/'+file.id+'?filename='+encodeURIComponent(file.filename),{method:'PUT',credentials:'same-origin',headers:{'Content-Type':'application/octet-stream'},body:file.source,signal:controller.signal});
+  let data;try{data=await response.json();}catch{throw Error('Upload failed. Retry.');}
+  if(!response.ok)throw Error(data.error?.message||'Upload failed. Retry.');
+  // A discarded upload or signed-out workspace must not repopulate its draft.
+  if(!(attachmentDrafts.get(key)||[]).includes(file))return;
+  Object.assign(file,data);chatFiles.set(file.id,data);delete file.source;
+ }catch(e){file.error=e.name==='AbortError'?'Upload timed out.':e instanceof TypeError?'Could not upload. Check your connection.':e.message;}
+ finally{clearTimeout(timer);file.uploading=false;renderAttachments();}
+}
+const fileAccept={pdf:'.pdf',txt:'.txt',word:'.docx',image:'.png,.jpg,.jpeg,.webp,.gif'};
+function closeAttachmentMenu({focus=false}={}){$('#attachment-menu').hidden=true;$('#attach').setAttribute('aria-expanded','false');if(focus)$('#attach').focus({preventScroll:true});}
+$('#attach').onclick=()=>{
+ if(busy||voiceSession)return;
+ const open=$('#attachment-menu').hidden;$('#attachment-menu').hidden=!open;$('#attach').setAttribute('aria-expanded',String(open));
+ if(open)$('#attachment-menu').querySelector('[role="menuitem"]').focus({preventScroll:true});
+};
+$('#attachment-menu').onclick=event=>{
+ const option=event.target.closest('[data-file-kind]');if(!option||busy||voiceSession)return;
+ $('#file-input').accept=fileAccept[option.dataset.fileKind];closeAttachmentMenu({focus:true});$('#file-input').click();
+};
+$('#attachment-picker').onkeydown=event=>{
+ const menu=$('#attachment-menu');
+ if(event.key==='Escape'&&!menu.hidden){event.preventDefault();event.stopPropagation();closeAttachmentMenu({focus:true});return;}
+ if(menu.hidden||!['ArrowDown','ArrowUp','Home','End'].includes(event.key))return;
+ event.preventDefault();const options=[...menu.querySelectorAll('[role="menuitem"]')],index=options.indexOf(document.activeElement);
+ const next=event.key==='Home'?0:event.key==='End'?options.length-1:(index+(event.key==='ArrowUp'?-1:1)+options.length)%options.length;
+ options[next].focus({preventScroll:true});
+};
+$('#attachment-picker').onfocusout=event=>{if(!event.currentTarget.contains(event.relatedTarget))closeAttachmentMenu();};
+document.addEventListener('click',event=>{if(!event.target.closest('#attachment-picker'))closeAttachmentMenu();});
+$('#file-input').onchange=()=>{
+ const selected=[...$('#file-input').files],key=chatTaskId||'',files=draftFiles();$('#file-input').value='';
+ if(busy||voiceSession)return;
+ if(files.length+selected.length>5){error(Error('Attach up to 5 files per message.'));return;}
+ if(selected.some(file=>!file.size||file.size>4000000)){error(Error('Choose nonempty files up to 4 MB each.'));return;}
+ const added=selected.map(source=>({id:crypto.randomUUID(),filename:source.name,size:source.size,source,uploading:true}));
+ attachmentDrafts.set(key,[...files,...added]);added.forEach(file=>uploadFile(file,key));renderAttachments();
+};
+$('#draft-attachments').onclick=e=>{
+ if(busy)return;
+ const remove=e.target.closest('[data-remove-file]'),retry=e.target.closest('[data-retry-file]');
+ if(remove){attachmentDrafts.set(chatTaskId||'',draftFiles().filter(file=>file.id!==remove.dataset.removeFile));renderAttachments();}
+ if(retry){const file=draftFiles().find(file=>file.id===retry.dataset.retryFile);if(file?.source)uploadFile(file,chatTaskId||'');}
+};
+// End file attachments.
 function renderChat(){
+ renderAttachments();
  const ids=new Set(chatRuns().map(r=>r.id)),visible=state.messages.filter(m=>ids.has(m.run_id));
  $('#chat-scope').innerHTML='<option value="">General chat</option>'+state.tasks.filter(t=>!t.parent_task_id).map(t=>`<option value="${esc(t.id)}">${esc(t.title)}</option>`).join('');
  $('#chat-scope').value=chatTaskId||'';
  $('#muse-title').textContent=chatTaskId?(state.tasks.find(t=>t.id===chatTaskId)?.title||'Task chat'):'Muse';
- $('#chat-context').textContent=chatTaskId?'Task chat':'General chat';$('#use-task-browser').hidden=!chatTaskId||!canHandoff(state.tasks.find(t=>t.id===(chatWorkId||chatTaskId)));
+ $('#chat-context').textContent=chatTaskId?'Task chat':'General chat';
  const entries=visible.map(m=>{
   const run=state.runs.find(r=>r.id===m.run_id),sources=m.role==='assistant'?(run?.proposal?.sources||[]):[];
   const links=sources.filter(s=>safeChatUrl(s.url)).map(s=>`<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title||s.url)}</a>`).join('');
-  return {at:m.created_at,html:`<div class="chat-message ${m.role==='user'?'user':''}"><small>${m.role==='user'?'YOU':'MUSE'}${m.role!=='user'&&run?.proposal?.web_search_used?' · WEB SEARCH':''}</small>${chatContent(m.content)}${links?`<div class="chat-sources">${links}</div>`:''}</div>`};
+  return {at:m.created_at,html:`<div class="chat-message ${m.role==='user'?'user':''}"><small>${m.role==='user'?'YOU':'MUSE'}${m.role!=='user'&&run?.proposal?.web_search_used?' · WEB SEARCH':''}</small>${chatContent(m.content)}${fileLinks(m.attachments||[])}${links?`<div class="chat-sources">${links}</div>`:''}</div>`};
  });
- const browserRuns=typeof browserState==='undefined'?[]:browserState.runs||[];
- if(chatTaskId)browserRuns.filter(r=>rootTaskId(r.task_id)===chatTaskId).forEach(r=>entries.push({at:r.created_at,html:`<div class="chat-message browser-chat-result"><small>MUSE · BROWSER · ${esc(r.status)}</small>${chatContent(r.summary)}<br><button class="small ghost" type="button" data-browser-result="${esc(r.id)}" data-browser-task="${esc(r.task_id)}">View browser run</button></div>`}));
  $('#chat-welcome').hidden=entries.length>0||!!pending;
  $('#conversation').innerHTML=entries.sort((a,b)=>String(a.at||'').localeCompare(String(b.at||''))).map(e=>e.html).join('');
- if(pending&&!visible.some(m=>m.role==='user'&&state.runs.some(r=>r.id===m.run_id&&r.request_id===pending.request_id)))$('#conversation').innerHTML+=`<div class="chat-message user"><small>YOU · SENDING</small>${esc(pending.message)}</div>`;
- $('#conversation').scrollTop=$('#conversation').scrollHeight;
+ if(pending&&!visible.some(m=>m.role==='user'&&state.runs.some(r=>r.id===m.run_id&&r.request_id===pending.request_id)))$('#conversation').innerHTML+=`<div class="chat-message user"><small>YOU · SENDING</small>${esc(pending.message)}${fileLinks((pending.attachment_ids||[]).map(id=>chatFiles.get(id)).filter(Boolean))}</div>`;
+ resizeComposer();$('#conversation').scrollTop=$('#conversation').scrollHeight;
  const latest=chatRuns().at(-1);
  $('#status').textContent=latest?.status==='running'?'Muse is working on your message…':latest?.status==='failed'?'The last request failed. Your saved work is unchanged.':'';
 }
@@ -731,7 +795,29 @@ function followTaskChat(run){
  try{localStorage.setItem('second-brain-chat:'+state.user_id,target);}catch{}
  renderChat();
 }
-$('#chat-form').onsubmit=e=>{e.preventDefault();if(voiceSession||busy)return;const message=$('#message').value.trim();if(!message)return;if(message.length>10000){error(Error('Shorten your message to 10,000 characters before sending. Your transcript is preserved.'));return;}const input={message,apply_immediately:true,chat_task_id:chatTaskId,keep_chat_scope:true,web_enabled:true,delegated_task_id:delegatedTaskId};if(!pending||pending.message!==message||pending.apply_immediately!==true||pending.delegated_task_id!==delegatedTaskId)pending={request_id:crypto.randomUUID(),conversation_id:conversationId,...input};const request=pending;let delivered=false;$('#message').value='';renderChat();action(async()=>{try{$('#status').textContent='Muse is working…';const run=await api('/api/conversation','POST',request);if(run.status==='running')throw Error('Muse is still processing this request. Refresh to check, or retry the same message.');if(run.status==='failed'){pending=null;throw Error(run.error||'Muse could not update your tasks. Try again.');}if(run.status==='stale'){pending=null;throw Error('Your workspace changed while Muse was processing. Send again to use the latest task state.');}if(!['applied','answered'].includes(run.status))throw Error('This reply used the earlier planning flow. Restart the updated backend, then try again.');delivered=true;delegatedTaskId=null;forgetSentMessage(request);await refresh();followTaskChat(run);}catch(e){if(!delivered&&!$('#message').value)$('#message').value=message;renderChat();throw e;}},'');};
+$('#chat-form').onsubmit=e=>{
+ e.preventDefault();if(voiceSession||busy)return;
+ const message=$('#message').value.trim(),files=draftFiles(),key=chatTaskId||'',owner=state.user_id;
+ if(files.some(file=>file.uploading||file.error))return;
+ if(!message&&!files.length)return;
+ if(message.length>10000){error(Error('Shorten your message to 10,000 characters before sending. Your transcript is preserved.'));return;}
+ const attachment_ids=files.map(file=>file.id);
+ const input={message,attachment_ids,apply_immediately:true,chat_task_id:chatTaskId,keep_chat_scope:true,web_enabled:true,delegated_task_id:delegatedTaskId};
+ if(!pending||pending.message!==message||pending.apply_immediately!==true||pending.delegated_task_id!==delegatedTaskId||JSON.stringify(pending.attachment_ids||[])!==JSON.stringify(attachment_ids))pending={request_id:crypto.randomUUID(),conversation_id:conversationId,...input};
+ const request=pending;let delivered=false;$('#message').value='';attachmentDrafts.delete(key);renderChat();
+ action(async()=>{try{
+  $('#status').textContent='Muse is working…';const run=await api('/api/conversation','POST',request);
+  if(run.status==='running')throw Error('Muse is still processing this request. Refresh to check, or retry the same message.');
+  if(run.status==='failed'){pending=null;throw Error(run.error||'Muse could not update your tasks. Try again.');}
+  if(run.status==='stale'){pending=null;throw Error('Your workspace changed while Muse was processing. Send again to use the latest task state.');}
+  if(!['applied','answered'].includes(run.status))throw Error('This reply used the earlier planning flow. Restart the updated backend, then try again.');
+  delivered=true;delegatedTaskId=null;forgetSentMessage(request);await refresh();followTaskChat(run);
+ }catch(e){
+  if(!delivered&&state.user_id===owner){if(!$('#message').value)$('#message').value=message;if(!draftFiles().length)attachmentDrafts.set(key,files);}
+  renderChat();throw e;
+ }},'');
+};
+$('#message').addEventListener('input',resizeComposer);
 $('#message').addEventListener('keydown',event=>{if(event.key!=='Enter'||event.shiftKey||event.isComposing)return;event.preventDefault();if(event.repeat||busy||voiceSession)return;$('#chat-form').requestSubmit();});
 $('#send').title='Send message (Enter; Shift+Enter for a new line)';$('#send').setAttribute('aria-keyshortcuts','Enter');
 $('#reviews').onclick=e=>{if(busy)return;const section=e.target.closest('[data-run]');if(!section)return;const id=section.dataset.run;if(e.target.closest('[data-save]'))action(()=>api('/api/conversation/'+id+'/approve','POST',{}),'Tasks added. You can edit them on the dashboard.');else if(e.target.closest('[data-reject]'))action(()=>api('/api/runs/'+id+'/reject','POST'),'Earlier plan dismissed.');};
@@ -884,7 +970,7 @@ $('#canvas').onchange=e=>{
 };
 $('#edit-form').onsubmit=e=>{e.preventDefault();action(async()=>{await api('/api/tasks/'+$('#edit-id').value,'PATCH',{expected_version:editVersion,time_horizon:$('#edit-horizon').value,user_importance_level:$('#edit-importance').value});$('#edit-dialog').close();},'Your correction is saved. Muse will use it next time.');};$('#close-edit').onclick=()=>$('#edit-dialog').close();
 $('#refresh').onclick=()=>action(async()=>{},'Saved state refreshed.');$('#access-form').onsubmit=e=>{e.preventDefault();const token=$('#token').value;action(async()=>{await api('/api/session','POST',{token});newChat();$('#token').value='';},'Connected.');};
-$('#signout').onclick=async()=>{if(busy)return;endVoice({discard:true});setBusy(true);$('#error').hidden=true;try{await api('/api/session','DELETE');newChat();state={tasks:[],messages:[],runs:[]};pending=null;$('#chat-form').reset();$('#edit-form').reset();$('#edit-dialog').close();$('#add-form').reset();$('#add-dialog').close();$('#subtask-form').reset();$('#subtask-dialog').close();$('#handoff-dialog').close();render();$('#access').hidden=false;$('#signout').hidden=true;}catch(e){error(e);}finally{setBusy(false);}};
+$('#signout').onclick=async()=>{if(busy)return;endVoice({discard:true});setBusy(true);$('#error').hidden=true;try{await api('/api/session','DELETE');newChat();state={tasks:[],messages:[],runs:[]};pending=null;$('#chat-form').reset();$('#edit-form').reset();$('#edit-dialog').close();$('#add-form').reset();$('#add-dialog').close();$('#subtask-form').reset();$('#subtask-dialog').close();render();$('#access').hidden=false;$('#signout').hidden=true;}catch(e){error(e);}finally{setBusy(false);}};
 // Reversible trash: version-checked writes and an Undo stack per workspace visit.
 let trashUndo=[],trashOwner=null,trashToastTimer=null;
 const trashRequests=new Map();
@@ -919,12 +1005,12 @@ $('#undo-trash').onclick=async()=>{
 };
 $('#undo-trash-menu').onclick=()=>{$('.workspace-menu').open=false;return $('#undo-trash').onclick();};
 // End reversible trash.
-// Machine handoff: suitability is independent of internet chat and optional browser execution.
+// Machine handoff: delegated work stays in internet-enabled Muse task chat.
 const assessmentPending=new Set(),assessmentErrors=new Map(),assessmentRequests=new Map();
 function handoffButton(task,disabledByBusy=busy){
   const root=handoffRoot(task);if(root&&taskHorizon(root)==='long_term')return '';
  const pending=assessmentPending.has(task.id),done=task.status==='completed';
- if(!task.handoff&&!done)return `<button type="button" class="small ghost" data-assess-handoff="${esc(task.id)}" ${disabledByBusy||pending?'disabled':''} title="${esc(assessmentErrors.get(task.id)||'Muse will assess whether this subtask can be handled on a computer.')}">${pending?'Assessing…':assessmentErrors.has(task.id)?'Retry assessment':'Assess with Muse'}</button>`;
+ if(!task.handoff&&!done)return `<button type="button" class="small ghost" data-assess-handoff="${esc(task.id)}" ${disabledByBusy||pending?'disabled':''} title="${esc(assessmentErrors.get(task.id)||'Muse will assess whether it can help with this subtask in chat.')}">${pending?'Assessing…':assessmentErrors.has(task.id)?'Retry assessment':'Assess with Muse'}</button>`;
  const eligible=canHandoff(task);
  return `<button type="button" class="small ghost" data-handoff="${esc(task.id)}" ${disabledByBusy||!eligible?'disabled':''} aria-label="Hand off ${esc(task.title)} to Muse" title="${esc(done?'Already completed':eligible?'Hand off to Muse in this task’s chat.':'Needs you: '+(task.handoff?.reason||'A human action is required.'))}">Hand off</button>`;
 }
@@ -957,72 +1043,14 @@ function handoffToMuse(id){
  openTaskChat(id);delegatedTaskId=id;
  const name=task.parent_task_id?'subtask':'task',draft=$('#message').value;
  $('#message').value=`Work on this ${name}: ${task.title}. Use the saved task context and the web when useful. Give me the result you can produce, and ask if essential information is missing.`;
- const sent=$('#message').value;$('#chat-form').requestSubmit();if(draft&&draft.trim()!==sent)$('#message').value=draft;
+ const sent=$('#message').value;$('#chat-form').requestSubmit();if(draft&&draft.trim()!==sent)$('#message').value=draft;resizeComposer();
 }
-$('#close-handoff').onclick=()=>$('#handoff-dialog').close();
 // End machine handoff.
-// Browser execution: explicit start, owned saved results, independent progress polling.
-let browserState={connected:false,runs:[]},browserTask=null,browserRun=null,browserRequest=null,browserTimer=null,browserOwner=null,browserStarting=false;
-const browserActive=new Set(['queued','running','pausing','paused','needs_input','stopping']);
-async function refreshBrowserState(){
- const owner=state.user_id;
- try{const saved=await api('/api/browser');if(state.user_id===owner){browserState=saved;if(chatTaskId)renderChat();}}catch{browserState={connected:false,runs:[],reason:'The local browser worker is unavailable. Restart with uv run --extra browser second-brain-browser.'};}
-}
-function browserError(e){$('#browser-error').textContent=e.message||'The browser worker could not be reached.';$('#browser-error').hidden=false;}
-function renderBrowserRun(){
- const run=browserRun;if(!run)return;if(run.task_title)$('#handoff-task').textContent=run.task_title;
- $('#browser-form').hidden=true;$('#browser-run').hidden=false;
- const names={queued:'Opening browser',running:'Muse is working',pausing:'Pausing…',paused:'Paused — you can take over',needs_input:'Needs your attention',stopping:'Stopping…',stopped:'Stopped',interrupted:'Interrupted',failed:'Run failed',finished:'Run ended — review the result'};
- $('#browser-state').textContent=names[run.status]||run.status;$('#browser-summary').textContent=run.summary;
- const frame=$('#browser-frame'),source='/api/browser/runs/'+encodeURIComponent(run.id)+'/frames/'+run.frame;
- frame.hidden=!run.frame;if(run.frame&&frame.getAttribute('src')!==source)frame.src=source;$('#browser-frame-link').hidden=!run.frame;if(run.frame)$('#browser-frame-link').href=source;
- $('#browser-steps').innerHTML=(run.steps||[]).slice(-6).map(s=>`<li>${esc(s.text)}</li>`).join('');
- $('#browser-downloads').innerHTML=(run.downloads||[]).map(d=>`<a href="/api/browser/runs/${encodeURIComponent(run.id)}/downloads/${encodeURIComponent(d.id)}" download>${esc(d.name)} · ${Math.ceil(d.bytes/1024)} KB</a>`).join('');
- $('#browser-pause').hidden=!['running','queued'].includes(run.status);$('#browser-resume').hidden=!['paused','needs_input'].includes(run.status);
- $('#browser-stop').hidden=!browserActive.has(run.status);$('#browser-stop').disabled=run.status==='stopping';$('#browser-again').hidden=browserActive.has(run.status)||!browserState.connected;
- $('#browser-note').textContent=browserActive.has(run.status)?'This run uses only the separate browser. Closing this panel does not stop it. Pause before using that browser yourself.':'Screenshots and downloads remain saved on this laptop. Review the result before marking the subtask complete.';
-}
-async function pollBrowserRun(){
- clearTimeout(browserTimer);const runId=browserRun?.id,owner=browserOwner;
- if(!runId||!$('#handoff-dialog').open)return;
- try{const saved=await api('/api/browser/runs/'+encodeURIComponent(runId));if(browserOwner!==owner||state.user_id!==owner||browserRun?.id!==runId)return;browserRun=saved;browserState.runs=browserState.runs.map(r=>r.id===saved.id?saved:r);renderBrowserHistory();renderBrowserRun();}
- catch(e){if(browserOwner===owner)browserError(e);}
- if($('#handoff-dialog').open&&browserRun?.id===runId&&browserActive.has(browserRun.status))browserTimer=setTimeout(pollBrowserRun,1200);
-}
-async function openBrowserHandoff(task,runId=null){
- clearTimeout(browserTimer);browserTask=task.id;browserRun=null;browserRequest=null;browserOwner=state.user_id;
- $('#browser-error').hidden=true;$('#browser-history-field').hidden=true;$('#browser-form').hidden=true;$('#browser-run').hidden=true;$('#browser-note').textContent='Checking the local browser…';
- await refreshBrowserState();if(browserTask!==task.id||browserOwner!==state.user_id||!$('#handoff-dialog').open)return;
- browserRun=browserState.runs.find(r=>runId?r.id===runId:r.task_id===task.id)||null;
- renderBrowserHistory();if(browserRun){renderBrowserRun();pollBrowserRun();}
- else{$('#browser-note').textContent=browserState.reason||'The local browser worker is unavailable.';$('#browser-form').hidden=!browserState.connected;$('#browser-form').reset();}
-}
-function renderBrowserHistory(){
- const runs=browserState.runs.filter(r=>r.task_id===browserTask);$('#browser-history-field').hidden=!runs.length;
- $('#browser-history').innerHTML=runs.map(r=>`<option value="${esc(r.id)}" ${r.id===browserRun?.id?'selected':''}>${esc(new Date(r.created_at).toLocaleString())} · ${esc(r.status)}</option>`).join('');
-}
-$('#browser-history').onchange=()=>{clearTimeout(browserTimer);browserRun=browserState.runs.find(r=>r.id===$('#browser-history').value)||null;if(browserRun){renderBrowserRun();pollBrowserRun();}};
-$('#browser-form').onsubmit=async event=>{
- event.preventDefault();if(busy||browserStarting||!browserState.connected)return;
- const task=state.tasks.find(t=>t.id===browserTask),owner=browserOwner;if(!task)return;
- const input={task_id:task.id,expected_version:task.version,start_url:$('#browser-url').value.trim(),instructions:$('#browser-instructions').value.trim()};
- if(!browserRequest||JSON.stringify(browserRequest.input)!==JSON.stringify(input))browserRequest={input,request_id:crypto.randomUUID()};
- browserStarting=true;$('#browser-start').disabled=true;$('#browser-error').hidden=true;
- try{const saved=await api('/api/browser/runs','POST',{...input,request_id:browserRequest.request_id});if(browserOwner!==owner||state.user_id!==owner||browserTask!==task.id)return;browserRun=saved;browserRequest=null;browserState.runs=[saved,...browserState.runs.filter(r=>r.id!==saved.id)];renderBrowserHistory();renderBrowserRun();pollBrowserRun();}
- catch(e){if(browserOwner===owner&&browserTask===task.id)browserError(e);}finally{browserStarting=false;$('#browser-start').disabled=false;}
-};
-async function controlBrowser(action){
- const id=browserRun?.id,owner=browserOwner;if(!id)return;
- $('#browser-error').hidden=true;
- try{const saved=await api('/api/browser/runs/'+encodeURIComponent(id)+'/control','POST',{action});if(browserOwner!==owner||state.user_id!==owner||browserRun?.id!==id)return;browserRun=saved;renderBrowserRun();pollBrowserRun();}catch(e){browserError(e);}
-}
-$('#browser-pause').onclick=()=>controlBrowser('pause');$('#browser-resume').onclick=()=>controlBrowser('resume');$('#browser-stop').onclick=()=>controlBrowser('stop');
-$('#browser-again').onclick=()=>{$('#handoff-task').textContent=state.tasks.find(t=>t.id===browserTask)?.title||'';browserRun=null;browserRequest=null;$('#browser-run').hidden=true;$('#browser-form').hidden=false;$('#browser-note').textContent=browserState.reason;};
-$('#handoff-dialog').addEventListener('close',()=>{clearTimeout(browserTimer);browserTask=null;browserRun=null;browserOwner=null;});
-// End browser execution.
+
 // Muse disclosure: keep the existing DOM, conversation, and unsent draft mounted.
 const generalChatHome=$('#muse-chat').parentElement;
 function setMuseOpen(open,{focus=true}={}){
+ closeAttachmentMenu();
  const panel=$('#muse-chat'),launcher=$('#muse-launcher'),dialog=$('#task-chat-dialog'),host=$('#task-chat-host'),taskMode=!!chatTaskId;
  if(open&&taskMode){
   if(panel.parentElement!==host)host.appendChild(panel);panel.classList.add('is-task-chat');if(!dialog.open)dialog.showModal();
@@ -1033,18 +1061,13 @@ function setMuseOpen(open,{focus=true}={}){
  if(!open&&dialog.open)dialog.close();
  launcher.setAttribute('aria-expanded',String(open&&!taskMode));launcher.setAttribute('aria-label',open&&!taskMode?'Close Muse chat':'Open Muse chat');
  if(!open&&voiceSession)endVoice({discard:true,message:'Voice input stopped when chat closed. Your typed draft is kept.'});
- if(open)requestAnimationFrame(()=>{if(!panel.classList.contains('is-open'))return;const history=$('#conversation');history.scrollTop=history.scrollHeight;if(focus)(busy?$('#close-muse'):$('#message')).focus({preventScroll:true});});else if(focus)launcher.focus({preventScroll:true});
+ if(open)requestAnimationFrame(()=>{if(!panel.classList.contains('is-open'))return;resizeComposer();const history=$('#conversation');history.scrollTop=history.scrollHeight;if(focus)(busy?$('#close-muse'):$('#message')).focus({preventScroll:true});});else if(focus)launcher.focus({preventScroll:true});
 }
 $('#muse-launcher').onclick=()=>{if(!chatTaskId&&$('#muse-chat').classList.contains('is-open'))setMuseOpen(false);else openTaskChat(null);};
 $('#close-muse').onclick=()=>setMuseOpen(false);
 $('#task-chat-dialog').addEventListener('close',()=>{if($('#muse-chat').parentElement===$('#task-chat-host')&&!$('#task-chat-dialog').open)setMuseOpen(false,{focus:false});});
-$('#use-task-browser').onclick=()=>{
- if(busy)return;const task=state.tasks.find(t=>t.id===(chatWorkId||chatTaskId));if(!canHandoff(task))return;
- $('#handoff-task').textContent=task.title;$('#handoff-dialog').showModal();openBrowserHandoff(task);
-};
-$('#conversation').onclick=event=>{const button=event.target.closest('[data-browser-result]');if(!button)return;const task=state.tasks.find(t=>t.id===button.dataset.browserTask);if(!task)return;$('#handoff-task').textContent=task.title;$('#handoff-dialog').showModal();openBrowserHandoff(task,button.dataset.browserResult);};
 document.addEventListener('click',event=>{if(event.target.closest('[data-open-muse]'))openTaskChat(null);});
-document.addEventListener('keydown',event=>{if(event.key==='Escape'&&$('#muse-chat').classList.contains('is-open')&&!$('#task-chat-dialog').open&&!$('#edit-dialog').open&&!$('#add-dialog').open&&!$('#subtask-dialog').open&&!$('#handoff-dialog').open){event.preventDefault();setMuseOpen(false);}});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&$('#muse-chat').classList.contains('is-open')&&!$('#task-chat-dialog').open&&!$('#edit-dialog').open&&!$('#add-dialog').open&&!$('#subtask-dialog').open){event.preventDefault();setMuseOpen(false);}});
 $('#review-link').onclick=()=>{setMuseOpen(false,{focus:false});$('#reviews').focus({preventScroll:true});};
 // End Muse disclosure.
 // Voice input: local microphone capture, server-side Meta transcription, reviewed text.
@@ -1064,7 +1087,7 @@ function syncVoice(){
  $('#voice').setAttribute('aria-pressed',String(active));
  $('#voice-cancel').hidden=!active&&!voiceRecording;$('#voice-cancel').disabled=busy;
  $('#voice-retry').hidden=active||!voiceRecording;$('#voice-retry').disabled=busy;
- $('#message').readOnly=active;$('#send').disabled=busy||active;
+ $('#message').readOnly=active;$('#send').disabled=busy||active||draftFiles().some(file=>file.uploading||file.error);$('#attach').disabled=busy||active;if(active)closeAttachmentMenu();resizeComposer();
 }
 function releaseCapture(session){
  clearTimeout(session.timer);
@@ -1100,16 +1123,23 @@ async function transcribeVoice(session){
  $('#voice-preview').hidden=true;$('#voice-status').textContent='Transcribing your recording with Meta…';
  session.timer=setTimeout(()=>{if(voiceSession===session)endVoice({message:'Transcription timed out. Your draft and recording are kept. Retry transcription or continue typing.'});},55000);
  try{
-  const response=await fetch('/api/voice/transcribe',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'audio/wav'},body:voiceRecording,signal:session.controller.signal});
+  for(let index=voiceRecording.transcripts.length;index<voiceRecording.parts.length;index++){
+  clearTimeout(session.timer);session.timer=setTimeout(()=>{if(voiceSession===session)endVoice({message:'Transcription timed out. Your draft and recording are kept. Retry transcription or continue typing.'});},55000);
+  $('#voice-status').textContent=voiceRecording.parts.length>1?`Transcribing part ${index+1} of ${voiceRecording.parts.length}…`:'Transcribing your recording with Meta…';
+  const response=await fetch('/api/voice/transcribe',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'audio/wav'},body:voiceRecording.parts[index],signal:session.controller.signal});
   let data;try{data=await response.json();}catch{throw Error('The server returned an unreadable transcription response.');}
   if(voiceSession!==session)return;
   if(!response.ok){
+   if(voiceRecording.parts.length>1&&response.status===422&&data.error?.message?.startsWith('No speech was transcribed.')){voiceRecording.transcripts.push('');continue;}
    if(response.status===401){endVoice({discard:true,message:'Your demo session expired. Reconnect before recording again.'});api('/api/dashboard').catch(error);return;}
    throw Error(data.error?.message||'Voice transcription failed.');
   }
   if(typeof data.transcript!=='string'||!data.transcript.trim()||data.transcript.length>10000)throw Error('The server returned an invalid transcript.');
-  const transcript=data.transcript.trim();
-  $('#message').value=session.base+(session.base?' ':'')+transcript;
+  voiceRecording.transcripts.push(data.transcript.trim());
+  }
+  const transcript=voiceRecording.transcripts.filter(Boolean).join(' ');
+  if(!transcript)throw Error('No speech was transcribed. Try speaking closer to the microphone.');
+  $('#message').value=session.base+(session.base?' ':'')+transcript;resizeComposer();
   endVoice({discard:true});$('#voice-status').textContent=$('#message').value.length>10000?'Transcript kept. Shorten your message to 10,000 characters before sending.':'';
  }catch(e){
   if(voiceSession!==session)return;
@@ -1121,7 +1151,9 @@ function stopVoice(){
  if(!session||!['recording','recorded'].includes(session.phase))return;
  releaseCapture(session);
  if(session.samples<session.rate/4){endVoice({discard:true,message:'The recording was too short. Speak for at least a moment, then stop.'});return;}
- voiceRecording=encodeWav(session);session.chunks=[];
+ const samples=new Float32Array(session.samples);let offset=0;for(const chunk of session.chunks){samples.set(chunk,offset);offset+=chunk.length;}
+ const parts=[];for(let offset=0;offset<samples.length;){const end=samples.length-(offset+session.rate*60)<session.rate/4?samples.length:offset+session.rate*60;const chunk=samples.subarray(offset,end);parts.push(encodeWav({rate:session.rate,samples:chunk.length,chunks:[chunk]}));offset=end;}
+ voiceRecording={parts,transcripts:[]};session.chunks=[];
  transcribeVoice(session);
 }
 $('#voice').onclick=async()=>{
@@ -1146,18 +1178,18 @@ $('#voice').onclick=async()=>{
   session.source.connect(session.node);session.node.connect(session.mute);session.mute.connect(session.context.destination);
   session.node.port.onmessage=event=>{
    if(voiceSession!==session||session.phase!=='recording')return;
-   const remaining=session.rate*60-session.samples,chunk=event.data.slice(0,remaining);
-   session.chunks.push(chunk);session.samples+=chunk.length;
+   const remaining=session.rate*180-session.samples,chunk=event.data.slice(0,remaining);
+   if(!chunk.length)return;session.chunks.push(chunk);session.samples+=chunk.length;
    const seconds=Math.floor(session.samples/session.rate);
-   if(seconds!==session.seconds){session.seconds=seconds;$('#voice-preview').textContent=`Recorded ${seconds}s / 60s`;}
+   if(seconds!==session.seconds){session.seconds=seconds;$('#voice-preview').textContent=`Recorded ${seconds}s / 180s`;}
   };
   stream.getTracks().forEach(track=>track.onended=()=>{if(voiceSession===session&&session.phase==='recording')endVoice({discard:true,message:'The microphone disconnected. Your typed draft is kept. Connect it and try again.'});});
   await session.context.resume();
   if(voiceSession!==session)return;
   clearTimeout(session.timer);session.phase='recording';syncVoice();
-  $('#voice-preview').textContent='Recorded 0s / 60s';$('#voice-preview').hidden=false;
+  $('#voice-preview').textContent='Recorded 0s / 180s';$('#voice-preview').hidden=false;
   $('#voice-status').textContent='Recording… Stop & transcribe when you’re ready.';
-  session.timer=setTimeout(()=>{if(voiceSession!==session)return;session.phase='recorded';releaseCapture(session);syncVoice();$('#voice-status').textContent='One-minute limit reached. Choose Stop & transcribe, or Cancel.';},60000);
+  session.timer=setTimeout(()=>{if(voiceSession!==session)return;session.phase='recorded';releaseCapture(session);syncVoice();$('#voice-status').textContent='Three-minute limit reached. Choose Stop & transcribe, or Cancel.';},180000);
  }catch(e){
   if(voiceSession!==session)return;
   const message=e.name==='NotAllowedError'?'Microphone access was denied. Allow this site to use your microphone in browser settings, or type your message.':e.name==='NotFoundError'?'No microphone was found. Connect one and try again, or type your message.':'Microphone capture could not start. Check your microphone and browser permissions, or type your message.';
@@ -1184,7 +1216,6 @@ async function registerWebMCP(){
  function uiBlocked(){
   if(!$('#access').hidden)return {error:'Connect using the visible demo access form first.'};
   if(busy||voiceSession)return {error:'Wait for the current request or stop voice capture before changing the interface.'};
-  if($('#handoff-dialog')?.open)return {error:'Close the browser setup before making another change.'};
   if($('#subtask-dialog')?.open)return {error:'Save or close the new subtask form first; its unsaved changes are preserved.'};
   if($('#add-dialog')?.open)return {error:'Save or close the new task form first; its unsaved changes are preserved.'};
   if($('#edit-dialog').open)return {error:'Save or close the open task editor first; its unsaved changes are preserved.'};
@@ -1234,7 +1265,7 @@ async function registerWebMCP(){
  const tools=[
   {
    name:'get_dashboard',
-   description:'Read saved tasks, handoff assessments, pending proposals, and current-chat run statuses from this browser workspace. Pass request_id to look up a specific Muse request even after reloading. Returns real saved state for verifying writes; unsaved edits are excluded. Optional browser execution requires Use browser in task chat and a local worker.',
+   description:'Read saved tasks, handoff assessments, pending proposals, and current-chat run statuses from this browser workspace. Pass request_id to look up a specific Muse request even after reloading. Returns real saved state for verifying writes; unsaved edits are excluded. Handoff uses Muse task chat with web search.',
    inputSchema:{type:'object',properties:{request_id:{...uuid,description:'Optional Muse request UUID to check after an interrupted response or page reload.'}},additionalProperties:false},annotations:{readOnlyHint:true,untrustedContentHint:true},
    async execute(input,{signal}={}){
     const invalid=validate(input,['request_id']);if(invalid)return invalid;
@@ -1243,7 +1274,7 @@ async function registerWebMCP(){
      const response=await fetch('/api/dashboard',{credentials:'same-origin',signal});
      if(!response.ok)return {error:response.status===401?'Connect using the visible demo access form first.':'Could not load saved state. Retry when the server is available.',status:response.status};
      const data=await response.json();signal?.throwIfAborted();
-     return {tasks:data.tasks.map(publicTask),reviews:data.runs.filter(run=>run.task_id===null&&run.status==='awaiting_review').map(run=>({id:run.id,status:run.status,proposal:publicProposal(run.proposal)})),runs:data.runs.filter(run=>input.request_id?run.request_id===input.request_id:(!run.chat_hidden&&run.task_id===null&&runChatScope(run,data.tasks,data.events)===chatTaskId)).map(publicRun),execution:{connected:typeof browserState!=='undefined'&&browserState.connected,status:typeof browserState!=='undefined'&&browserState.connected?'ready':'unavailable',reason:'Hand off uses internet task chat. Use browser is a separate explicit option requiring the local worker. This tool does not start browser execution.'},source:'Saved server state; unsaved interface edits are not included.'};
+     return {tasks:data.tasks.map(publicTask),reviews:data.runs.filter(run=>run.task_id===null&&run.status==='awaiting_review').map(run=>({id:run.id,status:run.status,proposal:publicProposal(run.proposal)})),runs:data.runs.filter(run=>input.request_id?run.request_id===input.request_id:(!run.chat_hidden&&run.task_id===null&&runChatScope(run,data.tasks,data.events)===chatTaskId)).map(publicRun),execution:{connected:false,status:'unavailable',reason:'Browser control has been removed. Hand off uses internet-enabled Muse task chat.'},source:'Saved server state; unsaved interface edits are not included.'};
     }catch(e){if(signal?.aborted)throw e;return {error:'Could not read saved state. Retry when the server is available.'};}
    }
   },
@@ -1359,7 +1390,7 @@ registerWebMCP();
 let bubbleResizeFrame=null;
 window.addEventListener('pagehide',stopBubbleWorld);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopBubbleWorld();else layoutBubbles();});
-window.addEventListener('resize',()=>{cancelAnimationFrame(bubbleResizeFrame);bubbleResizeFrame=requestAnimationFrame(()=>{layoutBubbles();syncFocusHeights();});});
+window.addEventListener('resize',()=>{cancelAnimationFrame(bubbleResizeFrame);bubbleResizeFrame=requestAnimationFrame(()=>{layoutBubbles();syncFocusHeights();resizeComposer();});});
 refresh().catch(error);
 window.addEventListener('pageshow',event=>{if(event.persisted)refresh().catch(error);});
 setInterval(()=>{if(busy&&pending)api('/api/dashboard').then(data=>{$('#status').textContent=data.runs.some(r=>r.status==='running')?'Muse is planning…':'';}).catch(()=>{});},4000);

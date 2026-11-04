@@ -80,8 +80,9 @@ def test_browser_task_histories_and_unsent_drafts_are_separate(tmp_path):
     )
     script = r"""
 const assert=require('node:assert/strict');
-let state={tasks:[],messages:[],runs:[]},pending=null,ranges={},busy=false;
-const elements=new Map(),$=key=>{if(!elements.has(key))elements.set(key,{reset(){this.value='';},value:'',textContent:'',innerHTML:'',hidden:false});return elements.get(key);};
+let state={tasks:[],messages:[],runs:[]},pending=null,ranges={},busy=false,voiceSession=null;
+const document={addEventListener(){}};
+const elements=new Map(),$=key=>{if(!elements.has(key))elements.set(key,{reset(){this.value='';},value:'',textContent:'',innerHTML:'',hidden:false,setAttribute(){}});return elements.get(key);};
 function canHandoff(){return true;}const esc=String;function refreshBrowserState(){}function loadTrashUndo(){}
 function render(){}function setMuseOpen(){}
 let data={tasks:[{id:'a',title:'Task A'},{id:'b',title:'Task B'},{id:'child',title:'Subtask',parent_task_id:'a'}],runs:[

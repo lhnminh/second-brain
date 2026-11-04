@@ -269,6 +269,7 @@ def test_rerouted_exchange_has_one_chat_after_reload_and_in_model_context(
         "keep_chat_scope": False,
         "web_enabled": False,
         "delegated_task_id": None,
+        "attachment_ids": [],
         **request,
     }
     assert len([m for m in data["messages"] if m["run_id"] == run["id"]]) == 2

@@ -7,6 +7,7 @@ from sqlalchemy import (
     Column,
     ForeignKeyConstraint,
     Integer,
+    LargeBinary,
     MetaData,
     String,
     Table,
@@ -17,6 +18,20 @@ from sqlalchemy import (
 from sqlalchemy.pool import NullPool
 
 metadata = MetaData()
+
+attachments = Table(
+    "attachments",
+    metadata,
+    Column("id", String(36), primary_key=True),
+    Column("user_id", String(100), nullable=False, index=True),
+    Column("filename", String(255), nullable=False),
+    Column("media_type", String(100), nullable=False),
+    Column("size", Integer, nullable=False),
+    Column("page_count", Integer, nullable=False),
+    Column("text", String(100000)),
+    Column("data", LargeBinary, nullable=False),
+    Column("created_at", String(40), nullable=False),
+)
 
 
 def now():
@@ -136,6 +151,7 @@ messages = Table(
     Column("content", String(10000), nullable=False),
     Column("created_at", String(40), nullable=False),
 )
+# Retired execution history: retained for data preservation, without runtime/API access.
 browser_runs = Table(
     "browser_runs",
     metadata,

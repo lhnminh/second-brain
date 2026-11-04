@@ -49,18 +49,6 @@ class HandoffAssessmentRequest(Input):
     task_ids: Annotated[list[UUID], Field(min_length=1, max_length=20)]
 
 
-class BrowserStart(Input):
-    request_id: UUID
-    task_id: UUID
-    expected_version: Annotated[StrictInt, Field(ge=1)]
-    start_url: Annotated[str, Field(min_length=1, max_length=2000)]
-    instructions: Annotated[str, Field(max_length=2000)] = ""
-
-
-class BrowserControl(Input):
-    action: Literal["pause", "resume", "stop"]
-
-
 class AssessedSubtask(Input):
     task_id: UUID
     handoff: Handoff
@@ -190,6 +178,10 @@ class ConversationApproval(Input):
 
 
 class ConversationRequest(PlanRequest):
+    message: Annotated[str, Field(max_length=10000)]
+    attachment_ids: Annotated[list[UUID], Field(max_length=5)] = Field(
+        default_factory=list
+    )
     conversation_id: UUID | None = None
     chat_task_id: UUID | None = None
     review_draft: ConversationProposal | None = None
@@ -198,3 +190,11 @@ class ConversationRequest(PlanRequest):
     keep_chat_scope: StrictBool = False
     web_enabled: StrictBool = False
     delegated_task_id: UUID | None = None
+
+    @model_validator(mode="after")
+    def message_or_attachment(self):
+        if not self.message and not self.attachment_ids:
+            raise ValueError("Add a message or an attachment")
+        if len(set(self.attachment_ids)) != len(self.attachment_ids):
+            raise ValueError("Attach each file once")
+        return self

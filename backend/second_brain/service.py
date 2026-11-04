@@ -6,7 +6,25 @@ from sqlalchemy import func, insert, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
-from .db import accounts, context, drafts, events, messages, now, runs, tasks, uid
+from .attachments import (
+    MAX_CONTEXT_BYTES,
+    PUBLIC_FIELDS,
+    model_file,
+    public_file,
+    validate_file,
+)
+from .db import (
+    accounts,
+    attachments,
+    context,
+    drafts,
+    events,
+    messages,
+    now,
+    runs,
+    tasks,
+    uid,
+)
 from .muse import MuseFailure
 from .schemas import RANGES, ConversationProposal, HandoffAssessment, Proposal
 
@@ -270,7 +288,66 @@ class Service:
                 rows(c, tasks, self.user_id, include_deleted=True),
                 data["events"],
             )
+            files = {
+                item["id"]: dict(item)
+                for item in c.execute(
+                    select(*(attachments.c[key] for key in PUBLIC_FIELDS)).where(
+                        attachments.c.user_id == self.user_id
+                    )
+                ).mappings()
+            }
+            by_run = {
+                run["id"]: (run["input_payload"] or {}).get("attachment_ids", [])
+                for run in data["runs"]
+            }
+            for message in data["messages"]:
+                message["attachments"] = (
+                    [
+                        files[value]
+                        for value in by_run.get(message["run_id"], [])
+                        if value in files
+                    ]
+                    if message["role"] == "user"
+                    else []
+                )
             return data
+
+    def upload_attachment(self, attachment_id, filename, data):
+        record = validate_file(filename, data)
+        with self.engine.begin() as c:
+            lock_account(c, self.user_id)
+            previous = (
+                c.execute(select(attachments).where(attachments.c.id == attachment_id))
+                .mappings()
+                .first()
+            )
+            if previous:
+                if previous["user_id"] != self.user_id:
+                    raise HTTPException(404, "Record not found")
+                if (
+                    previous["filename"] != record["filename"]
+                    or previous["data"] != data
+                ):
+                    raise HTTPException(
+                        409, "This upload ID was already used for another file"
+                    )
+                return public_file(previous)
+            stored_bytes = c.scalar(
+                select(func.coalesce(func.sum(attachments.c.size), 0)).where(
+                    attachments.c.user_id == self.user_id
+                )
+            )
+            if stored_bytes + len(data) > 500_000_000:
+                raise HTTPException(
+                    413, "This workspace has reached its 500 MB attachment limit"
+                )
+            record.update(id=attachment_id, user_id=self.user_id, created_at=now())
+            c.execute(insert(attachments).values(**record))
+            return public_file(record)
+
+    def attachment(self, attachment_id):
+        with self.engine.connect() as c:
+            return owned(c, attachments, attachment_id, self.user_id)
 
     def create_task(self, body):
         data = body.model_dump(mode="json", exclude={"subtasks"})
@@ -664,6 +741,7 @@ class Service:
                         "keep_chat_scope": False,
                         "web_enabled": False,
                         "delegated_task_id": None,
+                        "attachment_ids": [],
                         **previous_input,
                     }
                 if (
@@ -788,6 +866,68 @@ class Service:
                     recent_messages, key=lambda m: m["created_at"]
                 )[-20:],
             }
+            if task_id is None:
+                current_ids = [str(value) for value in body.attachment_ids]
+                current_files = [
+                    owned(c, attachments, value, self.user_id) for value in current_ids
+                ]
+                if sum(item["page_count"] for item in current_files) > 50:
+                    raise HTTPException(
+                        422, "Attach up to 50 PDF pages and images in one message"
+                    )
+                # Files follow the same projected chat scope as their messages,
+                # including conversations moved from General to a specific task.
+                history_ids = list(
+                    dict.fromkeys(
+                        value
+                        for run in sorted(
+                            recent_runs, key=lambda r: r["created_at"], reverse=True
+                        )
+                        for value in (run["input_payload"] or {}).get(
+                            "attachment_ids", []
+                        )
+                    )
+                )
+                history_files = [
+                    owned(c, attachments, value, self.user_id)
+                    for value in history_ids
+                    if value not in current_ids
+                ]
+                history_files.sort(
+                    key=lambda item: (
+                        item["filename"].casefold() not in body.message.casefold()
+                    )
+                )
+                selected, size, pages, characters = (
+                    list(current_files),
+                    sum(f["size"] for f in current_files),
+                    sum(f["page_count"] for f in current_files),
+                    sum(len(f["text"] or "") for f in current_files),
+                )
+                for item in history_files:
+                    if (
+                        len(selected) < 10
+                        and size + item["size"] <= MAX_CONTEXT_BYTES
+                        and pages + item["page_count"] <= 50
+                        and characters + len(item["text"] or "") <= 500000
+                    ):
+                        selected.append(item)
+                        size += item["size"]
+                        pages += item["page_count"]
+                        characters += len(item["text"] or "")
+                selected_ids = {item["id"] for item in selected}
+                snapshot["attachments"] = [
+                    {
+                        **public_file(item),
+                        "included": item["id"] in selected_ids,
+                        "just_attached": item["id"] in current_ids,
+                    }
+                    for item in current_files + history_files
+                ]
+                # Never persist file bytes in run payloads, audit events or dashboard JSON.
+                snapshot["_attachment_content"] = [
+                    model_file(item) for item in selected
+                ]
             if task_id is None and body.review_draft is not None:
                 try:
                     self._check_conversation(body.review_draft, saved_tasks)

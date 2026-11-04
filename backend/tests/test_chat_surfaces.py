@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 
-def test_launcher_task_dialog_handoff_and_optional_browser(tmp_path):
+def test_launcher_task_dialog_and_internet_handoff(tmp_path):
     node = shutil.which("node")
     if not node:
         pytest.skip("Node is required")
@@ -29,7 +29,9 @@ def test_launcher_task_dialog_handoff_and_optional_browser(tmp_path):
     surface = surface[surface.index("const generalChatHome=") :]
     handoff = (
         "function handoffToMuse("
-        + page.split("function handoffToMuse(", 1)[1].split("$('#close-handoff')", 1)[0]
+        + page.split("function handoffToMuse(", 1)[1].split(
+            "// End machine handoff.", 1
+        )[0]
     )
     script = (
         r"""
@@ -43,9 +45,8 @@ const $=id=>{if(!els.has(id))els.set(id,element());return els.get(id)};
 const home=element();home.appendChild($('#muse-chat'));
 const state={user_id:'owner',tasks:[{id:'root',title:'Main work',status:'pending'},{id:'child',parent_task_id:'root',title:'Research sources',status:'pending',handoff:{handler:'muse'}},{id:'other',title:'Other task',status:'pending'}]};
 const document={addEventListener:(key,fn)=>events[key]=fn};const localStorage={setItem(){}};
-let rendered=[],browserOpened=[],sent=[];function renderChat(){rendered.push(chatTaskId)};function endVoice(){voiceSession=null}
+let rendered=[],sent=[];function closeAttachmentMenu(){}function resizeComposer(){}function renderChat(){rendered.push(chatTaskId)};function endVoice(){voiceSession=null}
 function canHandoff(t){return !!t&&t.status!=='completed'&&(t.handoff?.handler==='muse'||!t.parent_task_id)}
-function openBrowserHandoff(task){browserOpened.push(task.id)}
 $('#chat-form').requestSubmit=()=>{sent.push({scope:chatTaskId,task:delegatedTaskId,message:$('#message').value});$('#message').value=''};
 ROOT
 OPENER
@@ -53,13 +54,11 @@ SURFACE
 HANDOFF
 $('#message').value='My general draft';$('#muse-launcher').onclick();assert.equal(chatTaskId,null);assert.equal($('#muse-chat').parentElement,home);
 openTaskChat('child');assert.equal(chatTaskId,'root');assert.equal(chatWorkId,'child');assert.equal($('#task-chat-dialog').open,true);assert.equal($('#muse-chat').parentElement,$('#task-chat-host'));assert.equal($('#message').value,'');
-$('#message').value='My task draft';handoffToMuse('child');assert.equal(sent.length,1);assert.equal(sent[0].scope,'root');assert.equal(sent[0].task,'child');assert.equal($('#message').value,'My task draft');assert.equal($('#handoff-dialog').open,false);
-$('#use-task-browser').onclick();assert.deepEqual(browserOpened,['child']);assert.equal($('#handoff-dialog').open,true);$('#handoff-dialog').close();
+$('#message').value='My task draft';handoffToMuse('child');assert.equal(sent.length,1);assert.equal(sent[0].scope,'root');assert.equal(sent[0].task,'child');assert.equal($('#message').value,'My task draft');
 $('#close-muse').onclick();assert.equal($('#task-chat-dialog').open,false);
 $('#muse-launcher').onclick();assert.equal(chatTaskId,null);assert.equal($('#muse-chat').parentElement,home);assert.equal($('#message').value,'My general draft');assert.equal($('#task-chat-dialog').open,false);
 openTaskChat('root');assert.equal($('#message').value,'My task draft');openTaskChat('other');assert.equal($('#message').value,'');openTaskChat('root');assert.equal($('#message').value,'My task draft');
-$('#use-task-browser').onclick();assert.equal(browserOpened.at(-1),'root');
-$('#handoff-dialog').close();pending={request_id:'uncertain',delegated_task_id:'child'};$('#message').value='Retry child question';openTaskChat(null);openTaskChat('root');assert.equal(pending.request_id,'uncertain');assert.equal(delegatedTaskId,'child');assert.equal($('#message').value,'Retry child question');
+pending={request_id:'uncertain',delegated_task_id:'child'};$('#message').value='Retry child question';openTaskChat(null);openTaskChat('root');assert.equal(pending.request_id,'uncertain');assert.equal(delegatedTaskId,'child');assert.equal($('#message').value,'Retry child question');
 """.replace("ROOT", root)
         .replace("OPENER", opener)
         .replace("SURFACE", surface)
@@ -72,6 +71,7 @@ $('#handoff-dialog').close();pending={request_id:'uncertain',delegated_task_id:'
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert '<select id="chat-scope" hidden' in page
+    assert "use-task-browser" not in page and "/api/browser" not in page
     assert "Transcript ready. Review or edit it, then Send." not in page
 
 
@@ -84,7 +84,7 @@ def test_chat_renderer_formats_links_without_injecting_html(tmp_path):
     )["PAGE"]
     helpers = (
         "function safeChatUrl"
-        + page.split("function safeChatUrl", 1)[1].split("function renderChat(){", 1)[0]
+        + page.split("function safeChatUrl", 1)[1].split("// General file attachments;", 1)[0]
     )
     script = r"""
 const assert=require('node:assert/strict');const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -125,6 +125,36 @@ trashUndo.push({id:'second',title:'Second task',deletion_id:'two'});saveTrashUnd
 renderTrashUndo();assert.equal($('#trash-undo').hidden,true);assert.equal($('#undo-trash-menu').hidden,false);
 """.replace("CONTROLLER", controller)
     path = tmp_path / "trash-toast.cjs"
+    path.write_text(script, encoding="utf-8")
+    result = subprocess.run(
+        [node, str(path)], capture_output=True, text=True, timeout=15, check=False
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_composer_grows_to_six_lines_then_scrolls_and_shrinks(tmp_path):
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("Node is required")
+    page = runpy.run_path(
+        str(Path(__file__).resolve().parents[2] / "frontend/dashboard.py")
+    )["PAGE"]
+    helper = (
+        "function resizeComposer(){"
+        + page.split("function resizeComposer(){", 1)[1].split(
+            "function chatInline(", 1
+        )[0]
+    )
+    script = r"""
+const assert=require('node:assert/strict');const input={isConnected:true,style:{},scrollHeight:24};const $=()=>input;const getComputedStyle=()=>({lineHeight:'24px'});
+HELPER
+resizeComposer();assert.equal(input.style.height,'24px');assert.equal(input.style.overflowY,'hidden');
+input.scrollHeight=72;resizeComposer();assert.equal(input.style.height,'72px');
+input.scrollHeight=144;resizeComposer();assert.equal(input.style.height,'144px');assert.equal(input.style.overflowY,'hidden');
+input.scrollHeight=216;resizeComposer();assert.equal(input.style.height,'144px');assert.equal(input.style.overflowY,'auto');
+input.scrollHeight=24;resizeComposer();assert.equal(input.style.height,'24px');assert.equal(input.style.overflowY,'hidden');
+""".replace("HELPER", helper)
+    path = tmp_path / "adaptive-composer.cjs"
     path.write_text(script, encoding="utf-8")
     result = subprocess.run(
         [node, str(path)], capture_output=True, text=True, timeout=15, check=False

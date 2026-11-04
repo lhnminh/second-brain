@@ -1,7 +1,6 @@
 """Run the shipped recorder/controller against browser and network test doubles."""
 
 import json
-import re
 import runpy
 import shutil
 import subprocess
@@ -21,7 +20,12 @@ def test_voice_lifecycle_and_conversation_submission():
         "// Voice input:"
         + page.split("// Voice input:", 1)[1].split("// End voice input.", 1)[0]
     )
-    submit = re.search(r"\$\('#chat-form'\)\.onsubmit=.*?;\n", page)[0]
+    submit = (
+        "$('#chat-form').onsubmit="
+        + page.split("$('#chat-form').onsubmit=", 1)[1].split(
+            "$('#message').addEventListener('input'", 1
+        )[0]
+    )
     full_js = page.split("<script>")[1].split("</script>")[0]
     harness = r"""
 const assert=require('node:assert/strict'),vm=require('node:vm');
@@ -52,12 +56,12 @@ function browser({supported=true,secure=true,permissionError=false,deferPermissi
  const sent=[],uploads=[],urls={revoked:[],createObjectURL:()=> 'blob:recorder',revokeObjectURL(url){this.revoked.push(url);}};
  const context=vm.createContext({$,window,navigator,document,AudioWorkletNode:Worklet,Blob,URL:urls,AbortController,TypeError,busy:false,
  setTimeout:fn=>{timers.set(++nextTimer,fn);return nextTimer;},clearTimeout:id=>timers.delete(id),
- delegatedTaskId:null,chatTaskId:null,renderChat:()=>{},followTaskChat:()=>{},forgetSentMessage:()=>{},conversationId:null,chatRuns:()=>[],state:{runs:[]},pending:null,drafts:new Map(),crypto:{randomUUID:()=> 'request-1'},structuredClone,
+ closeAttachmentMenu:()=>{},draftFiles:()=>[],attachmentDrafts:new Map(),resizeComposer:()=>{},delegatedTaskId:null,chatTaskId:null,renderChat:()=>{},followTaskChat:()=>{},forgetSentMessage:()=>{},conversationId:null,chatRuns:()=>[],state:{runs:[]},pending:null,drafts:new Map(),crypto:{randomUUID:()=> 'request-1'},structuredClone,
  action:async fn=>fn(),api:async(path,method,body)=>{sent.push({path,body});return {status:'answered'};},refresh:async()=>{},error:e=>$('#error').textContent=e.message,
  fetch:async(path,options)=>{
   uploads.push({path,...options});
   if(network==='hang')return new Promise(()=>{});
-  if(network==='fail')throw new TypeError('offline');
+  if(network==='fail'||network==='second-fail'&&uploads.length===2)throw new TypeError('offline');
   return {ok:true,json:async()=>({transcript:'Finish my math homework.'})};
  }});
  vm.runInContext(VOICE+'\n'+SUBMIT,context);
@@ -107,11 +111,25 @@ function browser({supported=true,secure=true,permissionError=false,deferPermissi
  // Cancelling in-flight transcription aborts the request without changing text.
  b=browser({network:'hang'});b.$('#message').value='Typed';await b.start();b.samples();b.$('#voice').onclick();
  b.$('#voice-cancel').onclick();assert.equal(b.uploads[0].signal.aborted,true);assert.equal(b.$('#message').value,'Typed');
- // Transcription timeout permits retry, while the one-minute limit stops capture only.
+ // Transcription timeout permits retry, while the three-minute limit stops capture only.
  b=browser({network:'hang'});await b.start();b.samples();b.$('#voice').onclick();[...b.timers.values()][0]();
  assert.equal(b.$('#voice-retry').hidden,false);assert.equal(b.$('#send').disabled,false);
  b=browser();await b.start();b.samples();[...b.timers.values()][0]();assert.equal(b.track.stopped,true);
  assert.equal(b.uploads.length,0);b.$('#voice').onclick();await flush();assert.equal(b.uploads.length,1);
+ // Three minutes are retained, capped, and uploaded in hosted-safe WAV parts.
+ b=browser();await b.start();b.samples(24000*181);assert.match(b.$('#voice-preview').textContent,/180s/);
+ b.$('#voice').onclick();await flush();await flush();assert.equal(b.uploads.length,3);
+ assert.ok(b.uploads.every(part=>part.body.size<=2880044));
+ assert.equal(b.$('#message').value,Array(3).fill('Finish my math homework.').join(' '));
+ // Retry resumes after a completed part without duplicating its transcript.
+ b=browser({network:'second-fail'});await b.start();b.samples(24000*180);b.$('#voice').onclick();await flush();
+ assert.equal(b.uploads.length,2);assert.equal(b.$('#voice-retry').hidden,false);
+ b.$('#voice-retry').onclick();await flush();await flush();assert.equal(b.uploads.length,4);
+ assert.equal(b.uploads[1].body,b.uploads[2].body);assert.notEqual(b.uploads[0].body,b.uploads[2].body);
+ assert.equal(b.$('#message').value,Array(3).fill('Finish my math homework.').join(' '));
+ // A very short tail joins the previous part instead of failing minimum duration.
+ b=browser();await b.start();b.samples(24000*60+1000);b.$('#voice').onclick();await flush();
+ assert.equal(b.uploads.length,1);assert.equal(b.uploads[0].body.size,44+(24000*60+1000)*2);
  // Too-short recordings never reach the server, and message limits still apply.
  b=browser();await b.start();b.$('#voice').onclick();await flush();assert.equal(b.uploads.length,0);
  b.$('#message').value='x'.repeat(10001);b.submit();assert.equal(b.sent.length,0);assert.match(b.$('#error').textContent,/Shorten/);

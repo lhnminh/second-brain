@@ -114,7 +114,7 @@ def test_provider_failures_are_safe(monkeypatch, case):
         wav(channels=2),
         wav(width=1),
         wav(seconds=0.1),
-        wav(seconds=61),
+        wav(seconds=181),
         wav()[:-100],
     ],
 )
@@ -128,7 +128,7 @@ def test_invalid_audio_never_reaches_provider(monkeypatch, audio):
 
 def test_supported_rates_and_duration_boundary():
     validate_audio(wav(rate=16000))
-    validate_audio(wav(seconds=60))
+    validate_audio(wav(seconds=180))
 
 
 def test_missing_key_never_connects(monkeypatch):

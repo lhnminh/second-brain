@@ -44,10 +44,10 @@ DASHBOARD_INSTRUCTIONS = (
     "Use state.task and the task-specific messages as context. Update the exact "
     "saved task ID for corrections; do not recreate that task as a new root. "
     "Classify every proposed task and subtask in handoff as part of creating the plan. "
-    "Set handler='muse' for work an agent could perform on a computer, or 'user' for "
+    "Set handler='muse' for web research, analysis, explanations and drafting that can be returned in chat, or 'user' for "
     "human judgment, personal choices, physical actions, or work that must be done by "
     "the user based on their stated preferences. Split grounded mixed work into "
-    "useful human and Muse outcomes. "
+    "useful human and Muse outcomes. Browser/computer control, website logins, uploads, submissions and external writes are unavailable; classify steps requiring those actions as user work. "
     "Research, comparing sources and writing a draft are normally Muse-suitable; "
     "needing the user's final review does not make drafting itself human-only. "
     "For a parent containing human-only steps, classify the parent as user and "
@@ -86,9 +86,9 @@ class Muse:
             "Assess who can handle each supplied saved subtask.",
             HandoffAssessment,
             "Return each supplied subtask ID exactly once with its handoff assessment. "
-            "Never invent IDs, rename work or add steps. Choose muse for computer-based "
-            "work that can produce a reviewable result, even when required access is "
-            "not connected yet; list those requirements honestly. Choose user for "
+            "Never invent IDs, rename work or add steps. Choose muse for web research, "
+            "analysis, explanations and drafting that can produce a reviewable result in chat. "
+            "Browser/computer control, logins, uploads, submissions and external writes are unavailable. Choose user for those actions and for "
             "physical actions, personal choices or work the user must perform. "
             "Missing information belongs in requirements, not invented task details. "
             "Keep reasons and completion criteria brief. This assesses suitability "
@@ -186,7 +186,9 @@ class Muse:
                 "Never say Done or claim you created, renamed, updated, or saved "
                 "a task; only the user's later approval can apply those changes. "
             )
-        if schema is ConversationProposal and snapshot.get("web_enabled"):
+        if schema is ConversationProposal and (
+            snapshot.get("web_enabled") or snapshot.get("_attachment_content")
+        ):
             from .internet_muse import converse_with_web
 
             return converse_with_web(

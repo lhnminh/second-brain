@@ -1,5 +1,11 @@
 # Backend API contract — first implementation
 
+
+**Current direction (November 4):** Browser/computer control is removed. Handoff
+uses internet-enabled task chat. Input starts at one line and grows to six lines
+before scrolling. Earlier browser execution notes below are historical. Document
+attachments are available in General and task chats using the paperclip button.
+
 Status: implemented backend contract; the quick dashboard's core task/planning
 flow has been verified locally in a browser. All paths are relative to the backend origin. JSON request and
 response bodies use snake_case. Interactive schemas: `/docs`; machine schema:
@@ -301,7 +307,7 @@ Token usage, provider latency, and raw outbound provider requests are not record
 
 `POST /api/voice/transcribe` accepts a raw `audio/wav` body with the same
 authentication and same-origin session rules as other writes. It accepts mono
-PCM16 WAV at 16 or 24 kHz, between 0.25 and 60 seconds, capped at 2,880,044 bytes.
+PCM16 WAV at 16 or 24 kHz, between 0.25 and 180 seconds, capped at 8,640,044 bytes.
 The browser captures at 24 kHz through Web Audio. The backend bounds the request
 stream, validates the WAV and duration, then calls Meta's `/asr/transcribe` in
 `PUSH_TO_TALK` mode using the server's `META_API_KEY` and `META_VOICE_MODEL`
@@ -684,49 +690,10 @@ existing handoff metadata. Blue Ask Muse opens root chat; per-subtask Hand off
 opens a no-computer-connected notice until an execution worker is implemented.
 
 
-## Dedicated laptop browser (November 3)
+## Browser control removed (November 4)
 
-Migration `d785c418a901` adds owned `browser_runs`, separate from planning runs
-and chat messages. All routes use normal workspace identity. Start, run reads,
-controls and artifacts additionally require a loopback client and localhost host,
-reject foreign Origin headers, and reject hosted execution. The local app must
-run with its optional browser worker enabled and one process.
-
-| Route | Result |
-| --- | --- |
-| `GET /api/browser` | `connected`, `mode`, setup `reason`, latest 30 owned `runs`; hosted returns disconnected with no runs |
-| `POST /api/browser/runs` | 202 with saved run; requires UUID `request_id`, owned leaf `task_id`, current `expected_version`, public `start_url`, optional `instructions` <=2000 chars |
-| `GET /api/browser/runs/{id}` | Owned persisted status/result |
-| `POST /api/browser/runs/{id}/control` | `{action: pause/resume/stop}`; Resume only from paused/needs_input |
-| `GET /api/browser/runs/{id}/frames/{frame}` | Owned saved PNG, no-store |
-| `GET /api/browser/runs/{id}/downloads/{file_id}` | Owned attachment; original sanitized display name, opaque local storage filename |
-
-Run responses contain id, task_id, task_title (the title at start), request_id, start_url, status, summary, steps,
-downloads, frame, created_at and updated_at. Goal snapshots/owner IDs are not
-returned. Statuses: queued, running, pausing, paused, needs_input, stopping, stopped,
-interrupted, failed, finished. Finished means the worker ended for user review,
-including a step-limit exit; it never marks a task complete.
-
-Duplicate request UUIDs with identical payload return the same run, without
-repeating execution; changed payload gives 409. Unavailable worker gives 503,
-foreign work 404, stale versions/ineligible or completed work/capacity conflicts
-409, invalid URLs or non-leaf targets 422. A run requires unfinished Muse-suitable
-work beneath unfinished ancestors. Task/ancestor version changes interrupt further
-actions. Browser state changes never mutate task status or insert chat messages.
-
-One local thread owns each browser, with one active browser per app process. The
-worker saves screenshots/actions/downloads after action batches. Pause/Stop wait
-for an in-flight action/model request before the next action; Resume discards
-stale actions and starts from a fresh screenshot. Shutdown requests stop; a new
-worker marks abandoned active records interrupted. Use one process and one local
-worker per database. There is no hosted pairing protocol or cloud worker.
-
-Screenshots/task context go to the existing Meta model via `/responses` with
-`store:false`, strict validated function tools and serial calls. The native tool
-was rejected in the account's smoke check; it is not silently retried. URLs are
-checked against public HTTP/HTTPS and standard ports, including DNS results on
-browser requests; this is a browser guard rather than network/VM isolation.
-
+Browser execution is removed. Run `uv run second-brain`; handoffs use task chat
+with web search. Historical execution rows/artifacts remain untouched.
 
 ## Internet chat, stable surfaces and reversible removal (November 4)
 
@@ -775,15 +742,10 @@ retain their original root chat_scope_id and mark `chat_hidden` for a removed ro
 so preserved task exchanges do not appear in General or its model context. Undo
 restores visibility. Raw owner-scoped diagnostic history is retained.
 
-### Optional whole-task browser runs
+### Retired browser execution
 
-Only an explicit browser start endpoint launches a computer. It now accepts an
-unfinished whole task, with saved descendant context, as well as a Muse-suitable
-subtask. Whole-task execution remains limited to the available browser; human
-steps are not authorized automatically. Captured task/ancestor/descendant versions
-and the current descendant set are checked before actions; corrections, removal
-or newly added delegated steps interrupt execution. Results remain separate from
-completion status and are rendered in the root's task chat.
+All `/api/browser*` routes and the optional worker are removed. Historical records
+and migrations remain; there is no execution or artifact-serving interface.
 
 Relevant earlier user statements that created or clearly discussed a task in
 another chat are supplied as bounded task_user_context in model snapshots. Current
@@ -808,3 +770,54 @@ ineligible new requests with 409. Chat replies hide native citation reference
 codes and retain real source links; the provider is instructed to use readable
 Markdown. Focus headers omit counts, composers are compact, and the long-term
 list scrolls only after reaching the adjacent short-term panel's height.
+
+
+Chat-only verification (November 4): the retired browser routes return 404 and
+are absent from OpenAPI. Source/entrypoint/config and optional Playwright/pyee
+lock entries are removed. Historical database record counts are unchanged.
+The remaining automated suite has 199 checks; all passed across the full run and
+focused correction rerun. Desktop/mobile UI checks verified one-line empty input,
+three-line growth, a six-line cap with internal scrolling, soft wrapping, shrinking,
+and restored task drafts. Typing previews were never sent to Muse.
+
+
+## General chat attachments (November 4)
+
+Migration `f72a0643bc11` adds `attachments` without changing existing records.
+`PUT /api/attachments/{uuid}?filename=...` streams a raw file body (up to 4 MB),
+validates the actual format, and returns `{id, filename, media_type, size,
+page_count, created_at}`. The client-generated UUID makes exact upload retries
+idempotent; a different file under the same UUID returns 409. Ownership and
+same-origin write checks apply. Allowed extensions: `.pdf`, `.txt`, `.docx`,
+`.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`. UTF-8 and BOM-marked UTF-16 text are
+supported. Word text includes paragraphs/table cells; embedded graphics are not
+included. PDFs must be unlocked and have 1–50 pages. Text is limited to 100,000
+characters per file; images to 25 megapixels; expanded DOCX to 20 MB.
+
+`GET /api/attachments/{uuid}` returns the owned original as an attachment with
+no-store, nosniff and sandbox headers. `?preview=true` permits inline image
+responses only. Other workspaces receive 404. Files are stored in SQL binary
+columns so hosted instances do not rely on temporary local files.
+
+`POST /api/conversation` adds optional `attachment_ids: UUID[]` (0–5 distinct
+owned IDs). Message may be empty only when attachments exist. Request UUID
+comparison includes the attachment IDs. Uploaded originals remain downloadable
+when model calls fail. Dashboard user messages add `attachments: metadata[]`;
+assistant messages have `attachments: []`. No original bytes or extracted text
+are returned in dashboard JSON. File scope follows its referencing conversation
+run, including a run projected into a different task chat. Explicitly attaching
+an owned file can reuse it in another chat; historical context never crosses
+chat scopes automatically.
+
+Model calls include current files and relevant history, bounded to 10 files,
+20 MB, 50 PDF pages/images and 500,000 extracted characters. History that does
+not fit remains saved; its metadata is marked excluded, and the model is told
+to ask for a filename or reattachment rather than invent its contents. PDF/image
+bytes are sent inline to Meta Responses; text is included as named reference
+content. There is no provider Files API storage to manage. Application originals
+remain in the database (500 MB/workspace cap); retention cleanup is not yet built.
+
+Three-minute voice capture uses individually uploaded WAV parts of roughly one
+minute to stay below hosted request caps. Completed parts are kept client-side
+for retry, and the final joined text is reviewed before sending. Captured audio
+and partial transcripts remain memory-only and are discarded on Cancel/reload.

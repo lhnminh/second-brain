@@ -6,8 +6,8 @@ import wave
 
 import httpx
 
-MAX_AUDIO_BYTES = 2_880_044  # One minute of mono 24 kHz PCM16 plus WAV header.
-MAX_AUDIO_SECONDS = 60
+MAX_AUDIO_BYTES = 8_640_044  # Three minutes of mono 24 kHz PCM16 plus WAV header.
+MAX_AUDIO_SECONDS = 180
 
 
 class VoiceFailure(Exception):
@@ -18,7 +18,7 @@ class VoiceFailure(Exception):
 
 def validate_audio(audio):
     if len(audio) > MAX_AUDIO_BYTES:
-        raise VoiceFailure("Recording exceeds the one-minute audio limit", 413)
+        raise VoiceFailure("Recording exceeds the three-minute audio limit", 413)
     try:
         with wave.open(io.BytesIO(audio), "rb") as recording:
             channels, width, rate, frames, compression, _ = recording.getparams()
@@ -34,7 +34,7 @@ def validate_audio(audio):
     except wave.Error, EOFError, ValueError:
         raise VoiceFailure(
             "Use a complete mono PCM16 WAV recording at 16 or 24 kHz, "
-            "between a quarter second and one minute long",
+            "between a quarter second and three minutes long",
             422,
         ) from None
 
