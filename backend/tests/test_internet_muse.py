@@ -74,6 +74,7 @@ def test_native_search_progress_and_sources_are_not_confused_with_final_json(
         {"type": "web_search"}
     ]
     assert request["json"]["store"] is False
+    assert request["json"]["reasoning"] == {"effort": "low"}
     schema = request["json"]["text"]["format"]["schema"]
     assert (
         "sources" not in schema["properties"]

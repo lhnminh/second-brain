@@ -17,6 +17,10 @@ wheels/
 # Local backend data and test caches
 *.db
 *.db-journal
+*.db-wal
+*.db-shm
+.coverage
+htmlcov/
 .pytest_cache/
 .ruff_cache/
 .uv-cache/

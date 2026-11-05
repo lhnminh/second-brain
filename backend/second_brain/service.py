@@ -26,6 +26,7 @@ from .db import (
     uid,
 )
 from .muse import MuseFailure
+from .sample import seed_workspace
 from .schemas import RANGES, ConversationProposal, HandoffAssessment, Proposal
 
 
@@ -251,12 +252,33 @@ def scope_conversations(saved_runs, saved_tasks, saved_events):
 
 
 class Service:
-    def __init__(self, engine, muse, user_id, model):
+    def __init__(self, engine, muse, user_id, model, *, sample_workspace=False):
         self.engine, self.muse, self.user_id, self.model = engine, muse, user_id, model
+        self.sample_workspace = sample_workspace
 
     def dashboard(self):
         with self.engine.begin() as c:
-            lock_account(c, self.user_id)
+            revision = lock_account(c, self.user_id)
+            if self.sample_workspace and revision == 0:
+                # Never refill a cleared workspace or mix examples into saved work.
+                populated = any(
+                    c.scalar(
+                        select(table.c.user_id)
+                        .where(table.c.user_id == self.user_id)
+                        .limit(1)
+                    )
+                    for table in (
+                        tasks,
+                        context,
+                        runs,
+                        messages,
+                        events,
+                        attachments,
+                        drafts,
+                    )
+                )
+                if not populated:
+                    seed_workspace(c, self.user_id)
             # A terminated serverless invocation must not look permanently running.
             cutoff = (datetime.now(UTC) - timedelta(minutes=2)).isoformat()
             for run in rows(c, runs, self.user_id):

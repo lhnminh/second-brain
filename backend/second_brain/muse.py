@@ -208,6 +208,7 @@ class Muse:
                     headers={"Authorization": f"Bearer {key.get_secret_value()}"},
                     json={
                         "model": self.settings.meta_model,
+                        "reasoning_effort": self.settings.meta_reasoning_effort,
                         "messages": [
                             {
                                 "role": "system",

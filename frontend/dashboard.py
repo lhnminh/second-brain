@@ -344,8 +344,9 @@ dialog{border:1px solid var(--line);border-radius:16px;padding:28px}.handoff-fie
 @media(max-width:700px){.step-line>.agent-actions{grid-column:3/-1;justify-self:end}}
 .file-list{display:flex;flex-wrap:wrap;gap:6px;grid-column:1/-1;min-width:0}.file-list[hidden]{display:none}.file-chip,.file-link{display:flex;align-items:center;gap:8px;max-width:100%;min-width:0;border:1px solid #dfe3ea;border-radius:10px;padding:6px 8px;background:#f6f7fa;color:#313b4b;font-size:12px;text-decoration:none}.file-chip{flex:1 1 180px}.file-name,.file-link>span:last-child{min-width:0;overflow-wrap:anywhere;flex:1}.file-chip small,.file-link small{display:block;color:#6c7482;font-size:11px}.file-type{font-size:9px;letter-spacing:.04em;font-weight:700;color:#53627a;background:#e9edf4;border-radius:5px;padding:5px}.file-remove,.file-retry{border:0;background:transparent;box-shadow:none;padding:3px;min-height:24px;line-height:1;color:#667085}.file-remove{font-size:20px}.sent-files{margin-top:8px}.file-link:hover{border-color:#9baeca;background:#edf1f8}.composer #attach{width:32px;height:36px;min-height:36px;padding:7px}.composer #attach svg{width:19px;height:19px;display:block}.composer .file-list~textarea{grid-column:1}
 .attachment-picker{position:relative;display:flex;align-items:center}.attachment-menu{position:absolute;bottom:calc(100% + 10px);right:0;z-index:30;width:180px;padding:5px;background:#fff;border:1px solid #e0e4ec;border-radius:13px;box-shadow:0 8px 30px #17203524}.attachment-menu[hidden]{display:none}.attachment-menu button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;min-height:40px;border:0;border-radius:8px;background:transparent;box-shadow:none;color:#313b4b;font-size:13px;text-align:left}.attachment-menu button:hover,.attachment-menu button:focus-visible{background:#eef2fa}.attachment-menu button:focus-visible{outline:2px solid #8798cf;outline-offset:-2px}.attachment-menu .file-type{width:31px;text-align:center;padding:5px 2px}.attachment-menu svg{width:26px;height:26px;margin-inline:2px;color:#53627a;flex-shrink:0}
+.focus-list.is-scrollable{overflow-y:auto;overflow-x:hidden;scrollbar-gutter:stable;align-content:start;padding-right:8px;overscroll-behavior:auto}
 </style></head><body>
-<header class="topbar row between"><div class="row"><span class="brand">Visual Second Brain</span></div><nav class="row" aria-label="Workspace"><details class="workspace-menu"><summary><span>Workspace</span><svg class="disclosure-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></summary><div class="workspace-menu-items"><button id="refresh" class="small ghost">Refresh</button><button id="undo-trash-menu" class="small ghost" hidden>Undo last deletion</button><a href="/dev">Developer console</a><button id="signout" class="small ghost" hidden>Sign out</button></div></details></nav></header>
+<header class="topbar row between"><div class="row"><span class="brand">Visual Second Brain</span><span id="sample-label" hidden title="These starter tasks are examples. Edit or delete any of them." style="font-size:11px;color:var(--muted)">Example workspace</span></div><nav class="row" aria-label="Workspace"><details class="workspace-menu"><summary><span>Workspace</span><svg class="disclosure-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></summary><div class="workspace-menu-items"><button id="refresh" class="small ghost">Refresh</button><button id="undo-trash-menu" class="small ghost" hidden>Undo last deletion</button><a href="/dev">Developer console</a><button id="signout" class="small ghost" hidden>Sign out</button></div></details></nav></header>
 <main><div id="error" class="error" role="alert" hidden></div>
 <section id="access" class="panel" hidden style="margin-bottom:24px"><form id="access-form" class="panel-body"><h2>Demo access</h2><p class="muted">Enter the app’s demo access token. Access lasts eight hours. Your workspace belongs to this browser; clearing cookies starts a new one.</p><div class="row" style="margin-top:12px"><input id="token" type="password" aria-label="Demo access token" autocomplete="off" maxlength="4096" required><button class="primary">Connect</button></div></form></section>
 <div id="layout" class="canvas-layout"><section class="canvas" aria-label="Your saved tasks"><div class="intro row between wrap"><div><h1 class="eyebrow"><time id="workspace-date" class="workspace-date"></time></h1></div></div><div id="reviews" tabindex="-1"></div><div id="canvas" aria-live="polite"><div class="canvas-state"><p>Loading your workspace…</p></div></div></section>
@@ -377,7 +378,7 @@ function error(e){const message=e.message||'Something went wrong. Your draft is 
 async function api(path,method='GET',body){let r;try{r=await fetch(path,{method,credentials:'same-origin',headers:{'Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})});}catch{throw Error('Could not reach the server. Your draft is preserved; try again.');}let data;try{data=await r.json();}catch{throw Error('The server returned an unreadable response. Your draft is preserved.');}if(!r.ok){if(r.status===401){endVoice({discard:true});$('#access').hidden=false;$('#signout').hidden=true;newChat();state={tasks:[],messages:[],runs:[]};render();}throw Error((data.error?.message||'Request failed')+(r.status===409?' Refresh to see the latest state.':''));}return data;}
 function setBusy(value){if(value)endVoice({discard:true});busy=value;document.querySelectorAll('button:not([data-chat-control]),input,textarea,select').forEach(el=>el.disabled=value);$('#send').textContent=value?'…':'Send';syncVoice();updateHandoffControls();}
 async function refresh(){const [data,levels,health]=await Promise.all([api('/api/dashboard'),api('/api/importance-levels'),api('/health')]);if(state.user_id!==data.user_id){chatTaskId=null;chatWorkId=null;delegatedTaskId=null;}state=data;if(chatTaskId)chatTaskId=rootTaskId(chatTaskId);ranges=levels;$('#access').hidden=true;$('#signout').hidden=!health.demo_access_required;render();loadTrashUndo();}
-async function action(work){if(busy)return;setBusy(true);$('#error').hidden=true;$('#chat-error').hidden=true;try{await work();await refresh();}catch(e){$('#status').textContent='';error(e);}finally{setBusy(false);}}
+async function action(work,options={}){if(busy)return;setBusy(true);$('#error').hidden=true;$('#chat-error').hidden=true;try{await work();if(options.refresh!==false)await refresh();}catch(e){$('#status').textContent='';error(e);}finally{setBusy(false);}}
 function stepProgress(task){const steps=state.tasks.filter(t=>t.parent_task_id===task.id);if(!steps.length)return '';const done=steps.filter(t=>t.status==='completed').length;return `<div class="task-progress"><progress value="${done}" max="${steps.length}" aria-label="Completed steps for ${esc(task.title)}"></progress><span>${done} of ${steps.length} steps complete</span></div>`;}
 let selectedBubble=null;
 const openPlans=new Set();
@@ -456,12 +457,21 @@ function sectionTaskControls(horizon){
 let focusSizeObserver=null;
 function syncFocusHeights(){
  const short=$('[aria-labelledby="focus-title"]'),long=$('.direction-panel'),list=$('.goal-list');if(!short||!long||!list)return;
+ const focus=short.querySelector('.focus-list'),items=focus?[...focus.querySelectorAll(':scope > .focus-item')]:[];
+ if(focus){
+  const scrollable=items.length>5;focus.classList.toggle('is-scrollable',scrollable);
+  if(scrollable){
+   // Include exactly the first five cards, regardless of wrapping or open steps.
+   const height=Math.ceil(items[4].getBoundingClientRect().bottom-focus.getBoundingClientRect().top+focus.scrollTop);
+   focus.style.maxHeight=height+'px';focus.setAttribute('tabindex','0');
+  }else{focus.style.maxHeight='none';focus.removeAttribute('tabindex');}
+ }
  if(window.matchMedia('(max-width:700px)').matches){list.style.maxHeight='none';return;}
  const style=getComputedStyle(long),header=long.querySelector('.panel-top'),headStyle=getComputedStyle(header);
  const chrome=parseFloat(style.paddingTop)+parseFloat(style.paddingBottom)+parseFloat(style.borderTopWidth)+parseFloat(style.borderBottomWidth)+header.getBoundingClientRect().height+parseFloat(headStyle.marginBottom);
  list.style.maxHeight=Math.max(52,short.getBoundingClientRect().height-chrome)+'px';
 }
-function watchFocusHeights(){focusSizeObserver?.disconnect();const short=$('[aria-labelledby="focus-title"]');if(short){focusSizeObserver=new ResizeObserver(syncFocusHeights);focusSizeObserver.observe(short);}syncFocusHeights();}
+function watchFocusHeights(){focusSizeObserver?.disconnect();const short=$('[aria-labelledby="focus-title"]');if(short){focusSizeObserver=new ResizeObserver(syncFocusHeights);focusSizeObserver.observe(short);short.querySelectorAll('.focus-list,.focus-item:nth-child(-n+5)').forEach(el=>focusSizeObserver.observe(el));}syncFocusHeights();}
 function renderOverview(){
  stopBubbleWorld();
  const roots=state.tasks.filter(t=>!t.parent_task_id),tasks=state.tasks;
@@ -751,7 +761,7 @@ function renderChat(){
  const entries=visible.map(m=>{
   const run=state.runs.find(r=>r.id===m.run_id),sources=m.role==='assistant'?(run?.proposal?.sources||[]):[];
   const links=sources.filter(s=>safeChatUrl(s.url)).map(s=>`<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title||s.url)}</a>`).join('');
-  return {at:m.created_at,html:`<div class="chat-message ${m.role==='user'?'user':''}"><small>${m.role==='user'?'YOU':'MUSE'}${m.role!=='user'&&run?.proposal?.web_search_used?' · WEB SEARCH':''}</small>${chatContent(m.content)}${fileLinks(m.attachments||[])}${links?`<div class="chat-sources">${links}</div>`:''}</div>`};
+  return {at:m.created_at,html:`<div class="chat-message ${m.role==='user'?'user':''}"><small>${m.role==='user'?(run?.status==='sample'?'EXAMPLE CONTEXT':'YOU'):'MUSE'}${m.role!=='user'&&run?.proposal?.web_search_used?' · WEB SEARCH':''}</small>${chatContent(m.content)}${fileLinks(m.attachments||[])}${links?`<div class="chat-sources">${links}</div>`:''}</div>`};
  });
  $('#chat-welcome').hidden=entries.length>0||!!pending;
  $('#conversation').innerHTML=entries.sort((a,b)=>String(a.at||'').localeCompare(String(b.at||''))).map(e=>e.html).join('');
@@ -771,6 +781,7 @@ function openTaskChat(id=null){
 }
 $('#chat-scope').onchange=()=>openTaskChat($('#chat-scope').value||null);
 function render(){
+ const sampleLabel=$('#sample-label');if(sampleLabel)sampleLabel.hidden=!(state.events||[]).some(e=>e.kind==='workspace.sample_loaded');
  renderOverview();renderChat();
  const reviews=state.runs.filter(r=>r.task_id===null&&r.status==='awaiting_review');
  $('#review-link').hidden=!reviews.length;$('#review-link').textContent='An earlier unsaved plan is available';
@@ -815,7 +826,7 @@ $('#chat-form').onsubmit=e=>{
  }catch(e){
   if(!delivered&&state.user_id===owner){if(!$('#message').value)$('#message').value=message;if(!draftFiles().length)attachmentDrafts.set(key,files);}
   renderChat();throw e;
- }},'');
+ }},{refresh:false});
 };
 $('#message').addEventListener('input',resizeComposer);
 $('#message').addEventListener('keydown',event=>{if(event.key!=='Enter'||event.shiftKey||event.isComposing)return;event.preventDefault();if(event.repeat||busy||voiceSession)return;$('#chat-form').requestSubmit();});

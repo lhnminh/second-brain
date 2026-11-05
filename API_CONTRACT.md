@@ -821,3 +821,28 @@ Three-minute voice capture uses individually uploaded WAV parts of roughly one
 minute to stay below hosted request caps. Completed parts are kept client-side
 for retry, and the final joined text is reviewed before sending. Captured audio
 and partial transcripts remain memory-only and are discarded on Cancel/reload.
+
+
+## Explicit public demo access
+
+`PUBLIC_DEMO=true` disables the shared access-code gate and makes
+`/health.demo_access_required` false. The dashboard and task/chat/file APIs still
+resolve an anonymous browser workspace and enforce ownership on every record.
+The same browser cookie preserves existing work when switching modes. Cross-origin
+mutations are rejected, including when a caller supplies an ignored Authorization
+header in public mode. The model key is never returned to the browser. Private
+mode remains the default and hosted deployments still require Postgres.
+
+
+### Starter workspace (November 4)
+
+`SAMPLE_WORKSPACE=true` initializes an untouched empty workspace during its first
+dashboard read, atomically under its account lock. Existing work is preserved.
+The normal dashboard schema includes the sample tasks, context, attachment
+metadata and a `workspace.sample_loaded` event. Seed context records use
+`provenance=sample`; illustrative handoff classifications use
+`handoff_source=sample`. Context-only run records have `status=sample`,
+`input_payload.operation=sample_context` and `model=none (sample content)`.
+They associate real downloadable sample files with the correct chat; they are
+not model requests and have no assistant response. UI model-run counts exclude
+them. Disabling samples affects future initialization, not already saved data.

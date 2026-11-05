@@ -41,6 +41,9 @@ def test_chat_saves_without_approval_and_preserves_retry_text():
         "function render(){"
         + page.split("function render(){", 1)[1].split("$('#chat-form').onsubmit", 1)[0]
     )
+    action = re.search(r"async function action.*?\n", page)[0].replace(
+        "async function action(", "async function performAction(", 1
+    )
     script = (
         r"""
 const assert=require('node:assert/strict'),vm=require('node:vm');
@@ -60,7 +63,9 @@ async function api(path,method,body){
  return {id:'run',request_id:body.request_id,message:body.message,status:mode,error:mode==='failed'?'Model failed':null};
 }
 function error(e){errors.push(e.message);}
-function action(work){lastAction=(async()=>{try{await work();await refresh();}catch(e){error(e);}})();return lastAction;}
+function setBusy(value){busy=value;}
+APP_ACTION
+function action(work,options){lastAction=performAction(work,options);return lastAction;}
 CHAT_RENDER
 SUBMIT
 RENDER
@@ -68,7 +73,7 @@ RENDER
  $('#message').value='Prepare a workshop';$('#chat-form').onsubmit({preventDefault(){}});await lastAction;
  assert.equal(requests.length,1);assert.equal(requests[0].path,'/api/conversation');
  assert.equal(requests[0].body.apply_immediately,true);assert.equal(requests[0].body.review_draft,undefined);
- assert.equal($('#message').value,'',errors.join('; '));assert.equal(pending,null);assert.equal(refreshes,2);
+ assert.equal($('#message').value,'',errors.join('; '));assert.equal(pending,null);assert.equal(refreshes,1);
  assert.ok(requests.every(r=>!r.path.includes('/approve')));
  state={tasks:[{id:'saved'}],runs:[{id:'run',task_id:null,status:'applied'}],messages:[{run_id:'run',role:'assistant',content:'Your workshop plan.'}]};
  render();assert.equal($('#reviews').innerHTML,'');assert.match($('#conversation').innerHTML,/MUSE/);
@@ -121,7 +126,8 @@ RENDER
  state={tasks:[],runs:[{id:'old',task_id:null,status:'awaiting_review',proposal:{tasks:[{title:'Earlier task',subtasks:[]}]}}],messages:[]};
  render();assert.match($('#reviews').innerHTML,/Add these tasks/);assert.doesNotMatch($('#reviews').innerHTML,/<input|<textarea|data-object=/);
 })().catch(e=>{console.error(e);process.exitCode=1;});
-""".replace("SUBMIT", submit)
+""".replace("APP_ACTION", action)
+        .replace("SUBMIT", submit)
         .replace("CHAT_HELPERS", helpers)
         .replace(
             "CHAT_RENDER",

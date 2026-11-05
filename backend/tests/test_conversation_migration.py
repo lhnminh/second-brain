@@ -53,6 +53,7 @@ def test_upgrade_preserves_existing_tasks_and_reviewable_plans(tmp_path, monkeyp
     client = TestClient(
         create_app(
             Settings(
+                sample_workspace=False,
                 _env_file=None,
                 database_url=url,
                 mock_user_id="alice",
@@ -62,7 +63,9 @@ def test_upgrade_preserves_existing_tasks_and_reviewable_plans(tmp_path, monkeyp
             engine,
         )
     )
-    settings = Settings(_env_file=None, mock_user_id="alice", vercel=None)
+    settings = Settings(
+        sample_workspace=False, _env_file=None, mock_user_id="alice", vercel=None
+    )
     service = Service(engine, None, "alice", settings.meta_model)
     data = service.dashboard()
     assert data["tasks"] == [task]

@@ -49,13 +49,14 @@ def setup(tmp_path, monkeypatch):
     engine = make_engine(url)
     muse = FixtureMuse()
 
-    def client(user="alice", token=None, cookies=None):
+    def client(user="alice", token=None, cookies=None, sample=False):
         settings = Settings(
             _env_file=None,
             database_url=url,
             mock_user_id=user,
             mock_auth_token=token,
             meta_api_key=None,
+            sample_workspace=sample,
             vercel=None,
         )
         result = TestClient(create_app(settings, engine, muse))

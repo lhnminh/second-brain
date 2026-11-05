@@ -113,6 +113,7 @@ def converse_with_web(settings, snapshot, message, instructions, schema):
                 },
                 json={
                     "model": settings.meta_model,
+                    "reasoning": {"effort": settings.meta_reasoning_effort},
                     "store": False,
                     "instructions": instructions,
                     "input": model_input,

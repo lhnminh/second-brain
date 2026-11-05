@@ -73,6 +73,7 @@ def test_meta_request_contract(monkeypatch):
         assert request.headers["Authorization"] == "Bearer test-secret"
         body = json.loads(request.content)
         assert body["model"] == "muse-spark-1.3"
+        assert body["reasoning_effort"] == "low"
         assert body["response_format"]["type"] == "json_schema"
         assert body["store"] is False
         assert json.loads(body["messages"][1]["content"])["state"] == {

@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -16,15 +17,24 @@ class Settings(BaseSettings):
     )
     mock_user_id: str = Field(default="demo-user", min_length=1, max_length=100)
     mock_auth_token: SecretStr | None = None
+    public_demo: bool = False
+    sample_workspace: bool = True
     meta_api_key: SecretStr | None = None
     meta_base_url: str = "https://api.meta.ai/v1"
     meta_model: str = "muse-spark-1.3"
+    meta_reasoning_effort: Literal[
+        "minimal", "low", "medium", "high", "xhigh", "max"
+    ] = "low"
     meta_voice_model: str = "muse-voice-transcribe-1.0"
     frontend_origin: str = "http://localhost:3000"
     vercel: str | None = None
 
     def validate_hosted(self):
         if self.vercel and (
-            self.database_url.startswith("sqlite") or not self.mock_auth_token
+            self.database_url.startswith("sqlite")
+            or (not self.mock_auth_token and not self.public_demo)
         ):
-            raise ValueError("Hosted demo requires Postgres and MOCK_AUTH_TOKEN")
+            raise ValueError(
+                "Hosted demo requires Postgres and MOCK_AUTH_TOKEN, "
+                "or explicit PUBLIC_DEMO=true"
+            )

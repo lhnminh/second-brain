@@ -1,7 +1,7 @@
 # Visual Second Brain — Product Spec
 
 **Status:** MVP product scope defined; technical integration and implementation details open  
-**Version:** 0.37
+**Version:** 0.39
 **Date:** November 4, 2026\
 **Format:** Hosted web application  
 **Working name:** Visual Second Brain
@@ -39,6 +39,20 @@ Conversation builds the initial workspace. Once saved work exists, the canvas pr
 **Hackathon decision:** Use one anonymous workspace per browser profile and app origin; individual sign-in is on the roadmap. A persistent HttpOnly cookie identifies the workspace, and every record retains `user_id` for isolation. Tasks, context, diagnostic conversation history, and agent runs are separate between browsers, even when they use the same demo access token. Reloads and backend restarts preserve access while the cookie remains. Sign-out ends demo access but keeps the workspace cookie.
 
 The workspace cookie lasts one year, renewed on use. Clearing cookies, private browsing, another browser, or a different app origin starts a separate workspace. Account recovery and cross-device linking require future sign-in. Existing shared-demo records remain untouched and are not automatically assigned to a browser.
+
+**Public judging access (November 4):** The user chose an app that opens without
+an access code for judges. `PUBLIC_DEMO=true` explicitly bypasses the shared demo
+gate while keeping the same HttpOnly workspace cookie and server-side ownership
+checks. Existing workspace identities and saved records are preserved. The
+server's Meta key stays private, and visitors can use its AI through the public
+app. Private mode remains the default for other deployments.
+
+An independent Vercel deployment and empty Supabase database now belong to the
+user; the shared GitHub repository remains in place. Manual deployment packages
+current saved source files, including uncommitted edits, without local secrets,
+databases, caches or stale deleted files. It applies pending database migrations
+before publishing to the locally linked Vercel project. GitHub pushes and live
+deployments remain separate operations.
 
 **Chat lifecycle (November 3):** General and task-specific conversations persist
 in the browser workspace's server-side records. Each root task has its own
@@ -213,6 +227,13 @@ a user gives context, sees grounded steps, delegates research in the same task
 chat, corrects saved work, and returns to preserved state. It demonstrates useful
 Meta model/tool execution and reliability. Verify source-backed replies, grounded
 step creation, scope isolation, Undo, optional browser entry and state on return.
+
+**Short-term list limit (November 4):** Up to five short-term cards grow naturally.
+With six or more, the task list scrolls within a height measured from its first
+five cards. The section heading and Add task control stay above the scroll area.
+The limit follows wrapping, viewport changes and expanded subtasks. Returning to
+five or fewer removes the limit. The long-term list still uses the visible
+short-term panel height on desktop and grows naturally on mobile.
 
 **Dashboard density and handoff correction (November 4):** Short/long focus headers
 omit task-count badges. Short-term cards use tighter spacing. On desktop the
@@ -683,4 +704,52 @@ request human input for sensitive actions; this is not a production guarantee.
 The UI shows results for review, never proof that an arbitrary goal was completed.
 
 Migration `d785c418a901` adds `browser_runs` only; no existing records are deleted.
-See BROWSER_HANDOFF.md for reproducible setup, demo and verification evidence.
+Historical browser setup is retired; current handoffs use task chat only.
+
+
+**Measured latency correction (November 4):** The user's independent Supabase
+project is in Oregon. Its Vercel backend previously ran in Virginia. Private
+`DEPLOY_REGION=pdx1` now deploys that backend beside its database without changing
+the shared repository's default region for other deployments. Three-request
+read-only checks from the same laptop measured dashboard median 1.243 seconds
+before and 0.163 seconds after; an isolated synthetic workspace measured manual
+create 0.179 seconds and reversible delete 0.211 seconds after the change. These
+are small point-in-time samples, not service-wide performance guarantees.
+
+Chat now performs one dashboard refresh after a successful answer; the outer
+action wrapper skips the duplicate refresh. Failed sends still retain draft text
+and attachments, and successful responses still route to the proper task scope.
+Two direct, nonpersisted Meta requests for the same simple task measured 7.888
+seconds at the existing default and 3.529 seconds with low reasoning effort. Both
+returned validated proposals. This was a comparison only: live model reasoning
+settings and model quality policy remain unchanged.
+
+
+**Reasoning effort choice (November 4):** The user chose low reasoning effort to
+reduce model latency. Requests previously omitted the parameter, leaving effort
+to the provider; they did not explicitly select medium. Muse now sends `low` for
+Responses chat (including attachments/web search), task planning and handoff
+assessment. `META_REASONING_EFFORT` is a validated server setting, defaulting to
+low. The model and output validation remain unchanged. Voice transcription is
+separate and does not use this reasoning setting.
+
+
+**Judging starter workspace and repository cleanup (November 4):** New untouched
+workspaces now receive a compact, explicitly labeled student-day example by
+default (`SAMPLE_WORKSPACE=false` restores empty onboarding). Four short-term
+tasks show deadline urgency, partial progress, personal work and eligible
+research/drafting handoffs; two long-term goals and one past task per focus
+section show the remaining dashboard states. A task chat includes a fictional
+presentation brief as a downloadable TXT file. Example context and assessments
+are marked as sample data, excluded from real model-run counts, and contain no
+assistant replies or simulated execution. Sending a message still invokes the
+real configured Meta model. Voice and file controls remain live features.
+
+Initialization is atomic under the workspace lock and occurs only at revision
+zero with no saved records. Reloads retain the same IDs, user corrections and
+files; clearing or finishing examples does not recreate them. Existing user
+workspaces are preserved. This provides an immediate daily scenario for judges
+without a sample/live switch. Verify isolation, concurrent first loads, rollback,
+reload, edits, deletion, attachment ownership and a real Muse reply. The README
+is shortened around the live URL and local setup; current operational details
+live in focused guides. The read-only dev console remains, with its logo removed.

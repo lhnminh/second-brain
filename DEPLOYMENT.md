@@ -1,62 +1,47 @@
-# GitHub → Neon → Vercel
+# Deployment
 
-Deployment target: `lhnminh/second-brain`, repository root, Python 3.14,
-FastAPI entrypoint `backend.app:app`. This uses isolated anonymous browser workspaces behind a
-shared demo access token. Individual sign-in is roadmap work.
+Live app: **https://second-brain-iota-blue.vercel.app/**
 
-## Provision and configure
+The live app uses Vercel and a separate Supabase PostgreSQL database. The shared GitHub repository can also serve other deployments; local project links and credentials are not committed.
 
-1. Create a dedicated Neon project/database for this application. Keep preview
-   databases separate from production. Do not copy the local SQLite demo data
-   into the hosted database automatically.
-2. Apply the committed Alembic migrations to that database before deployment:
-   `uv run alembic -c backend/alembic.ini upgrade head`. Supply its Neon URL via
-   server-side `DATABASE_URL`, preserving SSL parameters. Never put the URL into
-   a command argument, tracked file, or browser source.
-3. Import the GitHub repository into Vercel with project root `.` and framework
-   FastAPI. Use the root `pyproject.toml`, `uv.lock`, and `vercel.json`.
-4. Set these server-side environment variables for the intended environment:
+## Update this deployment
 
-   | Variable | Value |
-   | --- | --- |
-   | `DATABASE_URL` | Neon connection string with SSL |
-   | `META_API_KEY` | Existing Meta API key, transferred privately |
-   | `META_BASE_URL` | `https://api.meta.ai/v1` |
-   | `META_MODEL` | `muse-spark-1.3` |
-   | `MOCK_USER_ID` | A stable namespace for browser workspace IDs; changing it selects new workspaces |
-   | `MOCK_AUTH_TOKEN` | A separately generated random demo access token |
-   | `FRONTEND_ORIGIN` | The final deployment origin if cross-origin requests are needed |
+Save your changes, then run from this laptop's project directory:
 
-5. Keep the demo access token private. The public HTML shell prompts for it;
-   every data/model API checks it. The Meta key never goes into the browser.
-   Use Vercel deployment protection where available. Do not enable broad public
-   data access to bypass the demo token.
+```powershell
+.\.venv\Scripts\python.exe scripts/deploy.py
+```
 
-The checked-in Vercel configuration allows 60 seconds per request, includes the
-frontend resource, and excludes local secrets/test databases. It does not run
-migrations during a request or automatically against production on preview
-builds. Configure environment-specific Neon branches before enabling previews.
+The helper packages current saved source, including uncommitted changes and new nonignored files, applies database migrations, then deploys to the locally linked Vercel project. It excludes credentials, local databases and caches. GitHub pushes are separate. Use `--prepare-only` to check the package without migrating or deploying.
 
-## Verify after deployment
+## Set up another deployment
 
-- `/` serves the dashboard; `/health` returns liveness.
-- `/api/dashboard` without a valid session or bearer token returns 401.
-- A demo login stays connected through workspace → dev console → workspace and
-  reload. Sign-out clears the session on both pages. HTTPS cookies include Secure.
-- With the token, create a synthetic task and context; reload to verify Neon
-  persistence. Use a separate browser profile/cookie jar for disposable smoke-test data.
-- Start a conversation from the blank canvas, request a real Muse plan, revise a
-  suggestion, approve it, and reload. Check saved objects at `/dev`.
-- Connect two browser profiles using the same demo token; verify their tasks,
-  messages, runs, and context are separate. Sign out/reconnect to the original
-  workspace. Clearing cookies should open an empty workspace.
-- Check Vercel build/runtime logs for startup/import or migration failures. Keep
-  secret values out of logs and screenshots.
+1. Create a PostgreSQL database (Supabase or Neon). Copy its server connection URL privately, preserving SSL parameters. Supabase's Data API is not required.
+2. Install the official Vercel CLI, run `vercel login`, then `vercel link` from this repository. Select your own project. The FastAPI entrypoint is `backend.app:app`.
+3. Create a private `.env.second-brain-hosted` with `DATABASE_URL` for migrations. Optional `DEPLOY_REGION` overrides the repository region for your deployment; choose a Vercel region near your database (`pdx1` for this app's Oregon database).
+4. Set these **Production** environment variables in Vercel:
 
-Mark each service verified only after its actual operation succeeds. Source
-being pushed does not establish database or deployment readiness.
+| Variable | Value |
+| --- | --- |
+| `DATABASE_URL` | Your PostgreSQL server URL with SSL |
+| `META_API_KEY` | Your private Meta Model API key |
+| `META_MODEL` | `muse-spark-1.3` |
+| `META_VOICE_MODEL` | `muse-voice-transcribe-1.0` |
+| `META_REASONING_EFFORT` | `low` |
+| `PUBLIC_DEMO` | `true` for code-free judging access |
+| `SAMPLE_WORKSPACE` | `true` for editable examples on first visit; `false` for empty onboarding |
+| `MOCK_USER_ID` | Stable workspace namespace; keep unchanged |
+| `FRONTEND_ORIGIN` | Your deployment origin |
 
-References checked October 26, 2026:
-[Vercel FastAPI](https://vercel.com/docs/frameworks/backend/fastapi),
-[Vercel function configuration](https://vercel.com/docs/project-configuration/vercel-json#functions),
-[Neon SQLAlchemy guide](https://neon.com/docs/guides/sqlalchemy).
+For a private demo, set `PUBLIC_DEMO=false` and provide a separate random `MOCK_AUTH_TOKEN`. The access code is not a Meta API key. Public mode allows visitors to use the server's model credits while retaining isolated browser workspaces.
+
+5. Run the deployment helper. Migrations run before deployment; they do not run during browser requests.
+
+## Verify
+
+- Open `/`, inspect `/health`, and check that the dashboard loads.
+- In a new browser profile, check the example tasks and attachment. Samples make no AI calls and contain no fabricated assistant replies.
+- Create or edit a task, send a real Muse message, and reload to verify persistence.
+- Verify that another browser profile has a separate workspace.
+
+Workspace identity uses a persistent HttpOnly cookie. Clearing cookies or changing browsers/origins selects a different workspace; account sign-in and cross-device recovery are not implemented. Existing saved work is never replaced by the example initializer.

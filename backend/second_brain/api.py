@@ -48,6 +48,8 @@ from .voice import MAX_AUDIO_BYTES, VoiceFailure, VoiceTranscriber
 def create_app(settings=None, engine=None, muse=None, transcriber=None):
     settings = settings or Settings()
     settings.validate_hosted()
+    # Explicit public demos retain private browser workspaces but skip the gate.
+    demo_token = None if settings.public_demo else settings.mock_auth_token
     engine = engine or make_engine(settings.database_url)
     muse = muse or Muse(settings)
     transcriber = transcriber or VoiceTranscriber(settings)
@@ -107,7 +109,7 @@ def create_app(settings=None, engine=None, muse=None, transcriber=None):
         response: Response,
         authorization: Annotated[str | None, Header()] = None,
     ):
-        token = settings.mock_auth_token
+        token = demo_token
         if token:
             if authorization is not None:
                 if not secrets.compare_digest(
@@ -124,11 +126,15 @@ def create_app(settings=None, engine=None, muse=None, transcriber=None):
                     same_origin(request)
             else:
                 raise HTTPException(401, "Connect with your demo access token")
-        elif authorization is None and request.method not in {"GET", "HEAD", "OPTIONS"}:
+        elif request.method not in {"GET", "HEAD", "OPTIONS"}:
             same_origin(request)
         workspace = ensure_workspace(request, response)
         return Service(
-            engine, muse, workspace_owner(settings, workspace), settings.meta_model
+            engine,
+            muse,
+            workspace_owner(settings, workspace),
+            settings.meta_model,
+            sample_workspace=settings.sample_workspace,
         )
 
     @app.middleware("http")
@@ -144,7 +150,7 @@ def create_app(settings=None, engine=None, muse=None, transcriber=None):
     @app.post("/api/session")
     def connect(body: SessionCreate, request: Request):
         same_origin(request)
-        token = settings.mock_auth_token
+        token = demo_token
         if token and not secrets.compare_digest(
             body.token.get_secret_value().encode(), token.get_secret_value().encode()
         ):
@@ -213,7 +219,7 @@ def create_app(settings=None, engine=None, muse=None, transcriber=None):
             "status": "ok",
             "authentication": "mock",
             "model": settings.meta_model,
-            "demo_access_required": bool(settings.mock_auth_token),
+            "demo_access_required": bool(demo_token),
         }
 
     @app.get("/api/dashboard")
